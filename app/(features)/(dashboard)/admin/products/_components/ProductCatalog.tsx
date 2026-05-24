@@ -6,9 +6,9 @@ import ProductCard from "./ProductCard";
 import ProductModal from "./ProductModal";
 import DeleteModal from "./DeleteModal";
 import Pagination from "./Pagination";
-import { CatalogFilters, Product, ProductCategory } from "../definations";
-import { dummyProducts } from "../data/products";
-import { computeCatalogStats, exportProductsToCSV, generateProductId } from "../lib/catalog-utils";
+import { CatalogFilters, Product, ProductCategory } from "@/types/catalog";
+import { dummyProducts } from "@/data/products";
+import { computeCatalogStats, exportProductsToCSV, generateProductId } from "@/lib/catalog-utils";
 import { LucideDownload, Package, PlusIcon, Search, Tag } from "lucide-react";
 
 const CATEGORIES: ProductCategory[] = [

@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "../qwetu-catalog/qwetu-catalog/definations.ts"  ],
+, "../definations.ts"  ],
   "exclude": ["node_modules"]
 }

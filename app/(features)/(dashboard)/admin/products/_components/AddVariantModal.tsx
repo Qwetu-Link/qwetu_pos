@@ -1,8 +1,8 @@
 "use client";
 
+import { NewVariantFormValues, ProductCategory } from "@/types/catalog";
 import { Puzzle } from "lucide-react";
 import { useState } from "react";
-import { NewVariantFormValues, ProductCategory } from "../definations";
 
 interface Props {
   productName: string;

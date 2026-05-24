@@ -1,8 +1,8 @@
 "use client";
 
+import { formatCompactCurrency } from "@/lib/catalog-utils";
+import { CatalogStats } from "@/types/catalog";
 import { BadgeAlert, Box, ChartColumnIncreasing, Tag } from "lucide-react";
-import { CatalogStats } from "../definations";
-import { formatCompactCurrency } from "../lib/catalog-utils";
 
 interface Props {
   stats: CatalogStats;

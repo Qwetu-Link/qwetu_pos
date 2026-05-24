@@ -4,7 +4,7 @@ import type {
   CatalogStats,
   VariantInventory,
   NewVariantFormValues,
-} from "../definations";
+} from "@/types/catalog";
 
 // ---- ID generators ----
 

@@ -1,12 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { Product } from "../definations";
+import { Product } from "@/types/catalog";
 import {
   getProductImageSrc,
   getProductTotalStock,
   getProductUniqueSizes,
-} from "../lib/catalog-utils";
+} from "@/lib/catalog-utils";
 import { AlertTriangle, Box, Edit, Trash2 } from "lucide-react";
 
 interface Props {

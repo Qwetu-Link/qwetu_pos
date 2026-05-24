@@ -1,4 +1,4 @@
-import { Product } from "../definations";
+import type { Product } from "@/types/catalog";
 
 export const dummyProducts: Product[] = [
   {
@@ -17,14 +17,14 @@ export const dummyProducts: Product[] = [
         buyPrice: 850,
         sellPrice: 1800,
         inventory: {
-          totalStock: 5,
+          totalStock: 42,
           reorderPoint: 10,
           status: "healthy",
           lastRestocked: "2025-03-10",
           locations: [
-            { name: "Main Store", stock: 0, reorderPoint: 5 },
-            { name: "Warehouse A", stock: 2, reorderPoint: 5 },
-            { name: "Outlet", stock: 3, reorderPoint: 5 },
+            { name: "Main Store", stock: 22, reorderPoint: 5 },
+            { name: "Warehouse A", stock: 15, reorderPoint: 5 },
+            { name: "Outlet", stock: 5, reorderPoint: 5 },
           ],
         },
       },
@@ -36,12 +36,12 @@ export const dummyProducts: Product[] = [
         buyPrice: 850,
         sellPrice: 1800,
         inventory: {
-          totalStock: 1,
+          totalStock: 8,
           reorderPoint: 10,
           status: "low",
           lastRestocked: "2025-02-20",
           locations: [
-            { name: "Main Store", stock: 1, reorderPoint: 5 },
+            { name: "Main Store", stock: 8, reorderPoint: 5 },
             { name: "Warehouse A", stock: 0, reorderPoint: 5 },
             { name: "Outlet", stock: 0, reorderPoint: 5 },
           ],
@@ -55,14 +55,14 @@ export const dummyProducts: Product[] = [
         buyPrice: 850,
         sellPrice: 1800,
         inventory: {
-          totalStock: 0,
+          totalStock: 30,
           reorderPoint: 10,
           status: "healthy",
           lastRestocked: "2025-03-15",
           locations: [
-            { name: "Main Store", stock: 0, reorderPoint: 5 },
-            { name: "Warehouse A", stock: 0, reorderPoint: 5 },
-            { name: "Outlet", stock: 0, reorderPoint: 5 },
+            { name: "Main Store", stock: 15, reorderPoint: 5 },
+            { name: "Warehouse A", stock: 10, reorderPoint: 5 },
+            { name: "Outlet", stock: 5, reorderPoint: 5 },
           ],
         },
       },

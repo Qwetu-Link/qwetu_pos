@@ -8,8 +8,8 @@ import {
   Product,
   ProductCategory,
   ProductVariant,
-} from "../definations";
-import { buildVariant, getProductImageSrc } from "../lib/catalog-utils";
+} from "@/types/catalog";
+import { buildVariant, getProductImageSrc } from "@/lib/catalog-utils";
 import { Edit, Plus, Save, Trash2 } from "lucide-react";
 
 const CATEGORIES: ProductCategory[] = [

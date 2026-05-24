@@ -1,5 +1,5 @@
-import CategoriesPage from "./_components/category_page";
+import ProductCategories from "./_components/ProductCategories";
 
 export default function CategoryPage() {
-  return <CategoriesPage />;
+  return <ProductCategories />;
 }
