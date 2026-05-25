@@ -1,6 +1,5 @@
-import React from "react";
-import VariantsPage from "./_components/variants_page";
+import ProductVariantsPage from "./_components/VariantsPage";
 
 export default function VariantPage() {
-  return <VariantsPage />;
+  return <ProductVariantsPage />;
 }
