@@ -1,6 +1,10 @@
-import React from "react";
-import InventoriesPage from "./_components/inventory_page";
+import { InventoryIntelligence } from "./_components/InventoryIntelligence";
+
+export const metadata = {
+  title: "QwetuLinks | Inventory Intelligence",
+  description: "Multi-location stock health and reorder management",
+};
 
 export default function InventoryPage() {
-  return <InventoriesPage />;
+  return <InventoryIntelligence />;
 }

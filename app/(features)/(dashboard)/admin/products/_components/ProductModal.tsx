@@ -10,7 +10,7 @@ import {
   ProductVariant,
 } from "@/types/catalog";
 import { buildVariant, getProductImageSrc } from "@/lib/catalog-utils";
-import { Edit, Plus, Save, Trash2 } from "lucide-react";
+import { ArrowRight, Edit, Plus, Puzzle, Save, Trash2 } from "lucide-react";
 
 const CATEGORIES: ProductCategory[] = [
   "Men's Clothing",
@@ -283,7 +283,9 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
                     onClick={goToStep2}
                     className="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-emerald-700 transition"
                   >
-                    Next: Add Variants →
+                    <span className="inline-flex items-center gap-1.5">
+                      Next: Add Variants <ArrowRight size={16} />
+                    </span>
                   </button>
                 </div>
               </div>
@@ -308,7 +310,7 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
                 <div className="border rounded-xl bg-gray-50 p-3 max-h-96 overflow-y-auto space-y-3">
                   {variants.length === 0 ? (
                     <div className="text-center py-8 text-gray-400">
-                      <p className="text-3xl mb-2">🧩</p>
+                      <Puzzle size={32} className="mx-auto mb-2" />
                       <p>No variants yet. Click `Add Variant` to create one.</p>
                     </div>
                   ) : (
@@ -373,3 +375,4 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
     </>
   );
 }
+

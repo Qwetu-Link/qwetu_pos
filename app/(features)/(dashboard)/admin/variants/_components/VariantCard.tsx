@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { Package, Pencil, Trash2 } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import { getStatus, type InventoryItem } from "@/lib/variant-utils";
 
@@ -23,7 +23,7 @@ export default function VariantCard({ item, onEdit, onDelete }: Props) {
         <div>
           <h3 className="font-bold text-xl text-slate-800">
             {item.productName}
-            {item.color ? ` – ${item.color}` : ""}
+            {item.color ? ` - ${item.color}` : ""}
             {item.size ? ` (${item.size})` : ""}
           </h3>
 
@@ -38,7 +38,9 @@ export default function VariantCard({ item, onEdit, onDelete }: Props) {
       <div className="space-y-3">
         <div className="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100">
           <p className="text-sm text-slate-600 font-medium mb-1">
-            📦 Total Stock
+            <span className="inline-flex items-center justify-center gap-1.5">
+              <Package size={15} /> Total Stock
+            </span>
           </p>
           <p className="text-3xl font-extrabold text-emerald-800">
             {totalStock}
