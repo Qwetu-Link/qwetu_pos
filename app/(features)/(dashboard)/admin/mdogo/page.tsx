@@ -1,5 +1,9 @@
-import MdogoMdogoPage from "./_components/mdogo_page";
+import LipaMdogoPage from "./_components/LipaMdogoPage";
 
-export default function MdogoPage() {
-  return <MdogoMdogoPage />;
+export const metadata = {
+  title: "Lipa Mdogo Core | QwetuLinks POS",
+};
+
+export default function Page() {
+  return <LipaMdogoPage />;
 }
