@@ -1,5 +1,4 @@
-import React from "react";
-import ReportsPage from "./_components/reports_page";
+import ReportsPage from "./_components/ReportsPage";
 
 export default function ReportPage() {
   return <ReportsPage />;
