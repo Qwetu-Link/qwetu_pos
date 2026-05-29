@@ -14,11 +14,14 @@ import CategoryStatsCards from "./CategoryStatsCards";
 import CategoryCard from "./CategoryCard";
 import CategoryModal from "./CategoryModal";
 import DeleteCategoryModal from "./DeleteCategoryModal";
+import Pagination from "@/components/Pagination";
 import { FolderOpen, Plus, Search } from "lucide-react";
 
 export default function ProductCategories() {
   const [categories, setCategories] = useState<Category[]>(dummyCategories);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
 
   // Modal state: null = closed, null-value = add mode, Category = edit mode
   const [editTarget, setEditTarget] = useState<Category | null | "new">(null);
@@ -30,6 +33,16 @@ export default function ProductCategories() {
   const filtered = useMemo(
     () => filterCategories(categories, search),
     [categories, search],
+  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const visiblePage = Math.min(currentPage, totalPages);
+  const paginated = useMemo(
+    () =>
+      filtered.slice(
+        (visiblePage - 1) * perPage,
+        visiblePage * perPage,
+      ),
+    [filtered, visiblePage, perPage],
   );
 
   const stats = useMemo(() => computeCategoryStats(categories), [categories]);
@@ -83,7 +96,10 @@ export default function ProductCategories() {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             placeholder="Search categories by name or description..."
             className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
           />
@@ -105,7 +121,7 @@ export default function ProductCategories() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((cat) => (
+          {paginated.map((cat) => (
             <CategoryCard
               key={cat.id}
               category={cat}
@@ -114,6 +130,20 @@ export default function ProductCategories() {
             />
           ))}
         </div>
+      )}
+
+      {filtered.length > 0 && (
+        <Pagination
+          currentPage={visiblePage}
+          totalPages={totalPages}
+          total={filtered.length}
+          perPage={perPage}
+          onPage={setCurrentPage}
+          onPerPage={(value) => {
+            setPerPage(value);
+            setCurrentPage(1);
+          }}
+        />
       )}
 
       {/* ---- Modals ---- */}

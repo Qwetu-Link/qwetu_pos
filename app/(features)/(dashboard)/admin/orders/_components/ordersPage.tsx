@@ -13,7 +13,7 @@ import {
 import AddOrderModal from "./addOrderModal";
 import { initialOrders } from "../../../../../../data/orderData";
 import OrderFilters from "./orderFilters";
-import OrderPagination from "./orderPagination";
+import Pagination from "@/components/Pagination";
 import OrderStatsCards from "./orderStatsCards";
 import { Order, OrderStatus } from "../../../../../../types/orderTypes";
 import OrdersTable, { OrderViewMode } from "./ordersTable";
@@ -170,7 +170,7 @@ export default function OrdersPage() {
           </div>
         </div>
         <OrdersTable orders={paginatedOrders} viewMode={viewMode} />
-        <OrderPagination
+        <Pagination
           currentPage={safeCurrentPage}
           totalItems={filteredOrders.length}
           perPage={perPage}

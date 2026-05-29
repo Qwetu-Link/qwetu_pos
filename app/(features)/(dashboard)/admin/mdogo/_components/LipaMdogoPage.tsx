@@ -17,7 +17,7 @@ import {
   HandCoins,
   MoneyBill,
 } from "./icons";
-import Pagination from "./Pagination";
+import Pagination from "@/components/Pagination";
 import PaymentPlanCard from "./PaymentPlanCard";
 import RecordPaymentModal from "./RecordPaymentModal";
 import ReminderModal from "./ReminderModal";

@@ -1,9 +1,90 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowLeft, Building2, CreditCard, ReceiptText } from "lucide-react";
-import FormField from "./FormField";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Building2,
+  Check,
+  CreditCard,
+  ReceiptText,
+  Save,
+} from "lucide-react";
 import SectionCard from "./SectionCard";
 
+type BillingForm = {
+  billingContact: string;
+  billingEmail: string;
+  billingPhone: string;
+  taxPin: string;
+  billingAddress: string;
+  paymentMethod: string;
+  billingCycle: string;
+};
+
+const steps = [
+  {
+    title: "Billing Contact",
+    description: "Confirm who owns billing communication.",
+  },
+  {
+    title: "Invoice Details",
+    description: "Add tax and invoice address details.",
+  },
+  {
+    title: "Payment Method",
+    description: "Choose how billing will be collected.",
+  },
+];
+
 export default function BillingSetupPage() {
+  const router = useRouter();
+  const [activeStep, setActiveStep] = useState(0);
+  const [saved, setSaved] = useState(false);
+  const [form, setForm] = useState<BillingForm>({
+    billingContact: "",
+    billingEmail: "",
+    billingPhone: "",
+    taxPin: "",
+    billingAddress: "",
+    paymentMethod: "card",
+    billingCycle: "monthly",
+  });
+
+  const completedSteps = useMemo(
+    () => [
+      Boolean(form.billingContact && form.billingEmail && form.billingPhone),
+      Boolean(form.taxPin && form.billingAddress),
+      Boolean(form.paymentMethod && form.billingCycle),
+    ],
+    [form],
+  );
+  const allComplete = completedSteps.every(Boolean);
+
+  function updateField(name: keyof BillingForm, value: string) {
+    setForm((current) => ({ ...current, [name]: value }));
+  }
+
+  function nextStep() {
+    if (!completedSteps[activeStep]) {
+      return;
+    }
+
+    setActiveStep((step) => Math.min(step + 1, steps.length - 1));
+  }
+
+  function saveBillingSetup() {
+    if (!allComplete) {
+      return;
+    }
+
+    localStorage.setItem("qwetu.billing.active", "true");
+    setSaved(true);
+    router.push("/admin/settings");
+  }
+
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
@@ -21,11 +102,17 @@ export default function BillingSetupPage() {
               Configure Billing
             </h1>
             <p className="mt-1 text-slate-500">
-              Add billing ownership, invoice details, and payment preferences.
+              Complete each step to activate billing for this POS account.
             </p>
           </div>
-          <span className="rounded-full bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700">
-            Billing not active
+          <span
+            className={`rounded-full px-4 py-2 text-sm font-medium ${
+              saved
+                ? "bg-emerald-50 text-emerald-700"
+                : "bg-amber-50 text-amber-700"
+            }`}
+          >
+            {saved ? "Billing active" : "Billing not active"}
           </span>
         </div>
 
@@ -37,48 +124,143 @@ export default function BillingSetupPage() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-slate-800">
-                  Billing Profile
+                  {steps[activeStep].title}
                 </h2>
                 <p className="text-sm text-slate-500">
-                  These details appear on invoices and receipts.
+                  {steps[activeStep].description}
                 </p>
               </div>
             </div>
 
-            <form className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <FormField
-                label="Billing Contact"
-                name="billingContact"
-                placeholder="e.g. Finance Admin"
-              />
-              <FormField
-                label="Billing Email"
-                name="billingEmail"
-                type="email"
-                placeholder="billing@qwetulinks.co.ke"
-              />
-              <FormField
-                label="Tax PIN"
-                name="taxPin"
-                placeholder="e.g. P051234567A"
-              />
-              <FormField
-                label="Phone"
-                name="billingPhone"
-                type="tel"
-                placeholder="+254 712 345 678"
-              />
-              <label className="md:col-span-2">
-                <span className="mb-1.5 block text-sm font-semibold text-slate-700">
-                  Billing Address
-                </span>
-                <textarea
-                  name="billingAddress"
-                  rows={3}
-                  placeholder="Street, building, city, country"
-                  className="w-full resize-none rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-gray-500 focus:ring-2 focus:ring-emerald-500"
-                />
-              </label>
+            <form
+              className="space-y-5"
+              onSubmit={(event) => {
+                event.preventDefault();
+                saveBillingSetup();
+              }}
+            >
+              {activeStep === 0 ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <BillingInput
+                    label="Billing Contact"
+                    name="billingContact"
+                    value={form.billingContact}
+                    placeholder="e.g. Finance Admin"
+                    onChange={updateField}
+                  />
+                  <BillingInput
+                    label="Billing Email"
+                    name="billingEmail"
+                    type="email"
+                    value={form.billingEmail}
+                    placeholder="billing@qwetulinks.co.ke"
+                    onChange={updateField}
+                  />
+                  <BillingInput
+                    label="Phone"
+                    name="billingPhone"
+                    type="tel"
+                    value={form.billingPhone}
+                    placeholder="+254 712 345 678"
+                    onChange={updateField}
+                  />
+                </div>
+              ) : null}
+
+              {activeStep === 1 ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <BillingInput
+                    label="Tax PIN"
+                    name="taxPin"
+                    value={form.taxPin}
+                    placeholder="e.g. P051234567A"
+                    onChange={updateField}
+                  />
+                  <label className="md:col-span-2">
+                    <span className="mb-1.5 block text-sm font-semibold text-slate-700">
+                      Billing Address
+                    </span>
+                    <textarea
+                      name="billingAddress"
+                      rows={4}
+                      value={form.billingAddress}
+                      onChange={(event) =>
+                        updateField("billingAddress", event.target.value)
+                      }
+                      placeholder="Street, building, city, country"
+                      className="w-full resize-none rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-gray-500 focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </label>
+                </div>
+              ) : null}
+
+              {activeStep === 2 ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <label>
+                    <span className="mb-1.5 block text-sm font-semibold text-slate-700">
+                      Payment Method
+                    </span>
+                    <select
+                      value={form.paymentMethod}
+                      onChange={(event) =>
+                        updateField("paymentMethod", event.target.value)
+                      }
+                      className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="card">Card</option>
+                      <option value="mpesa">M-Pesa</option>
+                      <option value="bank">Bank Transfer</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span className="mb-1.5 block text-sm font-semibold text-slate-700">
+                      Billing Cycle
+                    </span>
+                    <select
+                      value={form.billingCycle}
+                      onChange={(event) =>
+                        updateField("billingCycle", event.target.value)
+                      }
+                      className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="monthly">Monthly</option>
+                      <option value="annual">Annual</option>
+                    </select>
+                  </label>
+                </div>
+              ) : null}
+
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
+                <button
+                  type="button"
+                  onClick={() => setActiveStep((step) => Math.max(step - 1, 0))}
+                  disabled={activeStep === 0}
+                  className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Previous
+                </button>
+
+                {activeStep < steps.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={!completedSteps[activeStep]}
+                    className="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Next Step
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={!allComplete}
+                    className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <Save className="h-4 w-4" />
+                    Save Billing Setup
+                  </button>
+                )}
+              </div>
             </form>
           </SectionCard>
 
@@ -97,33 +279,83 @@ export default function BillingSetupPage() {
               </div>
             </div>
             <div className="space-y-3">
-              {[
-                "Confirm billing contact",
-                "Add invoice tax details",
-                "Choose payment method",
-              ].map((step, index) => (
-                <div
-                  key={step}
-                  className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3"
-                >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-semibold text-slate-700">
-                    {index + 1}
-                  </span>
-                  <span className="text-sm font-medium text-slate-700">
-                    {step}
-                  </span>
-                </div>
-              ))}
+              {steps.map((step, index) => {
+                const complete = completedSteps[index];
+                const current = activeStep === index;
+
+                return (
+                  <button
+                    key={step.title}
+                    type="button"
+                    onClick={() => {
+                      if (index === 0 || completedSteps[index - 1]) {
+                        setActiveStep(index);
+                      }
+                    }}
+                    className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${
+                      current
+                        ? "border-amber-200 bg-amber-50"
+                        : "border-slate-100 bg-slate-50 hover:bg-slate-100"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${
+                        complete
+                          ? "bg-emerald-600 text-white"
+                          : current
+                            ? "bg-amber-600 text-white"
+                            : "bg-white text-slate-700"
+                      }`}
+                    >
+                      {complete ? <Check className="h-4 w-4" /> : index + 1}
+                    </span>
+                    <span>
+                      <span className="block text-sm font-medium text-slate-800">
+                        {step.title}
+                      </span>
+                      <span className="block text-xs text-slate-500">
+                        {complete ? "Complete" : step.description}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-            <button
-              type="button"
-              className="mt-5 w-full rounded-xl bg-amber-600 px-4 py-2.5 font-semibold text-white transition hover:bg-amber-700"
-            >
-              Save Billing Setup
-            </button>
           </SectionCard>
         </div>
       </div>
     </main>
+  );
+}
+
+function BillingInput({
+  label,
+  name,
+  type = "text",
+  value,
+  placeholder,
+  onChange,
+}: {
+  label: string;
+  name: keyof BillingForm;
+  type?: string;
+  value: string;
+  placeholder: string;
+  onChange: (name: keyof BillingForm, value: string) => void;
+}) {
+  return (
+    <label>
+      <span className="mb-1.5 block text-sm font-semibold text-slate-700">
+        {label}
+      </span>
+      <input
+        name={name}
+        type={type}
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onChange(name, event.target.value)}
+        className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-gray-500 focus:ring-2 focus:ring-emerald-500"
+      />
+    </label>
   );
 }

@@ -7,7 +7,7 @@ import type { InventoryItem } from "@/types/inventory";
 import { StatsRow } from "./StatsRow";
 import { FilterBar } from "./FilterBar";
 import { InventoryCard } from "./InventoryCard";
-import { Pagination } from "./Pagination";
+import { Pagination } from "@/components/Pagination";
 import { AdjustModal } from "./AdjustModal";
 import { TransferModal } from "./TransferModal";
 import { computeStats } from "@/lib/inventory-utils";

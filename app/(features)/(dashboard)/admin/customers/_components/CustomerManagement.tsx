@@ -8,7 +8,7 @@ import type { Customer, CustomerFormData } from "@/types/customer";
 import { CustomerStatsRow } from "./CustomerStatsRow";
 import { CustomerCard } from "./CustomerCard";
 import { CustomerFormModal } from "./CustomerFormModal";
-import { Pagination } from "./Pagination";
+import { Pagination } from "@/components/Pagination";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 
 export function CustomerManagement() {

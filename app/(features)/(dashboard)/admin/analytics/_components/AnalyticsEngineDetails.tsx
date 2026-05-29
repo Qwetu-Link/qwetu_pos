@@ -173,7 +173,7 @@ export default function AnalyticsEngineDetails() {
                       </p>
                     </div>
                     <p className="font-semibold text-emerald-700">
-                      {formatCompactCurrency(segment.revenue)}
+                      KES {formatCompactCurrency(segment.revenue)}
                     </p>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-white">
@@ -215,7 +215,7 @@ export default function AnalyticsEngineDetails() {
                 </div>
               </div>
               <p className="mb-1 text-2xl font-bold text-slate-800">
-                {formatCompactCurrency(method.amount)}
+               KES {formatCompactCurrency(method.amount)}
               </p>
               <p className="text-xs text-slate-500">
                 {method.transactions.toLocaleString()} transactions
@@ -232,13 +232,13 @@ export default function AnalyticsEngineDetails() {
             Plan Duration Analysis
           </h3>
           <div className="space-y-4">
-            {[3, 6, 9, 12].map((months, index) => {
-              const percentage = [18, 42, 25, 15][index];
+            {[2, 3, 6, 9].map((months, index) => {
+              const percentage = [25, 16, 39, 20][index];
 
               return (
                 <div key={months}>
                   <div className="mb-1 flex justify-between">
-                    <span className="text-sm">{months} Months</span>
+                    <span className="text-sm text-black">{months} Months</span>
                     <span className="text-sm font-medium text-emerald-600">
                       {percentage}%
                     </span>
@@ -271,7 +271,7 @@ export default function AnalyticsEngineDetails() {
               of total revenue from installments
             </p>
           </div>
-          <div className="space-y-2 border-t pt-4 text-sm">
+          <div className="space-y-2 border-t pt-4 text-md">
             <InfoRow
               label="Installment revenue"
               value={formatCurrency(installmentRevenue)}
@@ -299,9 +299,9 @@ export default function AnalyticsEngineDetails() {
             <p className="mb-2 text-4xl font-bold text-blue-600">
               {retentionRate.toFixed(1)}%
             </p>
-            <p className="mb-4 text-sm text-slate-500">Repeat customers rate</p>
+            <p className="mb-4 text-md text-slate-500">Repeat customers rate</p>
           </div>
-          <div className="space-y-2 border-t pt-4 text-sm">
+          <div className="space-y-2 border-t pt-4 text-md">
             <InfoRow label="New customers" value={String(newCustomers)} />
             <InfoRow
               label="Returning customers"

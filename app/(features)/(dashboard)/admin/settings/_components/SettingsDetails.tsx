@@ -3,7 +3,7 @@
 import type { FormEvent } from "react";
 import { CreditCard, MessageCircle, ShieldCheck, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { businessProfile, teamUsers } from "@/lib/pos-details-data";
 import type { TeamUser } from "@/lib/pos-details-data";
 import AddRoleModal from "./AddRoleModal";
@@ -24,7 +24,7 @@ export default function SettingsDetails() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isRoleOpen, setIsRoleOpen] = useState(false);
   const [isUserOpen, setIsUserOpen] = useState(false);
-  const [isBillingActive] = useState(false);
+  const isBillingActive = useBillingActive();
   const [whatsappStatus, setWhatsappStatus] =
     useState<WhatsappStatus>("checking");
   const [pairingCode, setPairingCode] = useState("");
@@ -141,4 +141,28 @@ function SettingsSummary({
       <p className="truncate font-semibold text-slate-900">{value}</p>
     </div>
   );
+}
+
+function useBillingActive() {
+  return useSyncExternalStore(
+    subscribeToBillingStorage,
+    getBillingSnapshot,
+    getServerBillingSnapshot,
+  );
+}
+
+function subscribeToBillingStorage(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+  };
+}
+
+function getBillingSnapshot() {
+  return localStorage.getItem("qwetu.billing.active") === "true";
+}
+
+function getServerBillingSnapshot() {
+  return false;
 }

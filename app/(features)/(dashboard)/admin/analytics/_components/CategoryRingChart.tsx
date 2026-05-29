@@ -8,7 +8,7 @@ export default function CategoryRingChart() {
   const total = categoryData.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <div className="grid gap-5 md:grid-cols-[220px_1fr] md:items-center">
+    <div className="grid gap-5 md:grid-rows md:items-center">
       <div
         className="mx-auto h-48 w-48 rounded-full"
         style={{
@@ -31,7 +31,7 @@ export default function CategoryRingChart() {
             <PieChart className="mb-1 h-5 w-5 text-slate-400" />
             <p className="text-xs text-slate-500">Total</p>
             <p className="text-xl font-bold text-slate-900">
-              {formatCompactCurrency(total)}
+             KES {formatCompactCurrency(total)}
             </p>
           </div>
         </div>
@@ -53,7 +53,7 @@ export default function CategoryRingChart() {
                 <span className="text-sm text-slate-700">{item.name}</span>
               </div>
               <span className="text-sm font-medium text-slate-900">
-                {formatCompactCurrency(item.value)} ({percentage.toFixed(1)}%)
+                KES {formatCompactCurrency(item.value)} ({percentage.toFixed(1)}%)
               </span>
             </div>
           );

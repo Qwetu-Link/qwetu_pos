@@ -7,25 +7,37 @@ import {
 
 interface PaginationProps {
   currentPage: number;
-  totalPages: number;
-  total: number;
+  totalPages?: number;
+  total?: number;
+  totalItems?: number;
   perPage: number;
-  onPage: (page: number) => void;
-  onPerPage: (value: number) => void;
+  onPage?: (page: number) => void;
+  onPerPage?: (perPage: number) => void;
+  onPageChange?: (page: number) => void;
+  onPerPageChange?: (perPage: number) => void;
 }
 
 export default function Pagination({
   currentPage,
-  totalPages,
+  totalPages: providedTotalPages,
   total,
+  totalItems,
   perPage,
   onPage,
   onPerPage,
+  onPageChange,
+  onPerPageChange,
 }: PaginationProps) {
-  const start = total === 0 ? 0 : (currentPage - 1) * perPage + 1;
-  const end = Math.min(currentPage * perPage, total);
+  const itemTotal = total ?? totalItems ?? 0;
+  const totalPages = providedTotalPages ?? Math.max(1, Math.ceil(itemTotal / perPage));
+  const page = Math.min(currentPage, totalPages);
+  const handlePage = onPage ?? onPageChange;
+  const handlePerPage = onPerPage ?? onPerPageChange;
+  const start = itemTotal === 0 ? 0 : (page - 1) * perPage + 1;
+  const end = Math.min(page * perPage, itemTotal);
+
   const maxVisible = 5;
-  let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+  let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
   const endPage = Math.min(totalPages, startPage + maxVisible - 1);
 
   if (endPage - startPage < maxVisible - 1) {
@@ -44,49 +56,49 @@ export default function Pagination({
   return (
     <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm">
       <span className="text-slate-500">
-        {start}-{end} of {total} items
+        {start}-{end} of {itemTotal} items
       </span>
 
       <div className="flex items-center gap-1">
         <button
           type="button"
           className={`${base} ${inactive}`}
-          disabled={currentPage === 1}
-          onClick={() => onPage(1)}
+          disabled={page === 1}
+          onClick={() => handlePage?.(1)}
         >
           <ChevronFirst size={14} />
         </button>
         <button
           type="button"
           className={`${base} ${inactive}`}
-          disabled={currentPage === 1}
-          onClick={() => onPage(currentPage - 1)}
+          disabled={page === 1}
+          onClick={() => handlePage?.(page - 1)}
         >
           <ChevronLeft size={14} />
         </button>
-        {pages.map((page) => (
+        {pages.map((pageNumber) => (
           <button
-            key={page}
+            key={pageNumber}
             type="button"
-            className={`${base} ${page === currentPage ? active : inactive}`}
-            onClick={() => onPage(page)}
+            className={`${base} ${pageNumber === page ? active : inactive}`}
+            onClick={() => handlePage?.(pageNumber)}
           >
-            {page}
+            {pageNumber}
           </button>
         ))}
         <button
           type="button"
           className={`${base} ${inactive}`}
-          disabled={currentPage === totalPages}
-          onClick={() => onPage(currentPage + 1)}
+          disabled={page === totalPages}
+          onClick={() => handlePage?.(page + 1)}
         >
           <ChevronRight size={14} />
         </button>
         <button
           type="button"
           className={`${base} ${inactive}`}
-          disabled={currentPage === totalPages}
-          onClick={() => onPage(totalPages)}
+          disabled={page === totalPages}
+          onClick={() => handlePage?.(totalPages)}
         >
           <ChevronLast size={14} />
         </button>
@@ -95,10 +107,10 @@ export default function Pagination({
       <div className="flex items-center gap-2 text-slate-500">
         <select
           value={perPage}
-          onChange={(event) => onPerPage(Number(event.target.value))}
+          onChange={(event) => handlePerPage?.(Number(event.target.value))}
           className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
         >
-          {[10, 25, 50, 100].map((value) => (
+          {[5, 10, 25, 50, 100].map((value) => (
             <option key={value} value={value}>
               {value}
             </option>
@@ -109,3 +121,5 @@ export default function Pagination({
     </div>
   );
 }
+
+export { Pagination };

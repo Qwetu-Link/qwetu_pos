@@ -14,7 +14,7 @@ import { dummyProducts } from "@/data/products";
 import { computeStats, computeVariantInventory, flattenVariants } from "@/lib/variant-utils";
 import StatCard from "./StatCard";
 import VariantCard from "./VariantCard";
-import Pagination from "./Paginations";
+import Pagination from "@/components/Pagination";
 import EditModal from "./EditModal";
 import DeleteModal from "./DeleteModal";
 
