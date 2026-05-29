@@ -1,6 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import {
   formatCurrency,
   formatDate,
@@ -14,6 +17,14 @@ type ReminderModalProps = {
   isOpen: boolean;
   onClose: () => void;
 };
+
+const reminderSchema = z.object({
+  channel: z.enum(["SMS", "Email", "WhatsApp"]),
+  sendTo: z.string().trim().min(1, "Recipient is required"),
+  message: z.string().trim().min(1, "Reminder message is required"),
+});
+
+type ReminderFormValues = z.infer<typeof reminderSchema>;
 
 export default function ReminderModal({
   plan,
@@ -36,6 +47,19 @@ export default function ReminderModal({
       getRemainingAmount(plan),
     )}.`;
   }, [plan]);
+  const {
+    formState: { errors },
+    handleSubmit,
+    register,
+    setValue,
+  } = useForm<ReminderFormValues>({
+    resolver: zodResolver(reminderSchema),
+    values: {
+      channel: channel as ReminderFormValues["channel"],
+      sendTo: plan ? (channel === "Email" ? plan.email : plan.phone) : "",
+      message,
+    },
+  });
 
   if (!isOpen || !plan) {
     return null;
@@ -67,10 +91,9 @@ export default function ReminderModal({
 
         <form
           className="space-y-5 px-6 py-5"
-          onSubmit={(event) => {
-            event.preventDefault();
+          onSubmit={handleSubmit(() => {
             onClose();
-          }}
+          })}
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
@@ -78,8 +101,13 @@ export default function ReminderModal({
                 Channel
               </span>
               <select
-                value={channel}
-                onChange={(event) => setChannel(event.target.value)}
+                {...register("channel", {
+                  onChange: (event) => {
+                    const nextChannel = event.target.value;
+                    setChannel(nextChannel);
+                    setValue("sendTo", nextChannel === "Email" ? plan.email : plan.phone);
+                  },
+                })}
                 className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
               >
                 <option>SMS</option>
@@ -94,9 +122,12 @@ export default function ReminderModal({
               </span>
               <input
                 readOnly
-                value={channel === "Email" ? plan.email : plan.phone}
+                {...register("sendTo")}
                 className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none"
               />
+              {errors.sendTo ? (
+                <span className="mt-1 block text-xs text-red-500">{errors.sendTo.message}</span>
+              ) : null}
             </label>
           </div>
 
@@ -105,10 +136,13 @@ export default function ReminderModal({
               Reminder message
             </span>
             <textarea
-              defaultValue={message}
+              {...register("message")}
               rows={5}
               className="mt-2 w-full resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-sm leading-6 text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
             />
+            {errors.message ? (
+              <span className="mt-1 block text-xs text-red-500">{errors.message.message}</span>
+            ) : null}
           </label>
 
           <div className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">

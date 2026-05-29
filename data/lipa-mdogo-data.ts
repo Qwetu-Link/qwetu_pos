@@ -1,3 +1,9 @@
+export {
+  formatCompactCurrency,
+  formatCurrency,
+  formatDate,
+} from "@/lib/formatters";
+
 export type PlanStatus = "active" | "overdue" | "completed";
 
 export interface PlanProduct {
@@ -157,30 +163,6 @@ export const receipts: Receipt[] = [
   { id: "RCP-011", planId: "PAY-004", amount: 1689, date: "2026-03-07", method: "M-Pesa", ref: "MWC500OP", note: "3rd installment" },
   { id: "RCP-012", planId: "PAY-005", amount: 1083, date: "2025-11-20", method: "M-Pesa", ref: "POA600QR", note: "1st installment" },
 ];
-
-export function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-KE", {
-    style: "currency",
-    currency: "KES",
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
-
-export function formatCompactCurrency(amount: number) {
-  return new Intl.NumberFormat("en-KE", {
-    notation: "compact",
-    compactDisplay: "short",
-    maximumFractionDigits: 1,
-  }).format(amount);
-}
-
-export function formatDate(date: string) {
-  return new Date(date).toLocaleDateString("en-KE", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 export function getPlanReceipts(planId: string) {
   return receipts

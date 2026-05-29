@@ -1,6 +1,5 @@
 "use client";
 
-import type { FormEvent } from "react";
 import { CreditCard, MessageCircle, ShieldCheck, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
@@ -29,16 +28,8 @@ export default function SettingsDetails() {
     useState<WhatsappStatus>("checking");
   const [pairingCode, setPairingCode] = useState("");
 
-  function saveProfile(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    setProfile({
-      name: String(formData.get("name") || ""),
-      email: String(formData.get("email") || ""),
-      phone: String(formData.get("phone") || ""),
-      location: String(formData.get("location") || ""),
-      description: String(formData.get("description") || ""),
-    });
+  function saveProfile(values: Profile) {
+    setProfile(values);
     setIsProfileOpen(false);
   }
 

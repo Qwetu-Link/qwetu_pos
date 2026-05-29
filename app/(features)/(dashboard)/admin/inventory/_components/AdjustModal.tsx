@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Info, SlidersHorizontal, X } from "lucide-react";
 import { LOCATIONS } from "@/types/inventory";
-import type { InventoryItem, LocationName } from "@/types/inventory";
+import type { InventoryItem } from "@/types/inventory";
 
 interface AdjustModalProps {
   item: InventoryItem;
@@ -11,19 +13,28 @@ interface AdjustModalProps {
   onConfirm: (sku: string, location: string, qty: number) => void;
 }
 
+const adjustStockSchema = z.object({
+  qty: z.number().int().min(0, "Please enter a valid non-negative quantity."),
+  location: z.enum(LOCATIONS),
+});
+
+type AdjustStockFormValues = z.infer<typeof adjustStockSchema>;
+
 export function AdjustModal({ item, onClose, onConfirm }: AdjustModalProps) {
-  const [qty, setQty] = useState("");
-  const [location, setLocation] = useState<LocationName>(LOCATIONS[0]);
-  const [error, setError] = useState("");
+  const {
+    formState: { errors },
+    handleSubmit,
+    register,
+  } = useForm<AdjustStockFormValues>({
+    resolver: zodResolver(adjustStockSchema),
+    defaultValues: {
+      qty: 0,
+      location: LOCATIONS[0],
+    },
+  });
 
-  function handleConfirm() {
-    const parsed = parseInt(qty, 10);
-    if (isNaN(parsed) || parsed < 0) {
-      setError("Please enter a valid non-negative quantity.");
-      return;
-    }
-
-    onConfirm(item.sku, location, parsed);
+  function handleConfirm(values: AdjustStockFormValues) {
+    onConfirm(item.sku, values.location, values.qty);
     onClose();
   }
 
@@ -43,7 +54,7 @@ export function AdjustModal({ item, onClose, onConfirm }: AdjustModalProps) {
           </button>
         </div>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit(handleConfirm)} className="space-y-4">
           <p className="text-sm text-slate-600">
             <span className="font-semibold text-slate-800">
               {item.productName}
@@ -65,15 +76,11 @@ export function AdjustModal({ item, onClose, onConfirm }: AdjustModalProps) {
             <input
               type="number"
               min={0}
-              value={qty}
-              onChange={(e) => {
-                setQty(e.target.value);
-                setError("");
-              }}
+              {...register("qty", { valueAsNumber: true })}
               placeholder="e.g. 24"
               className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-black placeholder:text-gray-500"
             />
-            {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+            {errors.qty && <p className="text-red-500 text-xs mt-1">{errors.qty.message}</p>}
           </div>
 
           <div>
@@ -81,8 +88,7 @@ export function AdjustModal({ item, onClose, onConfirm }: AdjustModalProps) {
               Location
             </label>
             <select
-              value={location}
-              onChange={(e) => setLocation(e.target.value as LocationName)}
+              {...register("location")}
               className="w-full px-3 py-2.5 border border-slate-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-black placeholder:text-gray-500"
             >
               {LOCATIONS.map((loc) => (
@@ -95,19 +101,20 @@ export function AdjustModal({ item, onClose, onConfirm }: AdjustModalProps) {
 
           <div className="flex gap-3 pt-1">
             <button
-              onClick={handleConfirm}
+              type="submit"
               className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl font-medium transition-colors"
             >
               Apply
             </button>
             <button
+              type="button"
               onClick={onClose}
               className="flex-1 border border-slate-300 py-2.5 rounded-xl font-medium hover:bg-slate-50 transition-colors text-black"
             >
               Cancel
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

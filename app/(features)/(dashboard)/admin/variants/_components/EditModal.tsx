@@ -1,6 +1,8 @@
 import { Pencil, X } from "lucide-react";
-import { useState } from "react";
 import type { Product, ProductVariant } from "@/types/catalog";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 type EditVariantValues = {
   color: string;
@@ -9,6 +11,14 @@ type EditVariantValues = {
   sellPrice: number;
   reorderPoint: number;
 };
+
+const editVariantSchema = z.object({
+  color: z.string().trim().min(1, "Color is required"),
+  size: z.string().trim().min(1, "Size is required"),
+  buyPrice: z.number().min(0, "Buy price cannot be negative"),
+  sellPrice: z.number().min(0, "Sell price cannot be negative"),
+  reorderPoint: z.number().int().min(0, "Reorder point cannot be negative"),
+});
 
 interface Props {
   variant: ProductVariant;
@@ -25,27 +35,28 @@ export default function EditModal({
   product,
   onSave,
 }: Props) {
-  const [color, setColor] = useState(variant.color);
-  const [size, setSize] = useState(variant.size);
-  const [buyPrice, setBuyPrice] = useState(String(variant.buyPrice));
-  const [sellPrice, setSellPrice] = useState(String(variant.sellPrice));
-  const [reorderPoint, setReorderPoint] = useState(
-    String(variant.inventory.reorderPoint),
-  );
+  const {
+    formState: { errors },
+    handleSubmit,
+    register,
+  } = useForm<EditVariantValues>({
+    resolver: zodResolver(editVariantSchema),
+    defaultValues: {
+      color: variant.color,
+      size: variant.size,
+      buyPrice: variant.buyPrice,
+      sellPrice: variant.sellPrice,
+      reorderPoint: variant.inventory.reorderPoint,
+    },
+  });
 
   const sizeOptions =
     product.category === "Footwear"
       ? Array.from({ length: 41 }, (_, i) => String(i + 10))
       : ["XS", "S", "M", "L", "XL", "XXL"];
 
-  function handleSave() {
-    onSave({
-      color,
-      size,
-      buyPrice: parseFloat(buyPrice),
-      sellPrice: parseFloat(sellPrice),
-      reorderPoint: parseInt(reorderPoint),
-    });
+  function handleSave(values: EditVariantValues) {
+    onSave(values);
   }
 
   if (!isOpen) return null;
@@ -72,25 +83,26 @@ export default function EditModal({
           </span>
         </div>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit(handleSave)} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Color
             </label>
             <input
               type="text"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
+              {...register("color")}
               className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-black placeholder:text-gray-500"
             />
+            {errors.color ? (
+              <p className="mt-1 text-xs text-red-500">{errors.color.message}</p>
+            ) : null}
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Size
             </label>
             <select
-              value={size}
-              onChange={(e) => setSize(e.target.value)}
+              {...register("size")}
               className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-black placeholder:text-gray-500"
             >
               {sizeOptions.map((s) => (
@@ -107,10 +119,12 @@ export default function EditModal({
               </label>
               <input
                 type="number"
-                value={buyPrice}
-                onChange={(e) => setBuyPrice(e.target.value)}
+                {...register("buyPrice", { valueAsNumber: true })}
                 className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-black placeholder:text-gray-500"
               />
+              {errors.buyPrice ? (
+                <p className="mt-1 text-xs text-red-500">{errors.buyPrice.message}</p>
+              ) : null}
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -118,10 +132,12 @@ export default function EditModal({
               </label>
               <input
                 type="number"
-                value={sellPrice}
-                onChange={(e) => setSellPrice(e.target.value)}
+                {...register("sellPrice", { valueAsNumber: true })}
                 className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-black placeholder:text-gray-500"
               />
+              {errors.sellPrice ? (
+                <p className="mt-1 text-xs text-red-500">{errors.sellPrice.message}</p>
+              ) : null}
             </div>
           </div>
           <div>
@@ -130,27 +146,30 @@ export default function EditModal({
             </label>
             <input
               type="number"
-              value={reorderPoint}
-              onChange={(e) => setReorderPoint(e.target.value)}
+              {...register("reorderPoint", { valueAsNumber: true })}
               className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-black placeholder:text-gray-500"
             />
+            {errors.reorderPoint ? (
+              <p className="mt-1 text-xs text-red-500">{errors.reorderPoint.message}</p>
+            ) : null}
           </div>
-        </div>
 
         <div className="flex gap-3 mt-6">
           <button
-            onClick={handleSave}
+            type="submit"
             className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl font-medium transition-colors"
           >
             Save Changes
           </button>
           <button
+            type="button"
             onClick={onClose}
             className="flex-1 border border-slate-300 py-2.5 rounded-xl font-medium hover:bg-slate-50 transition-colors text-black"
           >
             Cancel
           </button>
         </div>
+        </form>
       </div>
     </div>
   );

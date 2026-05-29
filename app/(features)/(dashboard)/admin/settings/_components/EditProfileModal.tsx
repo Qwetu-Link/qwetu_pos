@@ -1,9 +1,21 @@
-import type { FormEvent } from "react";
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Save, X } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import type { businessProfile } from "@/lib/pos-details-data";
 import FormField from "./FormField";
 
 type Profile = typeof businessProfile;
+
+const profileSchema = z.object({
+  name: z.string().trim().min(1, "Business name is required"),
+  email: z.email("Enter a valid email address").trim(),
+  phone: z.string().trim().min(1, "Business phone is required"),
+  location: z.string().trim().min(1, "Location is required"),
+  description: z.string().trim(),
+});
 
 export default function EditProfileModal({
   isOpen,
@@ -13,9 +25,18 @@ export default function EditProfileModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (event: FormEvent<HTMLFormElement>) => void;
+  onSave: (profile: Profile) => void;
   profile: Profile;
 }) {
+  const {
+    formState: { errors },
+    handleSubmit,
+    register,
+  } = useForm<Profile>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: profile,
+  });
+
   if (!isOpen) {
     return null;
   }
@@ -41,29 +62,28 @@ export default function EditProfileModal({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <form onSubmit={onSave} className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
-          <FormField label="Business Name" name="name" defaultValue={profile.name} />
+        <form onSubmit={handleSubmit(onSave)} className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
+          <FormField label="Business Name" error={errors.name?.message} {...register("name")} />
           <FormField
             label="Business Email"
-            name="email"
             type="email"
-            defaultValue={profile.email}
+            error={errors.email?.message}
+            {...register("email")}
           />
           <FormField
             label="Business Phone"
-            name="phone"
             type="tel"
-            defaultValue={profile.phone}
+            error={errors.phone?.message}
+            {...register("phone")}
           />
-          <FormField label="Location" name="location" defaultValue={profile.location} />
+          <FormField label="Location" error={errors.location?.message} {...register("location")} />
           <label className="md:col-span-2">
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">
               Business Description
             </span>
             <textarea
-              name="description"
+              {...register("description")}
               rows={3}
-              defaultValue={profile.description}
               className="w-full resize-none rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 text-black placeholder:text-gray-500"
             />
           </label>

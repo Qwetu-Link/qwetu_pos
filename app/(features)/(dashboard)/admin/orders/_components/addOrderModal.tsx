@@ -1,6 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch, UseFormRegister } from "react-hook-form";
+import { z } from "zod";
 import {
   Calculator,
   CheckCircle2,
@@ -25,6 +28,30 @@ interface LineItemRow {
   discountPrice: string;
 }
 
+const addOrderSchema = z.object({
+  selectedCustomerId: z.string().min(1, "Customer is required"),
+  customer: z.string().trim(),
+  email: z.email("Enter a valid email address").trim().or(z.literal("")),
+  phone: z.string().trim(),
+  address: z.string().trim(),
+  paymentType: z.enum(["full", "installment"]),
+  installmentPlan: z.string(),
+  installmentStartDate: z.string(),
+  status: z.enum(["pending", "processing", "shipped", "delivered"]),
+}).superRefine((values, ctx) => {
+  if (values.selectedCustomerId !== "new") {
+    return;
+  }
+  if (!values.customer) {
+    ctx.addIssue({ code: "custom", message: "Customer name is required", path: ["customer"] });
+  }
+  if (!values.phone) {
+    ctx.addIssue({ code: "custom", message: "Phone number is required", path: ["phone"] });
+  }
+});
+
+type AddOrderFormValues = z.infer<typeof addOrderSchema>;
+
 let rowCounter = 0;
 
 const createBlankLineItem = (): LineItemRow => ({
@@ -41,12 +68,16 @@ function FormField({
   type = "text",
   required = false,
   placeholder = "",
+  register,
+  error,
 }: {
   label: string;
-  name: string;
+  name: keyof AddOrderFormValues;
   type?: string;
   required?: boolean;
   placeholder?: string;
+  register: UseFormRegister<AddOrderFormValues>;
+  error?: string;
 }) {
   return (
     <label className="block">
@@ -54,12 +85,13 @@ function FormField({
         {label} {required && <span className="text-red-500">*</span>}
       </span>
       <input
-        name={name}
+        {...register(name)}
         type={type}
         required={required}
         placeholder={placeholder}
         className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-slate-400 transition outline-none focus:ring-2 focus:ring-emerald-500"
       />
+      {error ? <p className="mt-1 text-xs text-red-500">{error}</p> : null}
     </label>
   );
 }
@@ -78,8 +110,27 @@ export default function AddOrderModal({
   onClose: () => void;
 }) {
   const [lineItems, setLineItems] = useState<LineItemRow[]>([createBlankLineItem()]);
-  const [paymentType, setPaymentType] = useState<PaymentType>("full");
-  const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    register,
+  } = useForm<AddOrderFormValues>({
+    resolver: zodResolver(addOrderSchema),
+    defaultValues: {
+      selectedCustomerId: "",
+      customer: "",
+      email: "",
+      phone: "",
+      address: "",
+      paymentType: "full",
+      installmentPlan: "3 months",
+      installmentStartDate: new Date().toISOString().slice(0, 10),
+      status: "pending",
+    },
+  });
+  const selectedCustomerId = useWatch({ control, name: "selectedCustomerId" });
+  const paymentType = useWatch({ control, name: "paymentType" });
 
   const selectedCustomer = customers.find(
     (customer) => customer.id === selectedCustomerId,
@@ -129,11 +180,7 @@ export default function AddOrderModal({
     );
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    if (!selectedCustomerId) return;
-
+  const submitOrder = (values: AddOrderFormValues) => {
     const validLineItems = lineItems.filter(
       (item) => item.variantId && item.qty > 0 && getEffectivePrice(item) > 0,
     );
@@ -164,7 +211,7 @@ export default function AddOrderModal({
     const createdAt = new Date().toISOString().slice(0, 10);
     const customer =
       selectedCustomer ??
-      createCustomerFromForm(formData, customers, total, paymentType, createdAt);
+      createCustomerFromForm(values, customers, total, paymentType, createdAt);
 
     if (isNewCustomer) {
       onAddCustomer(customer);
@@ -180,13 +227,13 @@ export default function AddOrderModal({
       paymentType,
       installmentPlan:
         paymentType === "installment"
-          ? String(formData.get("installmentPlan") ?? "3 months")
+          ? values.installmentPlan
           : undefined,
       installmentStartDate:
         paymentType === "installment"
-          ? String(formData.get("installmentStartDate") || new Date().toISOString().slice(0, 10))
+          ? values.installmentStartDate
           : undefined,
-      status: String(formData.get("status") ?? "pending") as OrderStatus,
+      status: values.status as OrderStatus,
       createdAt,
       lineItems: orderLineItems,
       items: orderLineItems.reduce((sum, item) => sum + item.qty, 0),
@@ -204,15 +251,14 @@ export default function AddOrderModal({
       maxWidth="max-w-4xl"
       onClose={onClose}
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit(submitOrder)} className="space-y-6">
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <label className="block md:col-span-2">
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">
               Customer
             </span>
             <select
-              value={selectedCustomerId}
-              onChange={(event) => setSelectedCustomerId(event.target.value)}
+              {...register("selectedCustomerId")}
               className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-slate-400 transition outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="">Select customer</option>
@@ -223,6 +269,9 @@ export default function AddOrderModal({
                 </option>
               ))}
             </select>
+            {errors.selectedCustomerId ? (
+              <p className="mt-1 text-xs text-red-500">{errors.selectedCustomerId.message}</p>
+            ) : null}
           </label>
 
           {isNewCustomer ? (
@@ -232,12 +281,16 @@ export default function AddOrderModal({
                 required
                 name="customer"
                 placeholder="e.g. Sarah Mwangi"
+                register={register}
+                error={errors.customer?.message}
               />
               <FormField
                 label="Email Address"
                 name="email"
                 type="email"
                 placeholder="name@example.com"
+                register={register}
+                error={errors.email?.message}
               />
               <FormField
                 label="Phone Number"
@@ -245,11 +298,15 @@ export default function AddOrderModal({
                 name="phone"
                 type="tel"
                 placeholder="+254 7XX XXX XXX"
+                register={register}
+                error={errors.phone?.message}
               />
               <FormField
                 label="Shipping Address"
                 name="address"
                 placeholder="Street, city or delivery location"
+                register={register}
+                error={errors.address?.message}
               />
             </>
           ) : (
@@ -271,10 +328,7 @@ export default function AddOrderModal({
               Payment Type
             </span>
             <select
-              value={paymentType}
-              onChange={(event) =>
-                setPaymentType(event.target.value as PaymentType)
-              }
+              {...register("paymentType")}
               className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-slate-400 transition outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="full">Full Payment</option>
@@ -288,7 +342,7 @@ export default function AddOrderModal({
                   Installment Plan
                 </span>
                 <select
-                  name="installmentPlan"
+                  {...register("installmentPlan")}
                   className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-slate-400 transition outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="3 months">3 Months</option>
@@ -303,8 +357,7 @@ export default function AddOrderModal({
                 </span>
                 <input
                   type="date"
-                  name="installmentStartDate"
-                  defaultValue={new Date().toISOString().slice(0, 10)}
+                  {...register("installmentStartDate")}
                   placeholder="Select start date"
                   className="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500"
                 />
@@ -316,7 +369,7 @@ export default function AddOrderModal({
               Order Status
             </span>
             <select
-              name="status"
+              {...register("status")}
               className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-slate-400 transition outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="pending">Pending</option>
@@ -479,7 +532,7 @@ export default function AddOrderModal({
 }
 
 function createCustomerFromForm(
-  formData: FormData,
+  values: AddOrderFormValues,
   customers: Customer[],
   orderTotal: number,
   paymentType: PaymentType,
@@ -489,10 +542,10 @@ function createCustomerFromForm(
 
   return {
     id: generateCustomerId(customers),
-    name: String(formData.get("customer") ?? "").trim(),
-    email: String(formData.get("email") ?? "").trim(),
-    phone: String(formData.get("phone") ?? "").trim(),
-    address: String(formData.get("address") ?? "").trim(),
+    name: values.customer,
+    email: values.email,
+    phone: values.phone,
+    address: values.address,
     segment: "New",
     riskLevel: "low",
     paymentScore: getPaymentScoreFromRisk("low"),

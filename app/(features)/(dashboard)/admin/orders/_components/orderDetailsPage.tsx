@@ -1,9 +1,12 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import {
   ArrowLeft,
   CalendarDays,
@@ -32,6 +35,14 @@ const statusOptions: OrderStatus[] = [
 
 const terminalStatuses: OrderStatus[] = ["delivered", "cancelled"];
 
+const orderPaymentSchema = z.object({
+  amount: z.number().positive("Please enter a valid payment amount"),
+  paymentMethod: z.enum(["M-Pesa", "Airtel Money", "Bank Transfer", "Cash"]),
+  reference: z.string().trim(),
+});
+
+type OrderPaymentFormValues = z.infer<typeof orderPaymentSchema>;
+
 export default function OrderDetailsPage() {
   const params = useParams<{ id: string }>();
   const initialOrder = findOrderById(initialOrders, decodeURIComponent(params.id));
@@ -42,6 +53,19 @@ export default function OrderDetailsPage() {
     initialOrder?.status ?? "pending",
   );
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const {
+    formState: { errors: paymentErrors },
+    handleSubmit: handlePaymentSubmit,
+    register: registerPayment,
+    reset: resetPayment,
+  } = useForm<OrderPaymentFormValues>({
+    resolver: zodResolver(orderPaymentSchema),
+    defaultValues: {
+      amount: 1,
+      paymentMethod: "M-Pesa",
+      reference: "",
+    },
+  });
 
   const isLocked = order ? terminalStatuses.includes(order.status) : true;
   const canRecordPayment =
@@ -80,24 +104,15 @@ export default function OrderDetailsPage() {
     showToast(`Order status updated to ${ORDER_STATUS_CONFIG[draftStatus].label}`);
   }
 
-  function recordPayment(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function recordPayment(values: OrderPaymentFormValues) {
     if (!order) return;
 
-    const formData = new FormData(event.currentTarget);
-    const amount = Number(formData.get("amount"));
-
-    if (!Number.isFinite(amount) || amount <= 0) {
-      showToast("Please enter a valid payment amount", "error");
-      return;
-    }
-
-    if (amount > order.remainingAmount) {
+    if (values.amount > order.remainingAmount) {
       showToast("Payment amount exceeds the remaining balance", "error");
       return;
     }
 
-    const amountPaid = order.amountPaid + amount;
+    const amountPaid = order.amountPaid + values.amount;
     const remainingAmount = Math.max(0, order.total - amountPaid);
 
     setOrder({
@@ -107,7 +122,8 @@ export default function OrderDetailsPage() {
       paymentStatus: remainingAmount === 0 ? "paid" : "partial",
     });
     setIsPaymentOpen(false);
-    showToast(`Payment of ${formatCurrency(amount)} recorded`);
+    resetPayment();
+    showToast(`Payment of ${formatCurrency(values.amount)} recorded`);
   }
 
   if (!order) {
@@ -362,21 +378,26 @@ export default function OrderDetailsPage() {
               <p>Remaining: {formatCurrency(order.remainingAmount)}</p>
               <p>Suggested installment: {formatCurrency(Math.min(installmentSummary.installmentAmount, order.remainingAmount))}</p>
             </div>
-            <form onSubmit={recordPayment} className="mt-5 space-y-4">
+            <form onSubmit={handlePaymentSubmit(recordPayment)} className="mt-5 space-y-4">
               <label className="block">
                 <span className="mb-1.5 block text-sm font-semibold text-slate-700">Amount (KES)</span>
                 <input
-                  name="amount"
                   type="number"
                   min={1}
                   max={order.remainingAmount}
-                  defaultValue={Math.min(installmentSummary.installmentAmount, order.remainingAmount)}
+                  {...registerPayment("amount", { valueAsNumber: true })}
                   className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                 />
+                {paymentErrors.amount ? (
+                  <span className="mt-1 block text-xs text-red-500">{paymentErrors.amount.message}</span>
+                ) : null}
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm font-semibold text-slate-700">Payment Method</span>
-                <select className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                <select
+                  {...registerPayment("paymentMethod")}
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                >
                   <option>M-Pesa</option>
                   <option>Airtel Money</option>
                   <option>Bank Transfer</option>
@@ -387,6 +408,7 @@ export default function OrderDetailsPage() {
                 <span className="mb-1.5 block text-sm font-semibold text-slate-700">Reference</span>
                 <input
                   type="text"
+                  {...registerPayment("reference")}
                   placeholder="Transaction ID"
                   className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                 />

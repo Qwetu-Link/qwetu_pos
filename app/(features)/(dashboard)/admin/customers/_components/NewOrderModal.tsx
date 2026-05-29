@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
 import { X, ShoppingCart, Plus, Trash2, Tag, Percent, Calculator, PackageSearch } from "lucide-react";
 import type { Customer, OrderFormData, LineItem, PaymentType, OrderStatus } from "@/types/customer";
 import { DEMO_VARIANTS } from "@/lib/customerUtils";
@@ -20,6 +23,16 @@ interface LineItemRow {
   discountPrice: string; // empty string = no discount
 }
 
+const newOrderSchema = z.object({
+  paymentType: z.enum(["full", "installment"]),
+  installmentPlan: z.string(),
+  startDate: z.string(),
+  amountPaid: z.number().min(0, "Amount paid cannot be negative"),
+  status: z.enum(["pending", "processing", "shipped", "delivered"]),
+});
+
+type NewOrderFormValues = z.infer<typeof newOrderSchema>;
+
 const INPUT = "w-full px-3 py-2.5 border border-slate-300 text-black placeholder:text-slate-400 transition rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white";
 const LABEL = "block text-xs font-semibold text-slate-600 mb-1.5";
 
@@ -30,12 +43,24 @@ function newRow(): LineItemRow {
 
 export function NewOrderModal({ customer, isOpen, onClose, onSubmit }: NewOrderModalProps) {
   const [rows, setRows] = useState<LineItemRow[]>([newRow()]);
-  const [paymentType, setPaymentType] = useState<PaymentType>("full");
-  const [installmentPlan, setInstallmentPlan] = useState("3 months");
-  const [startDate, setStartDate] = useState("");
-  const [amountPaid, setAmountPaid] = useState("");
-  const [status, setStatus] = useState<OrderStatus>("pending");
   const [error, setError] = useState("");
+  const {
+    control,
+    formState: { errors },
+    handleSubmit: handleFormSubmit,
+    register,
+    reset,
+  } = useForm<NewOrderFormValues>({
+    resolver: zodResolver(newOrderSchema),
+    defaultValues: {
+      paymentType: "full",
+      installmentPlan: "3 months",
+      startDate: "",
+      amountPaid: 0,
+      status: "pending",
+    },
+  });
+  const paymentType = useWatch({ control, name: "paymentType" });
 
   const getVariant = (id: string) => DEMO_VARIANTS.find((v) => v.variantId === id);
 
@@ -71,15 +96,12 @@ export function NewOrderModal({ customer, isOpen, onClose, onSubmit }: NewOrderM
 
   const handleClose = () => {
     setRows([newRow()]);
-    setPaymentType("full");
-    setAmountPaid("");
-    setStartDate("");
-    setStatus("pending");
+    reset();
     setError("");
     onClose();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (values: NewOrderFormValues) => {
     setError("");
     const validRows = rows.filter((r) => r.variantId && r.qty > 0 && getEffectivePrice(r) > 0);
     if (!validRows.length) {
@@ -100,11 +122,11 @@ export function NewOrderModal({ customer, isOpen, onClose, onSubmit }: NewOrderM
     });
     onSubmit(
       {
-        paymentType,
-        amountPaid: parseFloat(amountPaid) || 0,
-        installmentPlan: paymentType === "installment" ? installmentPlan : undefined,
-        startDate: startDate || undefined,
-        status,
+        paymentType: values.paymentType as PaymentType,
+        amountPaid: values.amountPaid,
+        installmentPlan: values.paymentType === "installment" ? values.installmentPlan : undefined,
+        startDate: values.startDate || undefined,
+        status: values.status as OrderStatus,
       },
       lineItems
     );
@@ -128,14 +150,13 @@ export function NewOrderModal({ customer, isOpen, onClose, onSubmit }: NewOrderM
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <form onSubmit={handleFormSubmit(handleSubmit)} className="p-6 space-y-6">
           {/* Payment + Status row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className={LABEL}>Payment Type <span className="text-red-500">*</span></label>
               <select
-                value={paymentType}
-                onChange={(e) => setPaymentType(e.target.value as PaymentType)}
+                {...register("paymentType")}
                 className={INPUT}
               >
                 <option value="full">Full Payment</option>
@@ -144,7 +165,7 @@ export function NewOrderModal({ customer, isOpen, onClose, onSubmit }: NewOrderM
             </div>
             <div>
               <label className={LABEL}>Order Status <span className="text-red-500">*</span></label>
-              <select value={status} onChange={(e) => setStatus(e.target.value as OrderStatus)} className={INPUT}>
+              <select {...register("status")} className={INPUT}>
                 <option value="pending">Pending</option>
                 <option value="processing">Processing</option>
                 <option value="shipped">Shipped</option>
@@ -156,7 +177,7 @@ export function NewOrderModal({ customer, isOpen, onClose, onSubmit }: NewOrderM
               <>
                 <div>
                   <label className={LABEL}>Installment Plan</label>
-                  <select value={installmentPlan} onChange={(e) => setInstallmentPlan(e.target.value)} className={INPUT}>
+                  <select {...register("installmentPlan")} className={INPUT}>
                     {["3 months", "6 months", "9 months", "12 months"].map((p) => (
                       <option key={p} value={p}>{p}</option>
                     ))}
@@ -164,7 +185,7 @@ export function NewOrderModal({ customer, isOpen, onClose, onSubmit }: NewOrderM
                 </div>
                 <div>
                   <label className={LABEL}>Start Date</label>
-                  <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={INPUT} />
+                  <input type="date" {...register("startDate")} className={INPUT} />
                 </div>
               </>
             )}
@@ -172,12 +193,15 @@ export function NewOrderModal({ customer, isOpen, onClose, onSubmit }: NewOrderM
             <div>
               <label className={LABEL}>Amount Paid Now (KES)</label>
               <input
-                type="number" min={0} value={amountPaid}
-                onChange={(e) => setAmountPaid(e.target.value)}
+                type="number" min={0}
+                {...register("amountPaid", { valueAsNumber: true })}
                 placeholder={paymentType === "full" ? "Auto-set to total" : "Deposit amount"}
                 className={INPUT}
-                disabled={paymentType === "full"}
+                readOnly={paymentType === "full"}
               />
+              {errors.amountPaid ? (
+                <p className="mt-1 text-xs text-red-500">{errors.amountPaid.message}</p>
+              ) : null}
             </div>
           </div>
 
@@ -320,13 +344,13 @@ export function NewOrderModal({ customer, isOpen, onClose, onSubmit }: NewOrderM
               Cancel
             </button>
             <button
-              type="button" onClick={handleSubmit}
+              type="submit"
               className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:shadow-lg text-sm font-semibold flex items-center gap-2 transition-all"
             >
               <ShoppingCart size={15} /> Create Order
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

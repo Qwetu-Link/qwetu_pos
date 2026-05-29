@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch, UseFormRegister } from "react-hook-form";
+import { z } from "zod";
 import {
   ArrowLeft,
   ArrowRight,
@@ -14,15 +17,17 @@ import {
 } from "lucide-react";
 import SectionCard from "./SectionCard";
 
-type BillingForm = {
-  billingContact: string;
-  billingEmail: string;
-  billingPhone: string;
-  taxPin: string;
-  billingAddress: string;
-  paymentMethod: string;
-  billingCycle: string;
-};
+const billingSchema = z.object({
+  billingContact: z.string().trim().min(1, "Billing contact is required"),
+  billingEmail: z.email("Enter a valid email address").trim(),
+  billingPhone: z.string().trim().min(1, "Phone is required"),
+  taxPin: z.string().trim().min(1, "Tax PIN is required"),
+  billingAddress: z.string().trim().min(1, "Billing address is required"),
+  paymentMethod: z.enum(["card", "mpesa", "bank"]),
+  billingCycle: z.enum(["monthly", "annual"]),
+});
+
+type BillingForm = z.infer<typeof billingSchema>;
 
 const steps = [
   {
@@ -43,15 +48,25 @@ export default function BillingSetupPage() {
   const router = useRouter();
   const [activeStep, setActiveStep] = useState(0);
   const [saved, setSaved] = useState(false);
-  const [form, setForm] = useState<BillingForm>({
-    billingContact: "",
-    billingEmail: "",
-    billingPhone: "",
-    taxPin: "",
-    billingAddress: "",
-    paymentMethod: "card",
-    billingCycle: "monthly",
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    register,
+    trigger,
+  } = useForm<BillingForm>({
+    resolver: zodResolver(billingSchema),
+    defaultValues: {
+      billingContact: "",
+      billingEmail: "",
+      billingPhone: "",
+      taxPin: "",
+      billingAddress: "",
+      paymentMethod: "card",
+      billingCycle: "monthly",
+    },
   });
+  const form = useWatch({ control });
 
   const completedSteps = useMemo(
     () => [
@@ -63,12 +78,14 @@ export default function BillingSetupPage() {
   );
   const allComplete = completedSteps.every(Boolean);
 
-  function updateField(name: keyof BillingForm, value: string) {
-    setForm((current) => ({ ...current, [name]: value }));
-  }
-
-  function nextStep() {
-    if (!completedSteps[activeStep]) {
+  async function nextStep() {
+    const stepFields: (keyof BillingForm)[][] = [
+      ["billingContact", "billingEmail", "billingPhone"],
+      ["taxPin", "billingAddress"],
+      ["paymentMethod", "billingCycle"],
+    ];
+    const valid = await trigger(stepFields[activeStep]);
+    if (!valid) {
       return;
     }
 
@@ -134,35 +151,32 @@ export default function BillingSetupPage() {
 
             <form
               className="space-y-5"
-              onSubmit={(event) => {
-                event.preventDefault();
-                saveBillingSetup();
-              }}
+              onSubmit={handleSubmit(saveBillingSetup)}
             >
               {activeStep === 0 ? (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <BillingInput
                     label="Billing Contact"
                     name="billingContact"
-                    value={form.billingContact}
                     placeholder="e.g. Finance Admin"
-                    onChange={updateField}
+                    error={errors.billingContact?.message}
+                    register={register}
                   />
                   <BillingInput
                     label="Billing Email"
                     name="billingEmail"
                     type="email"
-                    value={form.billingEmail}
                     placeholder="billing@qwetulinks.co.ke"
-                    onChange={updateField}
+                    error={errors.billingEmail?.message}
+                    register={register}
                   />
                   <BillingInput
                     label="Phone"
                     name="billingPhone"
                     type="tel"
-                    value={form.billingPhone}
                     placeholder="+254 712 345 678"
-                    onChange={updateField}
+                    error={errors.billingPhone?.message}
+                    register={register}
                   />
                 </div>
               ) : null}
@@ -172,24 +186,23 @@ export default function BillingSetupPage() {
                   <BillingInput
                     label="Tax PIN"
                     name="taxPin"
-                    value={form.taxPin}
                     placeholder="e.g. P051234567A"
-                    onChange={updateField}
+                    error={errors.taxPin?.message}
+                    register={register}
                   />
                   <label className="md:col-span-2">
                     <span className="mb-1.5 block text-sm font-semibold text-slate-700">
                       Billing Address
                     </span>
                     <textarea
-                      name="billingAddress"
                       rows={4}
-                      value={form.billingAddress}
-                      onChange={(event) =>
-                        updateField("billingAddress", event.target.value)
-                      }
+                      {...register("billingAddress")}
                       placeholder="Street, building, city, country"
                       className="w-full resize-none rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-gray-500 focus:ring-2 focus:ring-emerald-500"
                     />
+                    {errors.billingAddress ? (
+                      <p className="mt-1 text-xs text-red-500">{errors.billingAddress.message}</p>
+                    ) : null}
                   </label>
                 </div>
               ) : null}
@@ -201,10 +214,7 @@ export default function BillingSetupPage() {
                       Payment Method
                     </span>
                     <select
-                      value={form.paymentMethod}
-                      onChange={(event) =>
-                        updateField("paymentMethod", event.target.value)
-                      }
+                      {...register("paymentMethod")}
                       className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black focus:ring-2 focus:ring-emerald-500"
                     >
                       <option value="card">Card</option>
@@ -217,10 +227,7 @@ export default function BillingSetupPage() {
                       Billing Cycle
                     </span>
                     <select
-                      value={form.billingCycle}
-                      onChange={(event) =>
-                        updateField("billingCycle", event.target.value)
-                      }
+                      {...register("billingCycle")}
                       className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black focus:ring-2 focus:ring-emerald-500"
                     >
                       <option value="monthly">Monthly</option>
@@ -332,16 +339,16 @@ function BillingInput({
   label,
   name,
   type = "text",
-  value,
   placeholder,
-  onChange,
+  error,
+  register,
 }: {
   label: string;
   name: keyof BillingForm;
   type?: string;
-  value: string;
   placeholder: string;
-  onChange: (name: keyof BillingForm, value: string) => void;
+  error?: string;
+  register: UseFormRegister<BillingForm>;
 }) {
   return (
     <label>
@@ -349,13 +356,12 @@ function BillingInput({
         {label}
       </span>
       <input
-        name={name}
         type={type}
-        value={value}
         placeholder={placeholder}
-        onChange={(event) => onChange(name, event.target.value)}
+        {...register(name)}
         className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-gray-500 focus:ring-2 focus:ring-emerald-500"
       />
+      {error ? <p className="mt-1 text-xs text-red-500">{error}</p> : null}
     </label>
   );
 }

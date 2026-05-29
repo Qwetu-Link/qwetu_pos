@@ -5,6 +5,7 @@ import type {
   VariantInventory,
   NewVariantFormValues,
 } from "@/types/catalog";
+import { formatCurrency } from "@/lib/formatters";
 
 // ---- ID generators ----
 
@@ -40,13 +41,7 @@ export function autoGenerateSku(
 
 // ---- Currency formatting ----
 
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-KE", {
-    style: "currency",
-    currency: "KES",
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
+export { formatCurrency };
 
 export function formatCompactCurrency(amount: number): string {
   if (amount >= 1_000_000) return `KES ${(amount / 1_000_000).toFixed(1)}M`;

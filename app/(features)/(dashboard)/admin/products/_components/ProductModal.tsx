@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import AddVariantModal from "./AddVariantModal";
 import Image from "next/image";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
 import {
   NewVariantFormValues,
   Product,
@@ -12,14 +15,23 @@ import {
 import { buildVariant, getProductImageSrc } from "@/lib/catalog-utils";
 import { ArrowRight, Edit, Plus, Puzzle, Save, Trash2 } from "lucide-react";
 
-const CATEGORIES: ProductCategory[] = [
+const CATEGORIES = [
   "Men's Clothing",
   "Women's Clothing",
   "Accessories",
   "Footwear",
   "Kids Wear",
   "Outerwear",
-];
+] as const satisfies readonly ProductCategory[];
+
+const productSchema = z.object({
+  name: z.string().trim().min(1, "Product name is required"),
+  category: z.enum(CATEGORIES),
+  brand: z.string().trim().min(1, "Supplier / brand is required"),
+  description: z.string().trim(),
+});
+
+type ProductDetailsFormValues = z.infer<typeof productSchema>;
 
 interface Props {
   product: Product | null; // null = new product
@@ -29,12 +41,23 @@ interface Props {
 
 export default function ProductModal({ product, onSave, onClose }: Props) {
   const [step, setStep] = useState<1 | 2>(1);
-  const [name, setName] = useState(product?.name ?? "");
-  const [category, setCategory] = useState<ProductCategory>(
-    product?.category ?? "Men's Clothing",
-  );
-  const [brand, setBrand] = useState(product?.brand ?? "");
-  const [description, setDescription] = useState(product?.description ?? "");
+  const {
+    control,
+    formState: { errors },
+    getValues,
+    handleSubmit,
+    register,
+  } = useForm<ProductDetailsFormValues>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: product?.name ?? "",
+      category: product?.category ?? "Men's Clothing",
+      brand: product?.brand ?? "",
+      description: product?.description ?? "",
+    },
+  });
+  const name = useWatch({ control, name: "name" });
+  const category = useWatch({ control, name: "category" });
   const [imagePreview, setImagePreview] = useState<string | null>(
     product ? getProductImageSrc(product) : null,
   );
@@ -72,7 +95,6 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
   }
 
   function goToStep2() {
-    if (!name.trim()) return alert("Product name is required");
     setStep(2);
   }
 
@@ -87,15 +109,12 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
   }
 
   function handleSave() {
-    if (!name.trim()) return alert("Product name required");
     if (variants.length === 0) return alert("Please add at least one variant");
+    const values = getValues();
 
     onSave(
       {
-        name,
-        category,
-        brand,
-        description,
+        ...values,
         imageData: imageData ?? undefined,
         imageUrl: !imageData ? (imageUrl ?? undefined) : undefined,
         variants,
@@ -171,21 +190,20 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
                     </label>
                     <input
                       type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      {...register("name")}
                       placeholder="e.g. Classic Oxford Shirt"
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
                     />
+                    {errors.name ? (
+                      <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
+                    ) : null}
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Category <span className="text-red-500">*</span>
                     </label>
                     <select
-                      value={category}
-                      onChange={(e) =>
-                        setCategory(e.target.value as ProductCategory)
-                      }
+                      {...register("category")}
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-xl outline-none text-black placeholder:text-gray-500"
                     >
                       {CATEGORIES.map((c) => (
@@ -201,11 +219,13 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
                     </label>
                     <input
                       type="text"
-                      value={brand}
-                      onChange={(e) => setBrand(e.target.value)}
+                      {...register("brand")}
                       placeholder="e.g. Fashion Hub Ltd"
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
                     />
+                    {errors.brand ? (
+                      <p className="mt-1 text-xs text-red-500">{errors.brand.message}</p>
+                    ) : null}
                   </div>
 
                   {/* Image Upload */}
@@ -269,8 +289,7 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
                     Description
                   </label>
                   <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    {...register("description")}
                     rows={3}
                     placeholder="Product details, features, care instructions..."
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none resize-none text text-black placeholder:text-gray-500"
@@ -280,7 +299,7 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
                 <div className="flex justify-end">
                   <button
                     type="button"
-                    onClick={goToStep2}
+                    onClick={handleSubmit(goToStep2)}
                     className="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-emerald-700 transition"
                   >
                     <span className="inline-flex items-center gap-1.5">
@@ -352,7 +371,7 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
                   </button>
                   <button
                     type="button"
-                    onClick={handleSave}
+                    onClick={handleSubmit(handleSave)}
                     className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition flex items-center justify-center gap-1"
                   >
                     <Save /> Save Product

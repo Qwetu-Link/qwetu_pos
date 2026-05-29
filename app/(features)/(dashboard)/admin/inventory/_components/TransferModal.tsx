@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
 import { ArrowLeftRight, X } from "lucide-react";
 import { LOCATIONS } from "@/types/inventory";
-import type { InventoryItem, LocationName } from "@/types/inventory";
+import type { InventoryItem } from "@/types/inventory";
 
 interface TransferModalProps {
   item: InventoryItem;
@@ -11,33 +13,47 @@ interface TransferModalProps {
   onConfirm: (sku: string, from: string, to: string, qty: number) => boolean;
 }
 
+const transferStockSchema = z.object({
+  from: z.enum(LOCATIONS),
+  to: z.enum(LOCATIONS),
+  qty: z.number().int().min(1, "Please enter a valid positive quantity."),
+}).refine((values) => values.from !== values.to, {
+  message: "Source and destination must be different.",
+  path: ["to"],
+});
+
+type TransferStockFormValues = z.infer<typeof transferStockSchema>;
+
 export function TransferModal({
   item,
   onClose,
   onConfirm,
 }: TransferModalProps) {
-  const [from, setFrom] = useState<LocationName>(LOCATIONS[0]);
-  const [to, setTo] = useState<LocationName>(LOCATIONS[1]);
-  const [qty, setQty] = useState("");
-  const [error, setError] = useState("");
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+    register,
+    setError,
+  } = useForm<TransferStockFormValues>({
+    resolver: zodResolver(transferStockSchema),
+    defaultValues: {
+      from: LOCATIONS[0],
+      to: LOCATIONS[1],
+      qty: 1,
+    },
+  });
+  const from = useWatch({ control, name: "from" });
 
   const fromLocationStock =
     item.inventory.locations.find((l) => l.name === from)?.stock ?? 0;
 
-  function handleConfirm() {
-    const parsed = parseInt(qty, 10);
-    if (isNaN(parsed) || parsed <= 0) {
-      setError("Please enter a valid positive quantity.");
-      return;
-    }
-    if (from === to) {
-      setError("Source and destination must be different.");
-      return;
-    }
-
-    const success = onConfirm(item.sku, from, to, parsed);
+  function handleConfirm(values: TransferStockFormValues) {
+    const success = onConfirm(item.sku, values.from, values.to, values.qty);
     if (!success) {
-      setError(`Insufficient stock at ${from}. Available: ${fromLocationStock}`);
+      setError("qty", {
+        message: `Insufficient stock at ${values.from}. Available: ${fromLocationStock}`,
+      });
       return;
     }
 
@@ -60,7 +76,7 @@ export function TransferModal({
           </button>
         </div>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit(handleConfirm)} className="space-y-4">
           <p className="text-sm text-slate-600">
             <span className="font-semibold text-slate-800">
               {item.productName}
@@ -77,11 +93,7 @@ export function TransferModal({
               </span>
             </label>
             <select
-              value={from}
-              onChange={(e) => {
-                setFrom(e.target.value as LocationName);
-                setError("");
-              }}
+              {...register("from")}
               className="w-full px-3 py-2.5 border border-slate-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-black placeholder:text-gray-500"
             >
               {LOCATIONS.map((loc) => (
@@ -97,11 +109,7 @@ export function TransferModal({
               To Location
             </label>
             <select
-              value={to}
-              onChange={(e) => {
-                setTo(e.target.value as LocationName);
-                setError("");
-              }}
+              {...register("to")}
               className="w-full px-3 py-2.5 border border-slate-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-black placeholder:text-gray-500"
             >
               {LOCATIONS.map((loc) => (
@@ -109,7 +117,10 @@ export function TransferModal({
                   {loc}
                 </option>
               ))}
-            </select>
+              </select>
+            {errors.to ? (
+              <p className="text-red-500 text-xs mt-1">{errors.to.message}</p>
+            ) : null}
           </div>
 
           <div>
@@ -119,32 +130,29 @@ export function TransferModal({
             <input
               type="number"
               min={1}
-              value={qty}
-              onChange={(e) => {
-                setQty(e.target.value);
-                setError("");
-              }}
+              {...register("qty", { valueAsNumber: true })}
               placeholder="e.g. 10"
               className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-black placeholder:text-gray-500"
             />
-            {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+            {errors.qty && <p className="text-red-500 text-xs mt-1">{errors.qty.message}</p>}
           </div>
 
           <div className="flex gap-3 pt-1">
             <button
-              onClick={handleConfirm}
+              type="submit"
               className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
             >
               <ArrowLeftRight size={15} /> Transfer
             </button>
             <button
+              type="button"
               onClick={onClose}
               className="flex-1 border border-slate-300 py-2.5 rounded-xl font-medium hover:bg-slate-50 transition-colors text-black"
             >
               Cancel
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

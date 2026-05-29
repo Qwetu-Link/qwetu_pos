@@ -1,6 +1,19 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Save, X } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { rolePermissionOptions } from "@/lib/pos-details-data";
 import FormField from "./FormField";
+
+const addRoleSchema = z.object({
+  roleName: z.string().trim().min(1, "Role name is required"),
+  roleDescription: z.string().trim(),
+  permissions: z.array(z.string()).min(1, "Select at least one permission"),
+});
+
+type AddRoleFormValues = z.infer<typeof addRoleSchema>;
 
 export default function AddRoleModal({
   isOpen,
@@ -9,8 +22,27 @@ export default function AddRoleModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
+  const {
+    formState: { errors },
+    handleSubmit,
+    register,
+  } = useForm<AddRoleFormValues>({
+    resolver: zodResolver(addRoleSchema),
+    defaultValues: {
+      roleName: "",
+      roleDescription: "",
+      permissions: rolePermissionOptions
+        .filter((permission) => permission.key.includes("view"))
+        .map((permission) => permission.key),
+    },
+  });
+
   if (!isOpen) {
     return null;
+  }
+
+  function submitRole() {
+    onClose();
   }
 
   return (
@@ -34,17 +66,15 @@ export default function AddRoleModal({
         </div>
         <form
           className="space-y-4 p-6"
-          onSubmit={(event) => {
-            event.preventDefault();
-            onClose();
-          }}
+          onSubmit={handleSubmit(submitRole)}
         >
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <FormField label="Role Name" name="roleName" placeholder="e.g. Manager" />
+            <FormField label="Role Name" placeholder="e.g. Manager" error={errors.roleName?.message} {...register("roleName")} />
             <FormField
               label="Description"
-              name="roleDescription"
               placeholder="Short role summary"
+              error={errors.roleDescription?.message}
+              {...register("roleDescription")}
             />
           </div>
           <div>
@@ -59,13 +89,17 @@ export default function AddRoleModal({
                 >
                   <input
                     type="checkbox"
-                    defaultChecked={permission.key.includes("view")}
+                    value={permission.key}
+                    {...register("permissions")}
                     className="h-4 w-4 rounded text-black placeholder:text-gray-500 focus:ring-2 focus:ring-emerald-500"
                   />
                   <span className="text-sm text-slate-700">{permission.label}</span>
                 </label>
               ))}
             </div>
+            {errors.permissions ? (
+              <p className="mt-2 text-xs text-red-500">{errors.permissions.message}</p>
+            ) : null}
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button

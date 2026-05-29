@@ -1,5 +1,6 @@
 import type { Order, OrderStatus } from "../types/orderTypes";
 import { ORDER_STATUS_CONFIG } from "../types/customer";
+import { formatCurrency } from "@/lib/formatters";
 
 export const statusStyles: Record<OrderStatus, string> = {
   delivered: ORDER_STATUS_CONFIG.delivered.color,
@@ -9,12 +10,7 @@ export const statusStyles: Record<OrderStatus, string> = {
   pending: ORDER_STATUS_CONFIG.pending.color,
 };
 
-export const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("en-KE", {
-    style: "currency",
-    currency: "KES",
-    minimumFractionDigits: 0,
-  }).format(amount);
+export { formatCurrency };
 
 export const formatDate = (date: string) => new Date(date).toLocaleDateString();
 

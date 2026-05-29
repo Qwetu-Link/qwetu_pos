@@ -1,9 +1,27 @@
 "use client";
 
-import type { FormEvent } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Plus, X } from "lucide-react";
 import type { Expense, ExpenseStatus } from "../../../../../../data/transaction-data";
 import ExpenseField from "./ExpenseField";
+
+const expenseSchema = z.object({
+  date: z.string().min(1, "Date is required"),
+  category: z.string().trim().min(1, "Category is required"),
+  vendor: z.string().trim().min(1, "Vendor is required"),
+  amount: z.number().positive("Amount must be greater than zero"),
+  method: z.enum(["M-Pesa", "Cash", "Bank Transfer", "Card"]),
+  status: z.enum(["pending", "approved", "rejected"]),
+  note: z.string().trim(),
+});
+
+type ExpenseFormValues = z.infer<typeof expenseSchema>;
+
+function createExpenseId() {
+  return `EXP-${Date.now().toString().slice(-5)}`;
+}
 
 export default function AddExpenseModal({
   isOpen,
@@ -14,25 +32,37 @@ export default function AddExpenseModal({
   onAddExpense: (expense: Expense) => void;
   onClose: () => void;
 }) {
+  const {
+    formState: { errors },
+    handleSubmit,
+    register,
+  } = useForm<ExpenseFormValues>({
+    resolver: zodResolver(expenseSchema),
+    defaultValues: {
+      date: new Date().toISOString().slice(0, 10),
+      category: "",
+      vendor: "",
+      amount: 0,
+      method: "M-Pesa",
+      status: "pending",
+      note: "",
+    },
+  });
+
   if (!isOpen) {
     return null;
   }
 
-  function submitExpense(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const amount = Number(formData.get("amount") || 0);
-    const status = String(formData.get("status") || "pending") as ExpenseStatus;
-
+  function submitExpense(values: ExpenseFormValues) {
     onAddExpense({
-      id: `EXP-${Date.now().toString().slice(-5)}`,
-      date: String(formData.get("date") || new Date().toISOString().slice(0, 10)),
-      category: String(formData.get("category") || ""),
-      vendor: String(formData.get("vendor") || ""),
-      method: String(formData.get("method") || "M-Pesa"),
-      amount,
-      status,
-      note: String(formData.get("note") || ""),
+      id: createExpenseId(),
+      date: values.date,
+      category: values.category,
+      vendor: values.vendor,
+      method: values.method,
+      amount: values.amount,
+      status: values.status as ExpenseStatus,
+      note: values.note,
     });
     onClose();
   }
@@ -56,18 +86,17 @@ export default function AddExpenseModal({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <form onSubmit={submitExpense} className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
-          <ExpenseField label="Date" name="date" type="date" required />
-          <ExpenseField label="Category" name="category" placeholder="e.g. Logistics" required />
-          <ExpenseField label="Vendor" name="vendor" placeholder="e.g. Rider Dispatch" required />
-          <ExpenseField label="Amount" name="amount" type="number" placeholder="0" required />
+        <form onSubmit={handleSubmit(submitExpense)} className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
+          <ExpenseField label="Date" type="date" required error={errors.date?.message} {...register("date")} />
+          <ExpenseField label="Category" placeholder="e.g. Logistics" required error={errors.category?.message} {...register("category")} />
+          <ExpenseField label="Vendor" placeholder="e.g. Rider Dispatch" required error={errors.vendor?.message} {...register("vendor")} />
+          <ExpenseField label="Amount" type="number" placeholder="0" required error={errors.amount?.message} {...register("amount", { valueAsNumber: true })} />
           <label>
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">
               Method
             </span>
             <select
-              name="method"
-              defaultValue="M-Pesa"
+              {...register("method")}
               className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black focus:ring-2 focus:ring-emerald-500"
             >
               <option>M-Pesa</option>
@@ -81,8 +110,7 @@ export default function AddExpenseModal({
               Status
             </span>
             <select
-              name="status"
-              defaultValue="pending"
+              {...register("status")}
               className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black focus:ring-2 focus:ring-emerald-500"
             >
               <option value="pending">Pending</option>
@@ -95,7 +123,7 @@ export default function AddExpenseModal({
               Note
             </span>
             <textarea
-              name="note"
+              {...register("note")}
               rows={3}
               placeholder="Short expense description"
               className="w-full resize-none rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-gray-500 focus:ring-2 focus:ring-emerald-500"

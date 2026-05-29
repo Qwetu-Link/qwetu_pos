@@ -1,3 +1,5 @@
+export { formatCompactCurrency, formatCurrency } from "@/lib/formatters";
+
 export type RevenueMonth = {
   month: string;
   fullPayments: number;
@@ -148,22 +150,6 @@ export const teamUsers: TeamUser[] = [
   { id: "U-002", name: "James Otieno", email: "james@qwetulinks.co.ke", role: "manager", status: "Active" },
   { id: "U-003", name: "Grace Njeri", email: "grace@qwetulinks.co.ke", role: "cashier", status: "Invited" },
 ];
-
-export function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-KE", {
-    style: "currency",
-    currency: "KES",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-export function formatCompactCurrency(amount: number) {
-  return new Intl.NumberFormat("en-KE", {
-    notation: "compact",
-    compactDisplay: "short",
-    maximumFractionDigits: 1,
-  }).format(amount);
-}
 
 export function getPercentChange(current: number, previous: number) {
   if (!previous && !current) {

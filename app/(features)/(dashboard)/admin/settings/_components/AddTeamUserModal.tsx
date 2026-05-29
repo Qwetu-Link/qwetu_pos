@@ -1,8 +1,25 @@
-import type { FormEvent } from "react";
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus, X } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { businessRoles } from "@/lib/pos-details-data";
 import type { TeamUser } from "@/lib/pos-details-data";
 import FormField from "./FormField";
+
+const teamUserSchema = z.object({
+  name: z.string().trim().min(1, "Full name is required"),
+  email: z.email("Enter a valid email address").trim(),
+  role: z.string().min(1, "Role is required"),
+  status: z.enum(["Invited", "Active"]),
+});
+
+type TeamUserFormValues = z.infer<typeof teamUserSchema>;
+
+function createTeamUserId() {
+  return `U-${Date.now().toString().slice(-6)}`;
+}
 
 export default function AddTeamUserModal({
   isOpen,
@@ -13,24 +30,31 @@ export default function AddTeamUserModal({
   onClose: () => void;
   onAddUser: (user: TeamUser) => void;
 }) {
+  const {
+    formState: { errors },
+    handleSubmit,
+    register,
+  } = useForm<TeamUserFormValues>({
+    resolver: zodResolver(teamUserSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      role: businessRoles[0]?.id || "owner",
+      status: "Invited",
+    },
+  });
+
   if (!isOpen) {
     return null;
   }
 
-  function submitUser(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const name = String(formData.get("name") || "");
-    const email = String(formData.get("email") || "");
-    const role = String(formData.get("role") || businessRoles[0]?.id || "owner");
-    const status = String(formData.get("status") || "Invited");
-
+  function submitUser(values: TeamUserFormValues) {
     onAddUser({
-      id: `U-${Date.now().toString().slice(-6)}`,
-      name,
-      email,
-      role,
-      status,
+      id: createTeamUserId(),
+      name: values.name,
+      email: values.email,
+      role: values.role,
+      status: values.status,
     });
     onClose();
   }
@@ -54,22 +78,22 @@ export default function AddTeamUserModal({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <form onSubmit={submitUser} className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
-          <FormField label="Full Name" name="name" placeholder="e.g. Jane Doe" required />
+        <form onSubmit={handleSubmit(submitUser)} className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
+          <FormField label="Full Name" placeholder="e.g. Jane Doe" required error={errors.name?.message} {...register("name")} />
           <FormField
             label="Email"
-            name="email"
             type="email"
             placeholder="jane@qwetulinks.co.ke"
             required
+            error={errors.email?.message}
+            {...register("email")}
           />
           <label>
             <span className="mb-1.5 block text-sm font-semibold text-slate-700">
               Role
             </span>
             <select
-              name="role"
-              defaultValue={businessRoles[0]?.id}
+              {...register("role")}
               className="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 text-black placeholder:text-gray-500"
             >
               {businessRoles.map((role) => (
@@ -84,8 +108,7 @@ export default function AddTeamUserModal({
               Status
             </span>
             <select
-              name="status"
-              defaultValue="Invited"
+              {...register("status")}
               className="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 text-black placeholder:text-gray-500"
             >
               <option value="Invited">Invited</option>

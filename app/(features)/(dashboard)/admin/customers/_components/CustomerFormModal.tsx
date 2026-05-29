@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import type { FormEvent } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { X, UserPlus, Pencil, Save } from "lucide-react";
 import type { Customer, CustomerFormData, Segment } from "@/types/customer";
 
@@ -15,6 +16,15 @@ interface CustomerFormModalProps {
 const INPUT =
   "w-full px-4 py-2.5 border border-slate-300 text-black placeholder:text-slate-400 transition rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white";
 const LABEL = "block text-sm font-semibold text-slate-700 mb-1.5";
+
+const customerFormSchema = z.object({
+  name: z.string().trim().min(1, "Name is required"),
+  email: z.email("Enter a valid email address").trim().or(z.literal("")),
+  phone: z.string().trim().min(1, "Phone is required"),
+  segment: z.enum(["New", "Regular", "VIP"]),
+  riskLevel: z.enum(["low", "medium", "high"]),
+  address: z.string().trim(),
+});
 
 export function CustomerFormModal({
   isOpen,
@@ -61,36 +71,18 @@ function CustomerFormModalContent({
   onClose,
   onSave,
 }: Omit<CustomerFormModalProps, "isOpen">) {
-  const [formData, setFormData] = useState<CustomerFormData>(() => getInitialFormData(editCustomer));
-  const [errors, setErrors] = useState<Partial<Record<keyof CustomerFormData, string>>>({});
   const isEdit = !!editCustomer;
+  const {
+    formState: { errors },
+    handleSubmit,
+    register,
+  } = useForm<CustomerFormData>({
+    resolver: zodResolver(customerFormSchema),
+    defaultValues: getInitialFormData(editCustomer),
+  });
 
-  function updateField<K extends keyof CustomerFormData>(field: K, value: CustomerFormData[K]) {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: undefined }));
-  }
-
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const nextErrors: Partial<Record<keyof CustomerFormData, string>> = {};
-    if (!formData.name.trim()) nextErrors.name = "Name is required";
-    if (!formData.phone.trim()) nextErrors.phone = "Phone is required";
-
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
-      return;
-    }
-
-    onSave(
-      {
-        ...formData,
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        address: formData.address.trim(),
-      },
-      editCustomer?.id ?? null
-    );
+  function onSubmit(formData: CustomerFormData) {
+    onSave(formData, editCustomer?.id ?? null);
   }
 
   return (
@@ -116,7 +108,7 @@ function CustomerFormModalContent({
 
         {/* Form */}
         <div className="p-6">
-          <form onSubmit={onSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Name */}
               <div>
@@ -125,13 +117,12 @@ function CustomerFormModalContent({
                 </label>
                 <input
                   type="text"
-                  value={formData.name}
-                  onChange={(event) => updateField("name", event.target.value)}
+                  {...register("name")}
                   className={INPUT}
                   placeholder="e.g. Sarah Mwangi"
                 />
                 {errors.name && (
-                  <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+                  <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
                 )}
               </div>
 
@@ -140,11 +131,13 @@ function CustomerFormModalContent({
                 <label className={LABEL}>Email Address</label>
                 <input
                   type="email"
-                  value={formData.email}
-                  onChange={(event) => updateField("email", event.target.value)}
+                  {...register("email")}
                   className={INPUT}
                   placeholder="name@example.com"
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                )}
               </div>
 
               {/* Phone */}
@@ -154,13 +147,12 @@ function CustomerFormModalContent({
                 </label>
                 <input
                   type="tel"
-                  value={formData.phone}
-                  onChange={(event) => updateField("phone", event.target.value)}
+                  {...register("phone")}
                   className={INPUT}
                   placeholder="+254 7XX XXX XXX"
                 />
                 {errors.phone && (
-                  <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                  <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>
                 )}
               </div>
 
@@ -168,8 +160,7 @@ function CustomerFormModalContent({
               <div>
                 <label className={LABEL}>Segment</label>
                 <select
-                  value={formData.segment}
-                  onChange={(event) => updateField("segment", event.target.value as Segment)}
+                  {...register("segment")}
                   className={INPUT}
                 >
                   {(["New", "Regular", "VIP"] as Segment[]).map((s) => (
@@ -182,8 +173,7 @@ function CustomerFormModalContent({
               <div>
                 <label className={LABEL}>Risk Level</label>
                 <select
-                  value={formData.riskLevel}
-                  onChange={(event) => updateField("riskLevel", event.target.value as CustomerFormData["riskLevel"])}
+                  {...register("riskLevel")}
                   className={INPUT}
                 >
                   <option value="low">Low Risk</option>
@@ -197,8 +187,7 @@ function CustomerFormModalContent({
                 <label className={LABEL}>Shipping Address</label>
                 <input
                   type="text"
-                  value={formData.address}
-                  onChange={(event) => updateField("address", event.target.value)}
+                  {...register("address")}
                   className={INPUT}
                   placeholder="Street, City"
                 />

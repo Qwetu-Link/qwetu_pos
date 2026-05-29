@@ -1,8 +1,10 @@
 "use client";
 
 import { NewVariantFormValues, ProductCategory } from "@/types/catalog";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Puzzle } from "lucide-react";
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 interface Props {
   productName: string;
@@ -14,22 +16,34 @@ interface Props {
 const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "One Size"];
 const FOOTWEAR_SIZES = Array.from({ length: 13 }, (_, i) => String(i + 36));
 
+const variantSchema = z.object({
+  color: z.string().trim().min(1, "Color is required"),
+  size: z.string().trim().min(1, "Size is required"),
+  buyPrice: z.number().min(0, "Buy price cannot be negative"),
+  sellPrice: z.number().min(0, "Sell price cannot be negative"),
+  mainStock: z.number().int().min(0, "Stock cannot be negative"),
+});
+
 export default function AddVariantModal({ productName, category, onAdd, onClose }: Props) {
   const isFootwear = category === "Footwear";
   const sizes = isFootwear ? FOOTWEAR_SIZES : CLOTHING_SIZES;
-
-  const [form, setForm] = useState<NewVariantFormValues>({
-    color: "",
-    size: sizes[0],
-    buyPrice: 0,
-    sellPrice: 0,
-    mainStock: 0,
+  const {
+    formState: { errors },
+    handleSubmit,
+    register,
+  } = useForm<NewVariantFormValues>({
+    resolver: zodResolver(variantSchema),
+    defaultValues: {
+      color: "",
+      size: sizes[0],
+      buyPrice: 0,
+      sellPrice: 0,
+      mainStock: 0,
+    },
   });
 
-  function handleSubmit() {
-    if (!form.color.trim()) return alert("Color is required");
-    if (!form.size) return alert("Size is required");
-    onAdd(form);
+  function submitVariant(values: NewVariantFormValues) {
+    onAdd(values);
   }
 
   return (
@@ -45,7 +59,7 @@ export default function AddVariantModal({ productName, category, onAdd, onClose 
         </h3>
         <p className="text-md text-gray-500 mb-5">For: <span className="font-medium text-gray-700">{productName}</span></p>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit(submitVariant)} className="space-y-4">
           {/* Color */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -53,11 +67,13 @@ export default function AddVariantModal({ productName, category, onAdd, onClose 
             </label>
             <input
               type="text"
-              value={form.color}
-              onChange={(e) => setForm({ ...form, color: e.target.value })}
+              {...register("color")}
               placeholder="e.g. Red, Navy Blue"
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
             />
+            {errors.color ? (
+              <p className="mt-1 text-xs text-red-500">{errors.color.message}</p>
+            ) : null}
           </div>
 
           {/* Size */}
@@ -66,8 +82,7 @@ export default function AddVariantModal({ productName, category, onAdd, onClose 
               Size <span className="text-red-500">*</span>
             </label>
             <select
-              value={form.size}
-              onChange={(e) => setForm({ ...form, size: e.target.value })}
+              {...register("size")}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
             >
               {sizes.map((s) => (
@@ -87,10 +102,12 @@ export default function AddVariantModal({ productName, category, onAdd, onClose 
               <input
                 type="number"
                 min={0}
-                value={form.buyPrice}
-                onChange={(e) => setForm({ ...form, buyPrice: parseFloat(e.target.value) || 0 })}
+                {...register("buyPrice", { valueAsNumber: true })}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
               />
+              {errors.buyPrice ? (
+                <p className="mt-1 text-xs text-red-500">{errors.buyPrice.message}</p>
+              ) : null}
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -99,10 +116,12 @@ export default function AddVariantModal({ productName, category, onAdd, onClose 
               <input
                 type="number"
                 min={0}
-                value={form.sellPrice}
-                onChange={(e) => setForm({ ...form, sellPrice: parseFloat(e.target.value) || 0 })}
+                {...register("sellPrice", { valueAsNumber: true })}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
               />
+              {errors.sellPrice ? (
+                <p className="mt-1 text-xs text-red-500">{errors.sellPrice.message}</p>
+              ) : null}
             </div>
           </div>
 
@@ -114,30 +133,33 @@ export default function AddVariantModal({ productName, category, onAdd, onClose 
             <input
               type="number"
               min={0}
-              value={form.mainStock}
-              onChange={(e) => setForm({ ...form, mainStock: parseInt(e.target.value) || 0 })}
+              {...register("mainStock", { valueAsNumber: true })}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
             />
+            {errors.mainStock ? (
+              <p className="mt-1 text-xs text-red-500">{errors.mainStock.message}</p>
+            ) : null}
             <p className="text-xs text-gray-400 mt-1">
               Warehouse A and Outlet will be set to 0. Stock can be transferred later.
             </p>
           </div>
-        </div>
+          <div className="flex gap-3 mt-6">
+            <button
+              type="submit"
+              className="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl font-medium hover:bg-emerald-700 transition"
+            >
+              Add Variant
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 border border-gray-300 py-2.5 rounded-xl font-medium hover:bg-gray-50 transition  text-black"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
 
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={handleSubmit}
-            className="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl font-medium hover:bg-emerald-700 transition"
-          >
-            Add Variant
-          </button>
-          <button
-            onClick={onClose}
-            className="flex-1 border border-gray-300 py-2.5 rounded-xl font-medium hover:bg-gray-50 transition  text-black"
-          >
-            Cancel
-          </button>
-        </div>
       </div>
     </div>
   );
