@@ -1,6 +1,6 @@
-import PageUnderDevelopment from "@/app/comming-soon";
-import React from "react";
+import { dashboardData } from "@/data/dashboard-data";
+import RoleDashboard from "../_components/RoleDashboard";
 
 export default function ManagerDashboard() {
-  return <PageUnderDevelopment title="Manager Dashboard" />;
+  return <RoleDashboard dashboard={dashboardData.manager} />;
 }

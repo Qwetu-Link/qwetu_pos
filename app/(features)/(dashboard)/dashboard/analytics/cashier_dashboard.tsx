@@ -1,6 +1,6 @@
-import PageUnderDevelopment from '@/app/comming-soon';
-import React from 'react'
+import { dashboardData } from "@/data/dashboard-data";
+import RoleDashboard from "../_components/RoleDashboard";
 
 export default function CashierDashboard() {
-  return <PageUnderDevelopment title="Cashier Dashboard" />;
+  return <RoleDashboard dashboard={dashboardData.cashier} />;
 }

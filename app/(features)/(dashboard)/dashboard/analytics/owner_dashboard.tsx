@@ -1,5 +1,6 @@
-import PageUnderDevelopment from "@/app/comming-soon";
+import { dashboardData } from "@/data/dashboard-data";
+import RoleDashboard from "../_components/RoleDashboard";
 
 export default function AdminDashboard() {
-  return <PageUnderDevelopment title="Owner Dashboard" />;
+  return <RoleDashboard dashboard={dashboardData.owner} />;
 }

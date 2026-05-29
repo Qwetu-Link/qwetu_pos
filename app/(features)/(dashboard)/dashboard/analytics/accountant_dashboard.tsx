@@ -1,5 +1,6 @@
-import PageUnderDevelopment from "@/app/comming-soon";
+import { dashboardData } from "@/data/dashboard-data";
+import RoleDashboard from "../_components/RoleDashboard";
 
 export default function AccountantDashboard() {
-  return <PageUnderDevelopment title="Accountant Dashboard" />;
+  return <RoleDashboard dashboard={dashboardData.accountant} />;
 }
