@@ -1,5 +1,5 @@
-import AnalyticsPage from "./_components/analytics_page";
+import AnalyticsEngineDetails from "./_components/AnalyticsEngineDetails";
 
-export default function AnalyticPage() {
-  return <AnalyticsPage />;
+export default function Page() {
+  return <AnalyticsEngineDetails />;
 }

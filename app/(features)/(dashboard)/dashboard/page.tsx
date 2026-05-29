@@ -3,11 +3,11 @@
 import { JSX, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { UserRole } from "@/app/config/roles";
-import AccountantDashboard from "./_components/accountant_dashboard";
-import CashierDashboard from "./_components/cashier_dashboard";
-import ManagerDashboard from "./_components/manager_dashboard";
-import AdminDashboard from "./_components/owner_dashboard";
-import InventoryDashboard from "./_components/inventory_dashboard";
+import AccountantDashboard from "./analytics/accountant_dashboard";
+import CashierDashboard from "./analytics/cashier_dashboard";
+import ManagerDashboard from "./analytics/manager_dashboard";
+import AdminDashboard from "./analytics/owner_dashboard";
+import InventoryDashboard from "./analytics/inventory_dashboard";
 
 // Lazy map of role to dashboard component
 const DASHBOARD_MAP: Record<UserRole, () => JSX.Element> = {

@@ -1,5 +1,6 @@
-import SettingsPage from "./_components/settings_page";
+import SettingsDetails from "./_components/SettingsDetails";
 
-export default function SettingPage() {
-  return <SettingsPage />;
+export default function Page() {
+  return <SettingsDetails />;
 }
+
