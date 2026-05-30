@@ -1,9 +1,21 @@
+import EmptyState from "@/components/EmptyState";
+import { ChartNoAxesColumnIncreasing } from "lucide-react";
 import type { DashboardBar } from "@/data/dashboard-data";
 
 export default function DashboardProgressPanel({ bars }: { bars: DashboardBar[] }) {
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-900">Focus Metrics</h2>
+      {bars.length === 0 ? (
+        <div className="mt-4">
+          <EmptyState
+            compact
+            icon={ChartNoAxesColumnIncreasing}
+            title="No focus metrics"
+            description="Progress metrics will appear here after dashboard data is available."
+          />
+        </div>
+      ) : (
       <div className="mt-4 space-y-4">
         {bars.map((bar) => (
           <div key={bar.label}>
@@ -27,6 +39,7 @@ export default function DashboardProgressPanel({ bars }: { bars: DashboardBar[] 
           </div>
         ))}
       </div>
+      )}
     </section>
   );
 }

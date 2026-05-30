@@ -2,10 +2,23 @@ import {
   formatCurrency,
   formatDate,
 } from "@/data/transaction-data";
+import EmptyState from "@/components/EmptyState";
+import { WalletCards } from "lucide-react";
 import type { Expense } from "@/types/transactions";
 import ExpenseStatusBadge from "./ExpenseStatusBadge";
 
 export default function ExpensesTable({ expenses }: { expenses: Expense[] }) {
+  if (expenses.length === 0) {
+    return (
+      <EmptyState
+        compact
+        icon={WalletCards}
+        title="No expenses recorded"
+        description="Business expenses will show here after they are added or returned from the backend."
+      />
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[780px] text-left text-sm">

@@ -108,14 +108,16 @@ export default function TransactionsPage() {
 
           <TransactionsTable transactions={paginatedTransactions} />
         </section>
-        <Pagination
-          currentPage={visiblePage}
-          totalPages={totalPages}
-          total={transactions.length}
-          perPage={perPage}
-          onPage={setCurrentPage}
-          onPerPage={updatePerPage}
-        />
+        {transactions.length > 0 && (
+          <Pagination
+            currentPage={visiblePage}
+            totalPages={totalPages}
+            total={transactions.length}
+            perPage={perPage}
+            onPage={setCurrentPage}
+            onPerPage={updatePerPage}
+          />
+        )}
       </div>
     </main>
   );

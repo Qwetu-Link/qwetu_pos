@@ -11,6 +11,7 @@ import CategoryStatsCards from "./CategoryStatsCards";
 import CategoryCard from "./CategoryCard";
 import CategoryModal from "./CategoryModal";
 import DeleteCategoryModal from "./DeleteCategoryModal";
+import EmptyState from "@/components/EmptyState";
 import Pagination from "@/components/Pagination";
 import { FolderOpen, Plus, Search } from "lucide-react";
 
@@ -98,17 +99,30 @@ export default function ProductCategories() {
 
       {/* ---- Grid ---- */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border text-gray-400">
-          <p className="text-5xl mb-3"><FolderOpen size={64} className="text-gray-300" /></p>
-          <p className="text-lg font-medium text-gray-500">
-            No categories found
-          </p>
-          <p className="text-sm mt-1">
-            {search
-              ? "Try adjusting your search"
-              : 'Click "Add Category" to create one'}
-          </p>
-        </div>
+        <EmptyState
+          icon={FolderOpen}
+          title={
+            categories.length === 0
+              ? "No categories created yet"
+              : "No categories match your search"
+          }
+          description={
+            categories.length === 0
+              ? "Create apparel categories like Outerwear, Footwear, or Accessories to organize the catalog."
+              : "Try a broader category name or clear the search field to see all categories."
+          }
+          action={
+            categories.length === 0 ? (
+              <button
+                type="button"
+                onClick={() => setEditTarget("new")}
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+              >
+                <Plus size={16} /> Add Category
+              </button>
+            ) : null
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {paginated.map((cat) => (

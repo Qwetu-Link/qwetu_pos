@@ -8,6 +8,7 @@ import type { Customer, CustomerFormData } from "@/types/customer";
 import { CustomerStatsRow } from "./CustomerStatsRow";
 import { CustomerCard } from "./CustomerCard";
 import { CustomerFormModal } from "./CustomerFormModal";
+import EmptyState from "@/components/EmptyState";
 import { Pagination } from "@/components/Pagination";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 
@@ -76,10 +77,30 @@ export function CustomerManagement() {
         </div>
 
         {paginated.length === 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 py-16 flex flex-col items-center gap-3 text-slate-400 shadow-sm">
-            <Users2 size={48} strokeWidth={1.2} />
-            <p className="text-lg font-medium">No customers found. Add new Customer</p>
-          </div>
+          <EmptyState
+            icon={Users2}
+            title={
+              customers.length === 0
+                ? "No customers yet"
+                : "No customers match your search"
+            }
+            description={
+              customers.length === 0
+                ? "Add a customer profile to start tracking orders, balances, and installment history."
+                : "Check the name, email, or phone number and try again."
+            }
+            action={
+              customers.length === 0 ? (
+                <button
+                  type="button"
+                  onClick={handleOpenAdd}
+                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                >
+                  <UserPlus size={16} /> Add Customer
+                </button>
+              ) : null
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {paginated.map((c) => (

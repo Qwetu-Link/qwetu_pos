@@ -238,12 +238,22 @@ export function NewOrderModal({ customer, isOpen, onClose, onSubmit }: NewOrderM
                         className={INPUT}
                       >
                         <option value="">Select product variant...</option>
+                        {DEMO_VARIANTS.length === 0 ? (
+                          <option value="" disabled>
+                            No variants available
+                          </option>
+                        ) : null}
                         {DEMO_VARIANTS.map((v) => (
                           <option key={v.variantId} value={v.variantId}>
                             {v.name} — KES {v.sellPrice.toLocaleString()}
                           </option>
                         ))}
                       </select>
+                      {DEMO_VARIANTS.length === 0 ? (
+                        <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                          Add product variants before creating order line items.
+                        </p>
+                      ) : null}
                     </div>
 
                     {/* Qty / Prices / Subtotal / Remove */}

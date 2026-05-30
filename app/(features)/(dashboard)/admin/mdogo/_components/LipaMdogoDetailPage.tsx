@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import EmptyState from "@/components/EmptyState";
 import {
   ArrowLeft,
   Coins,
@@ -115,23 +116,32 @@ export default function LipaMdogoDetailPage({ plan }: { plan: PaymentPlan }) {
                   <span>Description</span>
                   <span>Amount</span>
                 </div>
-                {plan.products.map((product) => (
-                  <div
-                    key={product.name}
-                    className="flex items-center justify-between border-b border-[#f3f0eb] py-2.5"
-                  >
-                    <div>
-                      <div className="text-sm font-semibold">{product.name}</div>
-                      <div className="text-xs text-slate-500">
-                        Qty: {product.quantity} x{" "}
-                        {formatCurrency(product.unitPrice)}
+                {plan.products.length === 0 ? (
+                  <EmptyState
+                    compact
+                    icon={Search}
+                    title="No products on this plan"
+                    description="Line items connected to this installment plan will appear here when returned from the backend."
+                  />
+                ) : (
+                  plan.products.map((product) => (
+                    <div
+                      key={product.name}
+                      className="flex items-center justify-between border-b border-[#f3f0eb] py-2.5"
+                    >
+                      <div>
+                        <div className="text-sm font-semibold">{product.name}</div>
+                        <div className="text-xs text-slate-500">
+                          Qty: {product.quantity} x{" "}
+                          {formatCurrency(product.unitPrice)}
+                        </div>
+                      </div>
+                      <div className="text-sm font-semibold">
+                        {formatCurrency(product.total)}
                       </div>
                     </div>
-                    <div className="text-sm font-semibold">
-                      {formatCurrency(product.total)}
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
                 <div className="mt-3 flex justify-between border-t border-slate-200 pt-3 font-bold">
                   <span>Total</span>
                   <span>{formatCurrency(plan.totalAmount)}</span>
@@ -146,6 +156,14 @@ export default function LipaMdogoDetailPage({ plan }: { plan: PaymentPlan }) {
                 <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-800">
                   Payment Schedule
                 </div>
+                {schedule.length === 0 ? (
+                  <EmptyState
+                    compact
+                    icon={Search}
+                    title="No installment schedule"
+                    description="Scheduled installment rows will appear when the payment plan has a valid start date and installment count."
+                  />
+                ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[680px] border-collapse text-left">
                     <thead>
@@ -193,6 +211,7 @@ export default function LipaMdogoDetailPage({ plan }: { plan: PaymentPlan }) {
                     </tbody>
                   </table>
                 </div>
+                )}
               </div>
 
               <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-4">
@@ -287,9 +306,13 @@ export default function LipaMdogoDetailPage({ plan }: { plan: PaymentPlan }) {
                 </table>
               </div>
             ) : (
-              <div className="flex flex-col items-center p-8 text-center text-slate-500">
-                <Search className="mb-2 h-10 w-10 text-slate-300" />
-                <p>No payment receipts recorded for this plan.</p>
+              <div className="p-5">
+                <EmptyState
+                  compact
+                  icon={Search}
+                  title="No receipts recorded"
+                  description="Payment receipts will appear here after installments are collected."
+                />
               </div>
             )}
           </section>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Boxes, PackageOpen } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
 import { useInventory } from "@/hooks/useInventory";
 import type { InventoryItem } from "@/types/inventory";
 import { StatsRow } from "./StatsRow";
@@ -63,10 +64,19 @@ export function InventoryIntelligence() {
 
         {/* Cards */}
         {paginated.length === 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 py-16 flex flex-col items-center gap-3 text-slate-400 shadow-sm">
-            <PackageOpen size={48} strokeWidth={1.2} />
-            <p className="text-lg font-medium">No inventory items match your search.</p>
-          </div>
+          <EmptyState
+            icon={PackageOpen}
+            title={
+              items.length === 0
+                ? "No inventory items yet"
+                : "No inventory items match this view"
+            }
+            description={
+              items.length === 0
+                ? "Once products and variants are available from the backend, stock records will appear here."
+                : "Try a different search term or switch the location filter back to all locations."
+            }
+          />
         ) : (
           <div className="space-y-5">
             {paginated.map((item) => (

@@ -1,4 +1,5 @@
 import { CalendarClock, Users } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
 import type { ScheduledReport } from "@/types/reports";
 
 export default function ScheduledReportsPanel({
@@ -14,6 +15,14 @@ export default function ScheduledReportsPanel({
           Scheduled Reports
         </h2>
       </div>
+      {reports.length === 0 ? (
+        <EmptyState
+          compact
+          icon={CalendarClock}
+          title="No scheduled reports"
+          description="Recurring report schedules will appear here after they are configured."
+        />
+      ) : (
       <div className="space-y-3">
         {reports.map((report) => (
           <div
@@ -39,6 +48,7 @@ export default function ScheduledReportsPanel({
           </div>
         ))}
       </div>
+      )}
     </section>
   );
 }

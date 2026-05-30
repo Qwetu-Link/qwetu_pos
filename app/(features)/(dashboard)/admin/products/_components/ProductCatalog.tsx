@@ -5,6 +5,7 @@ import CatalogStatsCards from "./CatalogStatsCards";
 import ProductCard from "./ProductCard";
 import ProductModal from "./ProductModal";
 import DeleteModal from "./DeleteModal";
+import EmptyState from "@/components/EmptyState";
 import Pagination from "@/components/Pagination";
 import { CatalogFilters, Product, ProductCategory } from "@/types/catalog";
 import { dummyProducts } from "@/data/products";
@@ -136,17 +137,30 @@ export default function ProductCatalog() {
 
       {/* ---- Products Grid ---- */}
       {paginated.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 bg-white rounded-xl border">
-          <p className="text-5xl mb-3">
-            <Package size={48} className="mx-auto text-gray-300" />
-          </p>
-          <p className="text-lg font-medium text-gray-500">No products found</p>
-          <p className="text-sm mt-1">
-            {filters.search || filters.category !== "all"
-              ? "Try adjusting your filters"
-              : 'Click "Add Product" to get started'}
-          </p>
-        </div>
+        <EmptyState
+          icon={Package}
+          title={
+            products.length === 0
+              ? "No products added yet"
+              : "No products match your filters"
+          }
+          description={
+            products.length === 0
+              ? "Add your first clothing item to start building the catalog that will sync with the backend."
+              : "Try a different product name, supplier, or category to bring matching items back into view."
+          }
+          action={
+            products.length === 0 ? (
+              <button
+                type="button"
+                onClick={() => setEditTarget("new")}
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+              >
+                <PlusIcon size={16} /> Add Product
+              </button>
+            ) : null
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {paginated.map((product) => (

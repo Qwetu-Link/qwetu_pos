@@ -1,14 +1,27 @@
 import { collectionData } from "@/lib/pos-details-data";
+import EmptyState from "@/components/EmptyState";
+import { TrendingUp } from "lucide-react";
 
 export default function CollectionTrendChart() {
+  if (collectionData.length === 0) {
+    return (
+      <EmptyState
+        compact
+        icon={TrendingUp}
+        title="No collection data"
+        description="Expected and collected installment amounts will appear here once payment plans are available."
+      />
+    );
+  }
+
   const maxExpected = Math.max(...collectionData.map((item) => item.expected));
 
   return (
     <div className="grid gap-4">
       {collectionData.map((item) => {
         const rate = item.expected ? (item.collected / item.expected) * 100 : 0;
-        const expectedWidth = (item.expected / maxExpected) * 100;
-        const collectedWidth = (item.collected / maxExpected) * 100;
+        const expectedWidth = maxExpected ? (item.expected / maxExpected) * 100 : 0;
+        const collectedWidth = maxExpected ? (item.collected / maxExpected) * 100 : 0;
 
         return (
           <div

@@ -19,6 +19,7 @@ import {
   type ReportStatus,
   type ReportTemplate,
 } from "@/data/report-center-data";
+import EmptyState from "@/components/EmptyState";
 import GeneratedReportsTable from "./GeneratedReportsTable";
 import ReportMetricCard from "./ReportMetricCard";
 import ReportTemplateCard from "./ReportTemplateCard";
@@ -228,16 +229,32 @@ export default function ReportsPage() {
             </p>
           </div>
         </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {filteredTemplates.map((report) => (
-            <ReportTemplateCard
-              key={report.title}
-              report={report}
-              onDownload={downloadTemplate}
-              onRun={runReport}
-            />
-          ))}
-        </div>
+        {filteredTemplates.length === 0 ? (
+          <EmptyState
+            icon={FileText}
+            title={
+              reportTemplates.length === 0
+                ? "No report templates available"
+                : "No report templates match these filters"
+            }
+            description={
+              reportTemplates.length === 0
+                ? "Templates returned from the backend will appear here for sales, inventory, customer, and collection reports."
+                : "Try another filter or reset the category to All."
+            }
+          />
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {filteredTemplates.map((report) => (
+              <ReportTemplateCard
+                key={report.title}
+                report={report}
+                onDownload={downloadTemplate}
+                onRun={runReport}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">

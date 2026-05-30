@@ -1,4 +1,5 @@
 import { Download } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
 import type { GeneratedReport } from "@/types/reports";
 import ReportStatusBadge from "./ReportStatusBadge";
 
@@ -21,6 +22,16 @@ export default function GeneratedReportsTable({
           </p>
         </div>
       </div>
+      {reports.length === 0 ? (
+        <div className="p-5">
+          <EmptyState
+            compact
+            icon={Download}
+            title="No generated reports"
+            description="Generated exports will appear here when report jobs complete."
+          />
+        </div>
+      ) : (
       <div className="overflow-x-auto">
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead>
@@ -69,6 +80,7 @@ export default function GeneratedReportsTable({
           </tbody>
         </table>
       </div>
+      )}
     </section>
   );
 }

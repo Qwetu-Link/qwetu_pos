@@ -1,4 +1,5 @@
 import { PieChart } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
 import {
   categoryData,
   formatCompactCurrency,
@@ -6,6 +7,17 @@ import {
 
 export default function CategoryRingChart() {
   const total = categoryData.reduce((sum, item) => sum + item.value, 0);
+
+  if (categoryData.length === 0 || total === 0) {
+    return (
+      <EmptyState
+        compact
+        icon={PieChart}
+        title="No category sales data"
+        description="Category performance will appear here after sales are grouped by clothing category."
+      />
+    );
+  }
 
   return (
     <div className="grid gap-5 md:grid-rows md:items-center">

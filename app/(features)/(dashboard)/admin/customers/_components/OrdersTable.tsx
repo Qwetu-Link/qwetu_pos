@@ -1,4 +1,5 @@
 import Link from "next/link";
+import EmptyState from "@/components/EmptyState";
 import { Eye, ShoppingBag } from "lucide-react";
 import type { Order } from "@/types/customer";
 import { ORDER_STATUS_CONFIG } from "@/data/customer-config";
@@ -10,10 +11,12 @@ interface OrdersTableProps {
 export function OrdersTable({ orders }: OrdersTableProps) {
   if (orders.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm py-16 flex flex-col items-center gap-3 text-slate-400">
-        <ShoppingBag size={48} strokeWidth={1.2} />
-        <p className="text-lg font-medium">No orders yet for this customer</p>
-      </div>
+      <EmptyState
+        icon={ShoppingBag}
+        title="No orders for this customer"
+        description="When this customer makes a purchase, their order history and payment status will appear here."
+        className="rounded-2xl"
+      />
     );
   }
 

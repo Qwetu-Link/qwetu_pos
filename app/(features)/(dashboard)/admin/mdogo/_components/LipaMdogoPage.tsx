@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import EmptyState from "@/components/EmptyState";
 import type { PaymentPlan } from "@/data/lipa-mdogo-data";
 import {
   formatCompactCurrency,
@@ -145,22 +146,40 @@ export default function LipaMdogoPage() {
 
           {activeTab === "plans" ? (
             <section className="space-y-4">
-              {paginatedPlans.map((plan) => (
-                <PaymentPlanCard
-                  key={plan.id}
-                  plan={plan}
-                  onRecord={setRecordPlan}
-                  onRemind={setReminderPlan}
+              {paginatedPlans.length === 0 ? (
+                <EmptyState
+                  icon={HandCoins}
+                  title={
+                    paymentPlans.length === 0
+                      ? "No payment plans yet"
+                      : "No active payment plans"
+                  }
+                  description={
+                    paymentPlans.length === 0
+                      ? "Installment plans from customer orders will appear here once the backend returns them."
+                      : "All available plans are completed. New active or overdue plans will appear here."
+                  }
                 />
-              ))}
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                total={visiblePlans.length}
-                perPage={perPage}
-                onPage={setCurrentPage}
-                onPerPage={updatePerPage}
-              />
+              ) : (
+                paginatedPlans.map((plan) => (
+                  <PaymentPlanCard
+                    key={plan.id}
+                    plan={plan}
+                    onRecord={setRecordPlan}
+                    onRemind={setReminderPlan}
+                  />
+                ))
+              )}
+              {visiblePlans.length > 0 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  total={visiblePlans.length}
+                  perPage={perPage}
+                  onPage={setCurrentPage}
+                  onPerPage={updatePerPage}
+                />
+              )}
             </section>
           ) : (
             <CollectionsPanel />

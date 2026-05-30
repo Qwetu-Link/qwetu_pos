@@ -1,3 +1,5 @@
+import EmptyState from "@/components/EmptyState";
+import { Activity } from "lucide-react";
 import type { DashboardActivity, DashboardTone } from "@/data/dashboard-data";
 
 const dotStyles: Record<DashboardTone, string> = {
@@ -17,6 +19,16 @@ export default function DashboardActivityPanel({
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-900">Live Activity</h2>
+      {activities.length === 0 ? (
+        <div className="mt-4">
+          <EmptyState
+            compact
+            icon={Activity}
+            title="No activity yet"
+            description="Recent order, stock, and collection events will appear here."
+          />
+        </div>
+      ) : (
       <div className="mt-4 space-y-4">
         {activities.map((activity) => (
           <div key={`${activity.title}-${activity.time}`} className="flex gap-3">
@@ -33,6 +45,7 @@ export default function DashboardActivityPanel({
           </div>
         ))}
       </div>
+      )}
     </section>
   );
 }

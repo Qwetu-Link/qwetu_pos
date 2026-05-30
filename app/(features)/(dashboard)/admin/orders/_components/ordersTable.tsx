@@ -7,6 +7,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import EmptyState from "@/components/EmptyState";
 import { Eye, Inbox } from "lucide-react";
 import StatusBadge from "./statusBadge";
 import { Order } from "@/types/orderTypes";
@@ -94,10 +95,12 @@ export default function OrdersTable({
 
   if (orders.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400 shadow-sm">
-        <Inbox className="mx-auto mb-2 h-8 w-8" />
-        <p>No orders match your search</p>
-      </div>
+      <EmptyState
+        compact
+        icon={Inbox}
+        title="No orders to show"
+        description="There are no orders in this view. Try clearing filters, changing the search, or creating a new order."
+      />
     );
   }
 

@@ -1,4 +1,5 @@
 import { LayoutDashboard } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
 import type { RoleDashboardData } from "@/data/dashboard-data";
 import DashboardActions from "./DashboardActions";
 import DashboardActivityPanel from "./DashboardActivityPanel";
@@ -25,11 +26,19 @@ export default function RoleDashboard({
         </div>
       </header>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {dashboard.metrics.map((metric) => (
-          <DashboardMetricCard key={metric.label} metric={metric} />
-        ))}
-      </section>
+      {dashboard.metrics.length === 0 ? (
+        <EmptyState
+          icon={LayoutDashboard}
+          title="No dashboard metrics"
+          description="Role metrics will appear here once the backend returns dashboard summary data."
+        />
+      ) : (
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {dashboard.metrics.map((metric) => (
+            <DashboardMetricCard key={metric.label} metric={metric} />
+          ))}
+        </section>
+      )}
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
         <div className="space-y-6">

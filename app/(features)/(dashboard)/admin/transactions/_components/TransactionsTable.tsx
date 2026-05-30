@@ -1,4 +1,5 @@
-import { Banknote } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
+import { Banknote, ReceiptText } from "lucide-react";
 import {
   formatCurrency,
   formatDate,
@@ -21,6 +22,17 @@ export default function TransactionsTable({
 }: {
   transactions: Transaction[];
 }) {
+  if (transactions.length === 0) {
+    return (
+      <EmptyState
+        compact
+        icon={ReceiptText}
+        title="No transactions yet"
+        description="Sales, refunds, and installment payments will appear here once the backend returns transaction records."
+      />
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[820px] text-left text-sm">

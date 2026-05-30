@@ -169,13 +169,15 @@ export default function OrdersPage() {
           </div>
         </div>
         <OrdersTable orders={paginatedOrders} viewMode={viewMode} />
-        <Pagination
-          currentPage={safeCurrentPage}
-          totalItems={filteredOrders.length}
-          perPage={perPage}
-          onPageChange={setCurrentPage}
-          onPerPageChange={handlePerPageChange}
-        />
+        {filteredOrders.length > 0 && (
+          <Pagination
+            currentPage={safeCurrentPage}
+            totalItems={filteredOrders.length}
+            perPage={perPage}
+            onPageChange={setCurrentPage}
+            onPerPageChange={handlePerPageChange}
+          />
+        )}
       </div>
 
       {isAddModalOpen && (

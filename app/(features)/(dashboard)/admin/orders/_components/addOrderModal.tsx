@@ -357,12 +357,22 @@ export default function AddOrderModal({
                     className="w-full rounded-xl text-black placeholder:text-slate-400 transition border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="">Select product variant...</option>
+                    {DEMO_VARIANTS.length === 0 ? (
+                      <option value="" disabled>
+                        No variants available
+                      </option>
+                    ) : null}
                     {DEMO_VARIANTS.map((variant) => (
                       <option key={variant.variantId} value={variant.variantId}>
                         {variant.name} - {formatCurrency(variant.sellPrice)}
                       </option>
                     ))}
                   </select>
+                  {DEMO_VARIANTS.length === 0 ? (
+                    <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                      Add product variants before creating order line items.
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">

@@ -3,8 +3,21 @@ import {
   formatCurrency,
   revenueData,
 } from "@/lib/pos-details-data";
+import EmptyState from "@/components/EmptyState";
+import { BarChart3 } from "lucide-react";
 
 export default function RevenueTrendChart() {
+  if (revenueData.length === 0) {
+    return (
+      <EmptyState
+        compact
+        icon={BarChart3}
+        title="No revenue data"
+        description="Revenue trends will appear here after sales and installment collections are available."
+      />
+    );
+  }
+
   const maxRevenue = Math.max(
     ...revenueData.map((item) => item.fullPayments + item.installments),
   );
@@ -27,9 +40,9 @@ export default function RevenueTrendChart() {
           <div className="relative flex h-80 items-end gap-4">
             {revenueData.map((item) => {
               const total = item.fullPayments + item.installments;
-              const totalHeight = Math.max(8, (total / maxRevenue) * 100);
-              const installmentShare = (item.installments / total) * 100;
-              const fullShare = (item.fullPayments / total) * 100;
+              const totalHeight = maxRevenue ? Math.max(8, (total / maxRevenue) * 100) : 8;
+              const installmentShare = total ? (item.installments / total) * 100 : 0;
+              const fullShare = total ? (item.fullPayments / total) * 100 : 0;
 
               return (
                 <div

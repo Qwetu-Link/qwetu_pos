@@ -348,7 +348,10 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
                   {variants.length === 0 ? (
                     <div className="text-center py-8 text-gray-400">
                       <Puzzle size={32} className="mx-auto mb-2" />
-                      <p>No variants yet. Click `Add Variant` to create one.</p>
+                      <p>No variants yet.</p>
+                      <p className="mt-1 text-sm">
+                        Add at least one size, color, and SKU before saving this product.
+                      </p>
                     </div>
                   ) : (
                     variants.map((v, idx) => (

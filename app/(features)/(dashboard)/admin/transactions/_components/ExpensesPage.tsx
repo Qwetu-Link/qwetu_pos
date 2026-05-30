@@ -137,14 +137,16 @@ export default function ExpensesPage() {
 
             <ExpensesTable expenses={paginatedExpenses} />
           </section>
-          <Pagination
-            currentPage={visiblePage}
-            totalPages={totalPages}
-            total={expenseItems.length}
-            perPage={perPage}
-            onPage={setCurrentPage}
-            onPerPage={updatePerPage}
-          />
+          {expenseItems.length > 0 && (
+            <Pagination
+              currentPage={visiblePage}
+              totalPages={totalPages}
+              total={expenseItems.length}
+              perPage={perPage}
+              onPage={setCurrentPage}
+              onPerPage={updatePerPage}
+            />
+          )}
         </div>
       </main>
       <AddExpenseModal

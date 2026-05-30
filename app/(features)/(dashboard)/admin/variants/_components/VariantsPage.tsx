@@ -11,6 +11,7 @@ import {
   PackageOpen,
 } from "lucide-react";
 import { dummyProducts } from "@/data/products";
+import EmptyState from "@/components/EmptyState";
 import { computeStats, flattenVariants } from "@/lib/variant-utils";
 import StatCard from "./StatCard";
 import VariantCard from "./VariantCard";
@@ -150,12 +151,19 @@ export default function ProductVariantsPage() {
         </div>
 
         {paginated.length === 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 py-16 flex flex-col items-center gap-3 text-slate-400 shadow-sm">
-            <PackageOpen size={48} strokeWidth={1.2} />
-            <p className="text-lg font-medium">
-              No variants match your search.
-            </p>
-          </div>
+          <EmptyState
+            icon={PackageOpen}
+            title={
+              inventoryItems.length === 0
+                ? "No product variants yet"
+                : "No variants match your search"
+            }
+            description={
+              inventoryItems.length === 0
+                ? "Add product variants with size, color, and SKU details so they can appear in stock and sales flows."
+                : "Try searching by a different product name or SKU."
+            }
+          />
         ) : (
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
             {paginated.map((item) => (

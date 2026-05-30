@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
+import { ArrowRight, ListChecks } from "lucide-react";
 import type { DashboardAction } from "@/data/dashboard-data";
 
 export default function DashboardActions({
@@ -10,6 +11,16 @@ export default function DashboardActions({
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-900">Quick Actions</h2>
+      {actions.length === 0 ? (
+        <div className="mt-4">
+          <EmptyState
+            compact
+            icon={ListChecks}
+            title="No quick actions"
+            description="Role-specific shortcuts will appear here once configured."
+          />
+        </div>
+      ) : (
       <div className="mt-4 space-y-3">
         {actions.map((action) => (
           <Link
@@ -29,6 +40,7 @@ export default function DashboardActions({
           </Link>
         ))}
       </div>
+      )}
     </section>
   );
 }

@@ -18,6 +18,7 @@ import {
   previousRevenueData,
   revenueData,
 } from "@/lib/pos-details-data";
+import EmptyState from "@/components/EmptyState";
 import CategoryRingChart from "./CategoryRingChart";
 import CollectionTrendChart from "./CollectionTrendChart";
 import InfoRow from "./InfoRow";
@@ -58,7 +59,7 @@ export default function AnalyticsEngineDetails() {
   const retentionRate = activeCustomers
     ? (returningCustomers / activeCustomers) * 100
     : 0;
-  const customerLtv = totalRevenue / activeCustomers;
+  const customerLtv = activeCustomers ? totalRevenue / activeCustomers : 0;
   // const topPaymentMethod = paymentMethodData[0];
 
   return (
@@ -151,12 +152,20 @@ export default function AnalyticsEngineDetails() {
             </h2>
             <p className="text-sm text-slate-500">Revenue by customer tier</p>
           </div>
+          {customerSegmentData.length === 0 ? (
+            <EmptyState
+              compact
+              icon={Users}
+              title="No customer segment data"
+              description="Customer tier performance will appear once backend customer analytics are available."
+            />
+          ) : (
           <div className="space-y-4">
             {customerSegmentData.map((segment) => {
               const maxRevenue = Math.max(
                 ...customerSegmentData.map((item) => item.revenue),
               );
-              const width = (segment.revenue / maxRevenue) * 100;
+              const width = maxRevenue ? (segment.revenue / maxRevenue) * 100 : 0;
 
               return (
                 <div
@@ -186,6 +195,7 @@ export default function AnalyticsEngineDetails() {
               );
             })}
           </div>
+          )}
         </SectionCard>
       </div>
 
@@ -198,6 +208,14 @@ export default function AnalyticsEngineDetails() {
             Transaction volume and amounts
           </p>
         </div>
+        {paymentMethodData.length === 0 ? (
+          <EmptyState
+            compact
+            icon={CreditCard}
+            title="No payment method data"
+            description="Tender split and transaction volume will appear once payments are available."
+          />
+        ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {paymentMethodData.map((method) => (
             <div
@@ -223,6 +241,7 @@ export default function AnalyticsEngineDetails() {
             </div>
           ))}
         </div>
+        )}
       </SectionCard>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
