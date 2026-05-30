@@ -103,7 +103,8 @@ export default function OverviewPage() {
               POS, inventory, customers, and installments for retail teams
             </p>
             <h1 className="mt-6 max-w-4xl text-5xl font-black leading-tight tracking-normal text-slate-950 sm:text-6xl">
-              A clearer way to run your electronics shop every day.
+              <Store className="mb-3 h-10 w-10 text-emerald-600" />
+              A clearer way to run your clothing store every day.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
               QwetuLinks brings the counter, store room, customer ledger, and

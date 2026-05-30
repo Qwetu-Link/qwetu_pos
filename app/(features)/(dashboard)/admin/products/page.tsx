@@ -1,11 +1,12 @@
 
+import type { Metadata } from "next";
 import ProductCatalog from "./_components/ProductCatalog";
 
-export const metadata = {
-  title: "QwetuLinks | Products Catalog",
-  description: "Manage your inventory, products, and pricing",
+export const metadata: Metadata = {
+  title: "Product Catalog | QwetuLinks Clothing POS",
+  description: "Manage apparel products, clothing categories, images, variants, and pricing.",
 };
 
 export default function ProductPage() {
-  return <ProductCatalog />
+  return <ProductCatalog />;
 }

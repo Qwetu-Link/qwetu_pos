@@ -28,6 +28,4 @@ export interface InventoryStats {
   critical: number;
   reorder: number;
 }
-
-export const LOCATIONS = ["Main Store", "Warehouse A", "Outlet"] as const;
-export type LocationName = (typeof LOCATIONS)[number];
+export type LocationName = "Main Store" | "Warehouse A" | "Outlet";

@@ -15,14 +15,13 @@ import { initialOrders } from "../../../../../../data/orderData";
 import OrderFilters from "./orderFilters";
 import Pagination from "@/components/Pagination";
 import OrderStatsCards from "./orderStatsCards";
-import { Order, OrderStatus } from "../../../../../../types/orderTypes";
+import { OrderStatus } from "@/data/order-options";
 import OrdersTable, { OrderViewMode } from "./ordersTable";
-import type { Customer } from "@/types/customer";
-import { DEMO_CUSTOMERS } from "@/lib/customerUtils";
+import { DEMO_CUSTOMERS } from "@/data/customers";
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
-  const [customers, setCustomers] = useState<Customer[]>(DEMO_CUSTOMERS);
+  const orders = initialOrders;
+  const customers = DEMO_CUSTOMERS;
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -94,7 +93,7 @@ export default function OrdersPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="flex items-center gap-2 text-3xl font-bold text-slate-800">
+            <h1 className="flex items-center gap-2 text-3xl font-extrabold text-black">
               <ReceiptText className="h-8 w-8 text-emerald-600" />
               Order Pipeline
             </h1>
@@ -181,14 +180,9 @@ export default function OrdersPage() {
 
       {isAddModalOpen && (
         <AddOrderModal
-          orders={orders}
           customers={customers}
-          onAdd={(order) => {
-            setOrders((currentOrders) => [order, ...currentOrders]);
+          onAdd={() => {
             setIsAddModalOpen(false);
-          }}
-          onAddCustomer={(customer) => {
-            setCustomers((currentCustomers) => [customer, ...currentCustomers]);
           }}
           onClose={() => setIsAddModalOpen(false)}
         />

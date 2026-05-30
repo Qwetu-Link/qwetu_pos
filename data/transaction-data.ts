@@ -1,31 +1,13 @@
+import type { Expense, Transaction } from "@/types/transactions";
+
 export { formatCurrency, formatDate } from "@/lib/formatters";
-
-export type TransactionStatus = "completed" | "pending" | "failed";
-export type TransactionType = "sale" | "refund" | "installment" | "expense";
-export type ExpenseStatus = "approved" | "pending" | "rejected";
-
-export interface Transaction {
-  id: string;
-  date: string;
-  customer: string;
-  customerPhone: string;
-  type: TransactionType;
-  method: string;
-  reference: string;
-  amount: number;
-  status: TransactionStatus;
-}
-
-export interface Expense {
-  id: string;
-  date: string;
-  category: string;
-  vendor: string;
-  method: string;
-  amount: number;
-  status: ExpenseStatus;
-  note: string;
-}
+export type {
+  Expense,
+  ExpenseStatus,
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+} from "@/types/transactions";
 
 export const transactions: Transaction[] = [
   {
@@ -101,11 +83,11 @@ export const expenses: Expense[] = [
     id: "EXP-501",
     date: "2026-05-29",
     category: "Stock purchase",
-    vendor: "Nairobi Electronics",
+    vendor: "Nairobi Garment Suppliers",
     method: "Bank Transfer",
     amount: 86000,
     status: "approved",
-    note: "Samsung accessories restock",
+    note: "Denim jackets and leather belts restock",
   },
   {
     id: "EXP-502",
@@ -135,16 +117,16 @@ export const expenses: Expense[] = [
     method: "Card",
     amount: 15000,
     status: "approved",
-    note: "May phone promotion campaign",
+    note: "May footwear promotion campaign",
   },
   {
     id: "EXP-505",
     date: "2026-05-25",
     category: "Repairs",
-    vendor: "TechFix Ltd",
+    vendor: "TailorFix Ltd",
     method: "Cash",
     amount: 7300,
     status: "rejected",
-    note: "Duplicate repair claim",
+    note: "Duplicate alteration claim",
   },
 ];

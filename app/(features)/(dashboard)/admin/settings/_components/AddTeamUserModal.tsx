@@ -17,10 +17,6 @@ const teamUserSchema = z.object({
 
 type TeamUserFormValues = z.infer<typeof teamUserSchema>;
 
-function createTeamUserId() {
-  return `U-${Date.now().toString().slice(-6)}`;
-}
-
 export default function AddTeamUserModal({
   isOpen,
   onClose,
@@ -49,13 +45,8 @@ export default function AddTeamUserModal({
   }
 
   function submitUser(values: TeamUserFormValues) {
-    onAddUser({
-      id: createTeamUserId(),
-      name: values.name,
-      email: values.email,
-      role: values.role,
-      status: values.status,
-    });
+    void values;
+    void onAddUser;
     onClose();
   }
 

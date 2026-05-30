@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import LipaMdogoDetailPage from "../_components/LipaMdogoDetailPage";
 import { paymentPlans } from "@/data/lipa-mdogo-data";
 
@@ -14,14 +15,15 @@ export function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const plan = paymentPlans.find((item) => item.id === id);
 
   return {
     title: plan
-      ? `${plan.invoiceNo} | Lipa Mdogo Details`
-      : "Lipa Mdogo Details",
+      ? `${plan.invoiceNo} | Lipa Mdogo Details | QwetuLinks Clothing POS`
+      : "Lipa Mdogo Details | QwetuLinks Clothing POS",
+    description: "View apparel installment schedule, receipts, and remaining customer balance.",
   };
 }
 

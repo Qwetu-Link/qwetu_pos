@@ -1,14 +1,9 @@
 import type {
   InventoryStatus,
   Product,
-  ProductVariant,
+  InventoryItem,
   VariantInventory,
 } from "@/types/catalog";
-
-export type InventoryItem = ProductVariant & {
-  productId: string;
-  productName: string;
-};
 
 export function getStatus(
   totalStock: number,

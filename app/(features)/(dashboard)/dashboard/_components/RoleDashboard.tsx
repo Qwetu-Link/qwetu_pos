@@ -17,7 +17,7 @@ export default function RoleDashboard({
           <p className="text-sm font-semibold uppercase tracking-wide text-emerald-600">
             {dashboard.eyebrow}
           </p>
-          <h1 className="mt-2 flex items-center gap-3 text-3xl font-bold text-slate-900">
+          <h1 className="mt-2 flex items-center gap-3 text-3xl font-extrabold text-black">
             <LayoutDashboard className="h-8 w-8 text-emerald-600" />
             {dashboard.title}
           </h1>

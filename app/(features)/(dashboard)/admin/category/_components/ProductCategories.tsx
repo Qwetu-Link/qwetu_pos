@@ -1,13 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import type { Category, CategoryFormValues } from "@/types/categories";
+import type { Category } from "@/types/categories";
 import { dummyCategories } from "@/data/categories";
 import {
   computeCategoryStats,
-  addCategory,
-  updateCategory,
-  deleteCategory,
   filterCategories,
 } from "@/lib/category-utils";
 import CategoryStatsCards from "./CategoryStatsCards";
@@ -18,7 +15,7 @@ import Pagination from "@/components/Pagination";
 import { FolderOpen, Plus, Search } from "lucide-react";
 
 export default function ProductCategories() {
-  const [categories, setCategories] = useState<Category[]>(dummyCategories);
+  const categories = dummyCategories;
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -49,18 +46,11 @@ export default function ProductCategories() {
 
   // ---- Handlers ----
 
-  function handleSave(values: CategoryFormValues, existingId?: number) {
-    if (existingId !== undefined) {
-      setCategories((prev) => updateCategory(prev, existingId, values));
-    } else {
-      setCategories((prev) => addCategory(prev, values));
-    }
+  function handleSave() {
     setEditTarget(null);
   }
 
   function handleDeleteConfirm() {
-    if (!deleteTarget) return;
-    setCategories((prev) => deleteCategory(prev, deleteTarget.id));
     setDeleteTarget(null);
   }
 
@@ -69,8 +59,8 @@ export default function ProductCategories() {
       {/* ---- Page Header ---- */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-            <FolderOpen size={32} className="text-green-600" /> Product Categories
+          <h1 className="text-3xl font-extrabold text-black flex items-center gap-2">
+            <FolderOpen size={32} className="text-emerald-600" /> Product Categories
           </h1>
           <p className="text-gray-500 mt-1">
             Organize your products — manage categories, icons, and descriptions

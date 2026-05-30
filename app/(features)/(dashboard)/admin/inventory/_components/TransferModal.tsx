@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { ArrowLeftRight, X } from "lucide-react";
-import { LOCATIONS } from "@/types/inventory";
+import { LOCATIONS } from "@/data/inventory-locations";
 import type { InventoryItem } from "@/types/inventory";
 
 interface TransferModalProps {

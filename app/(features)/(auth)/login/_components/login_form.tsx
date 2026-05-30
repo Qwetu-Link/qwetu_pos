@@ -25,7 +25,6 @@ const VALID_PASSWORD = "admin123";
 const loginSchema = z.object({
   email: z.email("Enter a valid email address").trim(),
   password: z.string().min(1, "Password is required"),
-  rememberMe: z.boolean(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -44,7 +43,6 @@ export default function LoginForm() {
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false,
     },
   });
 
@@ -66,8 +64,6 @@ export default function LoginForm() {
     }
 
     setIsSubmitting(true);
-    const storage = values.rememberMe ? localStorage : sessionStorage;
-    storage.setItem("qwetu_user_email", values.email);
 
     window.setTimeout(() => {
       router.push("/dashboard");
@@ -89,7 +85,6 @@ export default function LoginForm() {
           icon={Mail}
           label="Email Address"
           type="email"
-          required
           {...register("email", { onChange: () => setError("") })}
           onFocus={() => setError("")}
           placeholder="admin@lipamdogo.com"
@@ -102,7 +97,6 @@ export default function LoginForm() {
           icon={LockKeyhole}
           label="Password"
           type={showPassword ? "text" : "password"}
-          required
           {...register("password", { onChange: () => setError("") })}
           onFocus={() => setError("")}
           placeholder="Password"
@@ -124,15 +118,6 @@ export default function LoginForm() {
         {errors.password ? (
           <p className="-mt-2 text-xs text-red-600">{errors.password.message}</p>
         ) : null}
-
-        <label className="flex cursor-pointer items-center text-sm text-slate-600">
-          <input
-            type="checkbox"
-            {...register("rememberMe")}
-            className="h-4 w-4 rounded border-slate-300 bg-white accent-emerald-500"
-          />
-          <span className="ml-2">Remember me</span>
-        </label>
 
         <AuthSubmitButton disabled={isSubmitting}>
           {isSubmitting ? (

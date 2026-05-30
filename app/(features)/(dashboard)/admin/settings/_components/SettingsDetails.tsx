@@ -1,8 +1,8 @@
 "use client";
 
-import { CreditCard, MessageCircle, ShieldCheck, Users } from "lucide-react";
+import { CreditCard, MessageCircle, Settings, ShieldCheck, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import { businessProfile, teamUsers } from "@/lib/pos-details-data";
 import type { TeamUser } from "@/lib/pos-details-data";
 import AddRoleModal from "./AddRoleModal";
@@ -18,30 +18,33 @@ import type { WhatsappStatus } from "./StatusBadge";
 type Profile = typeof businessProfile;
 
 export default function SettingsDetails() {
-  const [profile, setProfile] = useState<Profile>(businessProfile);
-  const [users, setUsers] = useState<TeamUser[]>(teamUsers);
+  const profile = businessProfile;
+  const users = teamUsers;
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isRoleOpen, setIsRoleOpen] = useState(false);
   const [isUserOpen, setIsUserOpen] = useState(false);
-  const isBillingActive = useBillingActive();
+  const isBillingActive = false;
   const [whatsappStatus, setWhatsappStatus] =
     useState<WhatsappStatus>("checking");
   const [pairingCode, setPairingCode] = useState("");
 
   function saveProfile(values: Profile) {
-    setProfile(values);
+    void values;
     setIsProfileOpen(false);
   }
 
   function addUser(user: TeamUser) {
-    setUsers((currentUsers) => [user, ...currentUsers]);
+    void user;
   }
 
   return (
     <div>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Settings</h1>
+          <h1 className="flex items-center gap-3 text-3xl font-extrabold text-black">
+            <Settings className="h-8 w-8 text-emerald-600" />
+            Settings
+          </h1>
           <p className="mt-1 text-slate-500">
             Manage business profile, WhatsApp, roles, and permissions
           </p>
@@ -132,28 +135,4 @@ function SettingsSummary({
       <p className="truncate font-semibold text-slate-900">{value}</p>
     </div>
   );
-}
-
-function useBillingActive() {
-  return useSyncExternalStore(
-    subscribeToBillingStorage,
-    getBillingSnapshot,
-    getServerBillingSnapshot,
-  );
-}
-
-function subscribeToBillingStorage(onStoreChange: () => void) {
-  window.addEventListener("storage", onStoreChange);
-
-  return () => {
-    window.removeEventListener("storage", onStoreChange);
-  };
-}
-
-function getBillingSnapshot() {
-  return localStorage.getItem("qwetu.billing.active") === "true";
-}
-
-function getServerBillingSnapshot() {
-  return false;
 }

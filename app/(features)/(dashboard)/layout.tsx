@@ -12,18 +12,22 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const userRole: UserRole = "Owner";
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Sidebar Shell */}
       <Sidebar
         currentTab={pathname}
+        isCollapsed={isSidebarCollapsed}
+        onCollapseChange={setIsSidebarCollapsed}
         userRole={userRole}
       />
 
-      {/* Main Fluid Render Space Container */}
-      {/* Main content */}
-      <div className="flex min-h-screen min-w-0 flex-col overflow-hidden pt-16 transition-[margin-left] duration-300 md:ml-[280px] md:pt-0">
+      <div
+        className={`flex min-h-screen min-w-0 flex-col overflow-hidden pt-16 transition-[margin-left] duration-300 md:pt-0 ${
+          isSidebarCollapsed ? "md:ml-[88px]" : "md:ml-[280px]"
+        }`}
+      >
         <main className="custom-scrollbar min-h-0 flex-1 overflow-y-auto">
           {children}
         </main>

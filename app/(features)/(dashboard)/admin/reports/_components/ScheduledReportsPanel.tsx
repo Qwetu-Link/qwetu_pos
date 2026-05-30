@@ -1,5 +1,5 @@
 import { CalendarClock, Users } from "lucide-react";
-import type { ScheduledReport } from "../../../../../../data/report-center-data";
+import type { ScheduledReport } from "@/types/reports";
 
 export default function ScheduledReportsPanel({
   reports,

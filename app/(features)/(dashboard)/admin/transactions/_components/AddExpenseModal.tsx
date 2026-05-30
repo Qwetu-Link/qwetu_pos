@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Plus, X } from "lucide-react";
-import type { Expense, ExpenseStatus } from "../../../../../../data/transaction-data";
+import type { Expense } from "@/types/transactions";
 import ExpenseField from "./ExpenseField";
 
 const expenseSchema = z.object({
@@ -18,10 +18,6 @@ const expenseSchema = z.object({
 });
 
 type ExpenseFormValues = z.infer<typeof expenseSchema>;
-
-function createExpenseId() {
-  return `EXP-${Date.now().toString().slice(-5)}`;
-}
 
 export default function AddExpenseModal({
   isOpen,
@@ -54,16 +50,8 @@ export default function AddExpenseModal({
   }
 
   function submitExpense(values: ExpenseFormValues) {
-    onAddExpense({
-      id: createExpenseId(),
-      date: values.date,
-      category: values.category,
-      vendor: values.vendor,
-      method: values.method,
-      amount: values.amount,
-      status: values.status as ExpenseStatus,
-      note: values.note,
-    });
+    void values;
+    void onAddExpense;
     onClose();
   }
 

@@ -1,5 +1,5 @@
 import { MapPin, Search } from "lucide-react";
-import { LOCATIONS } from "@/types/inventory";
+import { LOCATIONS } from "@/data/inventory-locations";
 
 interface FilterBarProps {
   search: string;

@@ -28,6 +28,11 @@ export interface ProductVariant {
   inventory: VariantInventory;
 }
 
+export type InventoryItem = ProductVariant & {
+  productId: string;
+  productName: string;
+};
+
 export type ProductCategory =
   | "Men's Clothing"
   | "Women's Clothing"

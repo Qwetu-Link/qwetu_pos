@@ -8,7 +8,7 @@ import DeleteModal from "./DeleteModal";
 import Pagination from "@/components/Pagination";
 import { CatalogFilters, Product, ProductCategory } from "@/types/catalog";
 import { dummyProducts } from "@/data/products";
-import { computeCatalogStats, exportProductsToCSV, generateProductId } from "@/lib/catalog-utils";
+import { computeCatalogStats, exportProductsToCSV } from "@/lib/catalog-utils";
 import { LucideDownload, Package, PlusIcon, Search, Tag } from "lucide-react";
 
 const CATEGORIES: ProductCategory[] = [
@@ -21,7 +21,7 @@ const CATEGORIES: ProductCategory[] = [
 ];
 
 export default function ProductCatalog() {
-  const [products, setProducts] = useState<Product[]>(dummyProducts);
+  const products = dummyProducts;
   const [filters, setFilters] = useState<CatalogFilters>({
     search: "",
     category: "all",
@@ -65,35 +65,20 @@ export default function ProductCatalog() {
     setCurrentPage(1);
   }, []);
 
-  const handleSaveProduct = useCallback(
-    (data: Omit<Product, "id">, existingId?: string) => {
-      setProducts((prev) => {
-        if (existingId) {
-          return prev.map((p) =>
-            p.id === existingId ? { ...p, ...data, id: existingId } : p
-          );
-        } else {
-          const newId = generateProductId(prev);
-          return [{ id: newId, ...data }, ...prev];
-        }
-      });
-      setEditTarget(null);
-    },
-    []
-  );
+  const handleSaveProduct = useCallback(() => {
+    setEditTarget(null);
+  }, []);
 
   const handleDeleteConfirm = useCallback(() => {
-    if (!deleteTarget) return;
-    setProducts((prev) => prev.filter((p) => p.id !== deleteTarget.id));
     setDeleteTarget(null);
-  }, [deleteTarget]);
+  }, []);
 
   return (
     <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
       {/* ---- Header ---- */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-emerald-600 flex items-center gap-2">
+          <h1 className="text-3xl font-extrabold text-black flex items-center gap-2">
             <Tag size={24} className="text-emerald-600" /> Product Catalog
           </h1>
           <p className="text-gray-500 mt-1">

@@ -11,7 +11,7 @@ import {
   PackageOpen,
 } from "lucide-react";
 import { dummyProducts } from "@/data/products";
-import { computeStats, computeVariantInventory, flattenVariants } from "@/lib/variant-utils";
+import { computeStats, flattenVariants } from "@/lib/variant-utils";
 import StatCard from "./StatCard";
 import VariantCard from "./VariantCard";
 import Pagination from "@/components/Pagination";
@@ -20,7 +20,7 @@ import DeleteModal from "./DeleteModal";
 
 
 export default function ProductVariantsPage() {
-  const [products, setProducts] = useState(dummyProducts);
+  const products = dummyProducts;
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -77,59 +77,22 @@ export default function ProductVariantsPage() {
       sellPrice: number;
       reorderPoint: number;
     }) => {
-      setProducts((prev) =>
-        prev.map((product) => {
-          if (product.id !== editProductId) return product;
-
-          return {
-            ...product,
-            variants: product.variants.map((variant) => {
-              if (variant.sku !== editSku) return variant;
-
-              const updatedInventory = computeVariantInventory({
-                ...variant.inventory,
-                reorderPoint: data.reorderPoint,
-              });
-
-              return {
-                ...variant,
-                color: data.color,
-                size: data.size,
-                buyPrice: data.buyPrice,
-                sellPrice: data.sellPrice,
-                inventory: updatedInventory,
-              };
-            }),
-          };
-        })
-      );
-
+      void data;
       setEditSku(null);
       setEditProductId(null);
     },
-    [editProductId, editSku]
+    []
   );
 
   const handleConfirmDelete = useCallback(() => {
-    if (!deleteSku) return;
-
-    setProducts((prev) =>
-      prev.map((product) => ({
-        ...product,
-        variants: product.variants.filter(
-          (variant) => variant.sku !== deleteSku
-        ),
-      }))
-    );
-
     setDeleteSku(null);
-  }, [deleteSku]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-4 md:p-6 antialiased">
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-800 flex items-center gap-2">
+          <h1 className="text-3xl font-extrabold text-black flex items-center gap-2">
             <Boxes size={28} className="text-emerald-600" />
             Product Variants
           </h1>

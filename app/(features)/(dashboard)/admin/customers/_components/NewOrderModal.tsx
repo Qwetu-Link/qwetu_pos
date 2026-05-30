@@ -6,7 +6,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { X, ShoppingCart, Plus, Trash2, Tag, Percent, Calculator, PackageSearch } from "lucide-react";
 import type { Customer, OrderFormData, LineItem, PaymentType, OrderStatus } from "@/types/customer";
-import { DEMO_VARIANTS } from "@/lib/customerUtils";
+import { DEMO_VARIANTS } from "@/data/customers";
 
 interface NewOrderModalProps {
   customer: Customer;

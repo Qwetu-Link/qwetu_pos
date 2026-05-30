@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Info, SlidersHorizontal, X } from "lucide-react";
-import { LOCATIONS } from "@/types/inventory";
+import { LOCATIONS } from "@/data/inventory-locations";
 import type { InventoryItem } from "@/types/inventory";
 
 interface AdjustModalProps {

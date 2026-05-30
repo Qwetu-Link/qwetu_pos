@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import { OrderStatus, statusOptions } from "../../../../../../types/orderTypes";
+import { OrderStatus, statusOptions } from "@/data/order-options";
 
 export default function OrderFilters({
   searchTerm,

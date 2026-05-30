@@ -7,21 +7,6 @@ import type {
 } from "@/types/catalog";
 import { formatCurrency } from "@/lib/formatters";
 
-// ---- ID generators ----
-
-export function generateProductId(products: Product[]): string {
-  if (products.length === 0) return "PRD-0001";
-  const maxNum = products.reduce((max, p) => {
-    const num = parseInt(p.id.replace(/\D/g, "")) || 0;
-    return Math.max(max, num);
-  }, 0);
-  return `PRD-${String(maxNum + 1).padStart(4, "0")}`;
-}
-
-export function generateVariantId(): string {
-  return `var_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-}
-
 // ---- SKU auto-generation ----
 
 export function autoGenerateSku(
@@ -94,9 +79,10 @@ export function buildVariant(
   values: NewVariantFormValues
 ): ProductVariant {
   const { color, size, buyPrice, sellPrice, mainStock } = values;
+  const sku = autoGenerateSku(productName, color, size);
   return {
-    id: generateVariantId(),
-    sku: autoGenerateSku(productName, color, size),
+    id: `draft-${sku.toLowerCase()}`,
+    sku,
     color,
     size,
     buyPrice,

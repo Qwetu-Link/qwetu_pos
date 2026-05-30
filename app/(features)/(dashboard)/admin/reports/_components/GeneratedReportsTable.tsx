@@ -1,5 +1,5 @@
 import { Download } from "lucide-react";
-import type { GeneratedReport } from "../../../../../../data/report-center-data";
+import type { GeneratedReport } from "@/types/reports";
 import ReportStatusBadge from "./ReportStatusBadge";
 
 export default function GeneratedReportsTable({

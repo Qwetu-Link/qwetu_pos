@@ -1,5 +1,5 @@
 import { Download, FileText, Play } from "lucide-react";
-import type { ReportTemplate } from "../../../../../../data/report-center-data";
+import type { ReportTemplate } from "@/types/reports";
 
 export default function ReportTemplateCard({
   report,

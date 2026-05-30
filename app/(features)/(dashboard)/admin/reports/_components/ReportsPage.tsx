@@ -18,7 +18,7 @@ import {
   type GeneratedReport,
   type ReportStatus,
   type ReportTemplate,
-} from "../../../../../../data/report-center-data";
+} from "@/data/report-center-data";
 import GeneratedReportsTable from "./GeneratedReportsTable";
 import ReportMetricCard from "./ReportMetricCard";
 import ReportTemplateCard from "./ReportTemplateCard";
@@ -54,7 +54,7 @@ export default function ReportsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState<"all" | ReportStatus>("all");
-  const [reports, setReports] = useState<GeneratedReport[]>(generatedReports);
+  const reports = generatedReports;
 
   const filteredTemplates = useMemo(() => {
     if (categoryFilter === "All") {
@@ -87,22 +87,7 @@ export default function ReportsPage() {
   }
 
   function runReport(report: ReportTemplate) {
-    const nextReport: GeneratedReport = {
-      id: `RPT-${2402 + reports.length}`,
-      title: report.title,
-      period: "Current period",
-      createdAt: new Date().toLocaleString("en-KE", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      size: "Pending",
-      status: "processing",
-    };
-
-    setReports((currentReports) => [nextReport, ...currentReports]);
+    void report;
   }
 
   function downloadGeneratedReport(report: GeneratedReport) {
@@ -151,7 +136,7 @@ export default function ReportsPage() {
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
       <header className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div>
-          <h1 className="flex items-center gap-3 text-3xl font-bold text-slate-900">
+          <h1 className="flex items-center gap-3 text-3xl font-extrabold text-black">
             <FileText className="h-8 w-8 text-emerald-600" />
             Reports Center
           </h1>

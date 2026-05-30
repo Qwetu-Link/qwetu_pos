@@ -78,7 +78,7 @@ export default function LipaMdogoPage() {
         <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="flex items-center gap-3 text-3xl font-bold text-slate-800">
+              <h1 className="flex items-center gap-3 text-3xl font-extrabold text-black">
                 <HandCoins className="h-8 w-8 text-emerald-600" />
                 Lipa Mdogo Core
               </h1>

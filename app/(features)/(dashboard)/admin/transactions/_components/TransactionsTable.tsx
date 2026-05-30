@@ -2,8 +2,8 @@ import { Banknote } from "lucide-react";
 import {
   formatCurrency,
   formatDate,
-} from "../../../../../../data/transaction-data";
-import type { Transaction } from "../../../../../../data/transaction-data";
+} from "@/data/transaction-data";
+import type { Transaction } from "@/types/transactions";
 import TransactionStatusBadge from "./TransactionStatusBadge";
 
 function getInitials(name: string) {

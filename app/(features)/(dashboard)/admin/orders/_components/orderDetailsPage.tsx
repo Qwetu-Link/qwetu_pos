@@ -23,7 +23,7 @@ import {
 import { initialOrders } from "@/data/orderData";
 import { findOrderById, formatCurrency, formatDate } from "@/lib/orderUtils";
 import type { Order, OrderStatus } from "@/types/customer";
-import { ORDER_STATUS_CONFIG } from "@/types/customer";
+import { ORDER_STATUS_CONFIG } from "@/data/customer-config";
 
 const statusOptions: OrderStatus[] = [
   "pending",
@@ -161,7 +161,7 @@ export default function OrderDetailsPage() {
           <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-teal-50 px-5 py-5 md:px-6">
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
               <div>
-                <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-800">
+                <h1 className="flex items-center gap-2 text-2xl font-extrabold text-black">
                   <Receipt className="h-7 w-7 text-emerald-600" />
                   Order Details
                 </h1>

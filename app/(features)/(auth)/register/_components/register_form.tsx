@@ -63,7 +63,6 @@ export default function RegisterForm() {
               icon={Building2}
               label="Business"
               type="text"
-              required
               placeholder="Qwetu Links"
               {...register("business")}
             />
@@ -76,7 +75,6 @@ export default function RegisterForm() {
               icon={User}
               label="Full Name"
               type="text"
-              required
               placeholder="Mary Wanjiku"
               {...register("fullName")}
             />
@@ -92,7 +90,6 @@ export default function RegisterForm() {
               icon={Mail}
               label="Email"
               type="email"
-              required
               placeholder="owner@qwetulinks.co.ke"
               {...register("email")}
             />
@@ -105,7 +102,6 @@ export default function RegisterForm() {
               icon={Phone}
               label="Phone"
               type="tel"
-              required
               placeholder="+254 712 345 678"
               {...register("phone")}
             />
@@ -119,7 +115,6 @@ export default function RegisterForm() {
           icon={LockKeyhole}
           label="Password"
           type="password"
-          required
           placeholder="Create password"
           {...register("password")}
         />

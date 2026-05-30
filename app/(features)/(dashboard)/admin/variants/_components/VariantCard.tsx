@@ -1,6 +1,7 @@
 import { Package, Pencil, Trash2 } from "lucide-react";
 import StatusBadge from "./StatusBadge";
-import { getStatus, type InventoryItem } from "@/lib/variant-utils";
+import { getStatus } from "@/lib/variant-utils";
+import type { InventoryItem } from "@/types/catalog";
 
 type Props = {
   item: InventoryItem;

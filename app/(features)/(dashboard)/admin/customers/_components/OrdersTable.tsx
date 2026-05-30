@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Eye, ShoppingBag } from "lucide-react";
 import type { Order } from "@/types/customer";
-import { ORDER_STATUS_CONFIG } from "@/types/customer";
+import { ORDER_STATUS_CONFIG } from "@/data/customer-config";
 
 interface OrdersTableProps {
   orders: Order[];

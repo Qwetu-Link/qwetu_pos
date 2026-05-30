@@ -97,7 +97,6 @@ export default function BillingSetupPage() {
       return;
     }
 
-    localStorage.setItem("qwetu.billing.active", "true");
     setSaved(true);
     router.push("/admin/settings");
   }
@@ -114,7 +113,7 @@ export default function BillingSetupPage() {
               <ArrowLeft className="h-4 w-4" />
               Back to Settings
             </Link>
-            <h1 className="flex items-center gap-3 text-3xl font-bold text-slate-800">
+            <h1 className="flex items-center gap-3 text-3xl font-extrabold text-black">
               <CreditCard className="h-8 w-8 text-amber-600" />
               Configure Billing
             </h1>

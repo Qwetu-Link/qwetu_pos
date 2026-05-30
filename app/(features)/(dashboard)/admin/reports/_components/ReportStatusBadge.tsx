@@ -1,4 +1,4 @@
-import type { ReportStatus } from "../../../../../../data/report-center-data";
+import type { ReportStatus } from "@/types/reports";
 
 const statusStyles: Record<ReportStatus, string> = {
   ready: "bg-emerald-50 text-emerald-700 ring-emerald-200",

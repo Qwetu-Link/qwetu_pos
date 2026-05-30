@@ -1,8 +1,8 @@
 import {
   formatCurrency,
   formatDate,
-} from "../../../../../../data/transaction-data";
-import type { Expense } from "../../../../../../data/transaction-data";
+} from "@/data/transaction-data";
+import type { Expense } from "@/types/transactions";
 import ExpenseStatusBadge from "./ExpenseStatusBadge";
 
 export default function ExpensesTable({ expenses }: { expenses: Expense[] }) {

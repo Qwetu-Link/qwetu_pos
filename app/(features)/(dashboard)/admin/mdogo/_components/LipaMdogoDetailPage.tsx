@@ -36,13 +36,19 @@ export default function LipaMdogoDetailPage({ plan }: { plan: PaymentPlan }) {
     <main className="min-h-screen bg-[#f9f7f4] text-[#1a1f2e]">
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6">
         <div className="no-print flex flex-wrap items-center justify-between gap-3">
-          <Link
-            href="/admin/mdogo"
-            className="inline-flex items-center gap-2 rounded-full bg-[#f0ede8] px-4 py-2 text-sm font-medium text-[#1a1f2e] transition hover:bg-[#e5e0d8]"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Link>
+          <div>
+            <Link
+              href="/admin/mdogo"
+              className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#f0ede8] px-4 py-2 text-sm font-medium text-[#1a1f2e] transition hover:bg-[#e5e0d8]"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Link>
+            <h1 className="flex items-center gap-3 text-3xl font-extrabold text-black">
+              <ReceiptText className="h-8 w-8 text-amber-600" />
+              Lipa Mdogo Details
+            </h1>
+          </div>
           <button
             type="button"
             onClick={() => window.print()}
@@ -61,9 +67,9 @@ export default function LipaMdogoDetailPage({ plan }: { plan: PaymentPlan }) {
                   <div className="text-[11px] uppercase tracking-[0.1em] opacity-70">
                     Lipa Mdogo
                   </div>
-                  <h1 className="text-2xl font-extrabold tracking-tight md:text-3xl">
+                  <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">
                     INVOICE
-                  </h1>
+                  </h2>
                   <div className="mt-1 font-mono text-sm opacity-85">
                     {plan.invoiceNo}
                   </div>

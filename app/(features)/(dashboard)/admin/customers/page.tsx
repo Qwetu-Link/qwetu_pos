@@ -1,8 +1,9 @@
+import type { Metadata } from "next";
 import { CustomerManagement } from "./_components/CustomerManagement";
 
-export const metadata = {
-  title: "QwetuLinks | Customer Management",
-  description: "Manage customers, track payment scores and loyalty",
+export const metadata: Metadata = {
+  title: "Customers | QwetuLinks Clothing POS",
+  description: "Manage clothing store customers, segments, balances, and order history.",
 };
 
 export default function CustomerPage() {

@@ -14,14 +14,14 @@ import Pagination from "@/components/Pagination";
 import {
   expenses,
   formatCurrency,
-} from "../../../../../../data/transaction-data";
-import type { Expense } from "../../../../../../data/transaction-data";
+} from "@/data/transaction-data";
+import type { Expense } from "@/types/transactions";
 import AddExpenseModal from "./AddExpenseModal";
 import ExpensesTable from "./ExpensesTable";
 import TransactionStatCard from "./TransactionStatCard";
 
 export default function ExpensesPage() {
-  const [expenseItems, setExpenseItems] = useState<Expense[]>(expenses);
+  const expenseItems = expenses;
   const [isExpenseOpen, setIsExpenseOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -48,7 +48,7 @@ export default function ExpensesPage() {
   );
 
   function addExpense(expense: Expense) {
-    setExpenseItems((current) => [expense, ...current]);
+    void expense;
     setCurrentPage(1);
   }
 
@@ -70,7 +70,7 @@ export default function ExpensesPage() {
                 <ArrowLeft className="h-4 w-4" />
                 Back to Transactions
               </Link>
-              <h1 className="flex items-center gap-3 text-3xl font-bold text-slate-800">
+              <h1 className="flex items-center gap-3 text-3xl font-extrabold text-black">
                 <WalletCards className="h-8 w-8 text-emerald-600" />
                 Expenses
               </h1>

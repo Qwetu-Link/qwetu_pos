@@ -41,7 +41,7 @@ export function InventoryIntelligence() {
 
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-800 flex items-center gap-2">
+          <h1 className="text-3xl font-extrabold text-black flex items-center gap-2">
             <Boxes size={28} className="text-emerald-600" />
             Inventory Intelligence
           </h1>

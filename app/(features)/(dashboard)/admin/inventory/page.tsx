@@ -1,8 +1,9 @@
+import type { Metadata } from "next";
 import { InventoryIntelligence } from "./_components/InventoryIntelligence";
 
-export const metadata = {
-  title: "QwetuLinks | Inventory Intelligence",
-  description: "Multi-location stock health and reorder management",
+export const metadata: Metadata = {
+  title: "Inventory | QwetuLinks Clothing POS",
+  description: "Monitor apparel inventory, stock movement, low-stock alerts, and transfers.",
 };
 
 export default function InventoryPage() {

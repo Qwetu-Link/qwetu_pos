@@ -13,7 +13,7 @@ import {
   ProductVariant,
 } from "@/types/catalog";
 import { buildVariant, getProductImageSrc } from "@/lib/catalog-utils";
-import { ArrowRight, Edit, Plus, Puzzle, Save, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowRight, Edit, Plus, Puzzle, Save, Trash2 } from "lucide-react";
 
 const CATEGORIES = [
   "Men's Clothing",
@@ -69,6 +69,7 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
     product ? JSON.parse(JSON.stringify(product.variants)) : [],
   );
   const [showAddVariant, setShowAddVariant] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Block background scroll
@@ -80,11 +81,17 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
   }, []);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setAlertMessage("");
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/"))
-      return alert("Please select a valid image file");
-    if (file.size > 2 * 1024 * 1024) return alert("Image must be under 2MB");
+    if (!file.type.startsWith("image/")) {
+      setAlertMessage("Please select a valid image file.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setAlertMessage("Image must be under 2MB.");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (ev) => {
       const result = ev.target?.result as string;
@@ -101,6 +108,7 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
   function handleAddVariant(values: NewVariantFormValues) {
     const variant = buildVariant(name, values);
     setVariants((prev) => [...prev, variant]);
+    setAlertMessage("");
     setShowAddVariant(false);
   }
 
@@ -109,7 +117,10 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
   }
 
   function handleSave() {
-    if (variants.length === 0) return alert("Please add at least one variant");
+    if (variants.length === 0) {
+      setAlertMessage("Please add at least one variant before saving this product.");
+      return;
+    }
     const values = getValues();
 
     onSave(
@@ -147,6 +158,13 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
           </div>
 
           <div className="p-6">
+            {alertMessage ? (
+              <div className="mb-5 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+                <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                <span>{alertMessage}</span>
+              </div>
+            ) : null}
+
             {/* Step Indicator */}
             <div className="flex items-center gap-3 mb-6">
               <div

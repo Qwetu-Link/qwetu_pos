@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "QwetuLinks | Enterprise Admin Suite",
-  description: "Manage inventory, products, and pricing for QwetuLinks.",
+  title: "QwetuLinks | Clothing Store POS",
+  description: "Manage apparel inventory, orders, customers, and Lipa Mdogo collections for QwetuLinks.",
 };
 
 

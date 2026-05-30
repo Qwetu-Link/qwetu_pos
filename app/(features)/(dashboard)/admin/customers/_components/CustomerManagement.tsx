@@ -47,7 +47,10 @@ export function CustomerManagement() {
 
         <div className="flex flex-col sm:flex-row justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-800">Customer Management</h1>
+            <h1 className="flex items-center gap-3 text-3xl font-extrabold text-black">
+              <Users2 className="h-8 w-8 text-emerald-600" />
+              Customer Management
+            </h1>
             <p className="text-slate-500 mt-1">Manage customers &amp; track payment scores</p>
           </div>
           <button

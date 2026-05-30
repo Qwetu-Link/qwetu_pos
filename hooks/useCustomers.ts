@@ -5,13 +5,12 @@ import type { Customer, CustomerFormData, Order, OrderFormData, LineItem } from 
 import { initialOrders } from "../data/orderData";
 import {
   DEMO_CUSTOMERS,
-  filterCustomers, generateCustomerId, generateOrderId,
-  getPaymentScoreFromRisk, computeOrderTotal,
+  filterCustomers, computeOrderTotal,
 } from "../lib/customerUtils";
 
 export function useCustomers() {
-  const [customers, setCustomers] = useState<Customer[]>(DEMO_CUSTOMERS);
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const customers = DEMO_CUSTOMERS;
+  const orders = initialOrders;
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -38,33 +37,19 @@ export function useCustomers() {
     setCurrentPage(Math.min(Math.max(1, page), totalPages));
   }, [totalPages]);
 
-  const addCustomer = useCallback((data: CustomerFormData): Customer => {
-    const newCustomer: Customer = {
-      id: generateCustomerId(customers),
-      name: data.name, email: data.email, phone: data.phone,
-      totalOrders: 0, totalSpent: 0, activeInstallments: 0,
-      paymentScore: getPaymentScoreFromRisk(data.riskLevel),
-      riskLevel: data.riskLevel, segment: data.segment,
-      joinedDate: new Date().toISOString().slice(0, 10),
-      lastPurchase: new Date().toISOString().slice(0, 10),
-      address: data.address,
-    };
-    setCustomers((prev) => [newCustomer, ...prev]);
-    return newCustomer;
-  }, [customers]);
+  const addCustomer = useCallback((data: CustomerFormData) => {
+    void data;
+    return null;
+  }, []);
 
-  const updateCustomer = useCallback((id: string, data: CustomerFormData): Customer | null => {
-    let updated: Customer | null = null;
-    setCustomers((prev) => prev.map((c) => {
-      if (c.id !== id) return c;
-      updated = { ...c, ...data, paymentScore: getPaymentScoreFromRisk(data.riskLevel) };
-      return updated;
-    }));
-    return updated;
+  const updateCustomer = useCallback((id: string, data: CustomerFormData) => {
+    void id;
+    void data;
+    return null;
   }, []);
 
   const deleteCustomer = useCallback((id: string) => {
-    setCustomers((prev) => prev.filter((c) => c.id !== id));
+    void id;
   }, []);
 
   const getById = useCallback((id: string) => customers.find((c) => c.id === id) ?? null, [customers]);
@@ -79,7 +64,7 @@ export function useCustomers() {
     customer: Customer,
     formData: OrderFormData,
     lineItems: LineItem[]
-  ): Order => {
+  ): Order | null => {
     const total = computeOrderTotal(lineItems);
     const amountPaid = formData.paymentType === "full"
       ? total
@@ -87,41 +72,11 @@ export function useCustomers() {
     const remainingAmount = Math.max(0, total - amountPaid);
     const paymentType = formData.paymentType === "installment" && remainingAmount > 0 ? "installment" : "full";
 
-    const newOrder: Order = {
-      id: generateOrderId(),
-      customerId: customer.id,
-      customer: customer.name,
-      email: customer.email,
-      phone: customer.phone,
-      items: lineItems.reduce((s, i) => s + i.qty, 0),
-      total,
-      amountPaid,
-      remainingAmount,
-      paymentStatus: remainingAmount > 0 ? "partial" : "paid",
-      paymentType,
-      installmentPlan: paymentType === "installment" ? formData.installmentPlan : undefined,
-      installmentStartDate: paymentType === "installment" ? formData.startDate : undefined,
-      status: formData.status,
-      createdAt: new Date().toISOString(),
-      shippingAddress: customer.address,
-      lineItems,
-    };
-
-    setOrders((prev) => [newOrder, ...prev]);
-
-    // Update customer stats
-    setCustomers((prev) => prev.map((c) => {
-      if (c.id !== customer.id) return c;
-      return {
-        ...c,
-        totalOrders: c.totalOrders + 1,
-        totalSpent: c.totalSpent + total,
-        activeInstallments: c.activeInstallments + (paymentType === "installment" ? 1 : 0),
-        lastPurchase: new Date().toISOString().slice(0, 10),
-      };
-    }));
-
-    return newOrder;
+    void total;
+    void amountPaid;
+    void remainingAmount;
+    void paymentType;
+    return null;
   }, []);
 
   return {

@@ -16,7 +16,8 @@ export default function PageUnderDevelopment({
             strokeWidth={1.5}
           />
         </div>
-        <h1 className="text-4xl font-bold text-slate-900 mb-3">
+        <h1 className="mb-3 flex items-center justify-center gap-3 text-4xl font-extrabold text-black">
+          <Construction className="h-9 w-9 text-amber-600" />
           {title} Under Development
         </h1>
         <p className="text-slate-600 text-lg mb-8 max-w-sm">

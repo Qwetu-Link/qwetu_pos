@@ -1,5 +1,5 @@
 import type { Order, OrderStatus } from "../types/orderTypes";
-import { ORDER_STATUS_CONFIG } from "../types/customer";
+import { ORDER_STATUS_CONFIG } from "@/data/customer-config";
 import { formatCurrency } from "@/lib/formatters";
 
 export const statusStyles: Record<OrderStatus, string> = {
@@ -13,14 +13,6 @@ export const statusStyles: Record<OrderStatus, string> = {
 export { formatCurrency };
 
 export const formatDate = (date: string) => new Date(date).toLocaleDateString();
-
-export function generateOrderId(orders: Order[]) {
-  const lastId = Math.max(
-    ...orders.map((order) => Number(order.id.split("-")[1])),
-    12841,
-  );
-  return `ORD-${lastId + 1}`;
-}
 
 export function findOrderById(orders: Order[], id: string) {
   return orders.find((order) => order.id.toLowerCase() === id.toLowerCase());

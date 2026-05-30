@@ -1,4 +1,3 @@
-import type { LucideIcon } from "lucide-react";
 import {
   Banknote,
   Boxes,
@@ -10,51 +9,16 @@ import {
   Users,
   WalletCards,
 } from "lucide-react";
+import type { RoleDashboardData } from "@/types/dashboard";
 
-export type DashboardTone =
-  | "emerald"
-  | "blue"
-  | "violet"
-  | "amber"
-  | "red"
-  | "slate";
-
-export interface DashboardMetric {
-  label: string;
-  value: string;
-  detail: string;
-  tone: DashboardTone;
-  icon: LucideIcon;
-}
-
-export interface DashboardAction {
-  label: string;
-  href: string;
-  detail: string;
-}
-
-export interface DashboardActivity {
-  title: string;
-  detail: string;
-  time: string;
-  tone: DashboardTone;
-}
-
-export interface DashboardBar {
-  label: string;
-  value: number;
-  caption: string;
-}
-
-export interface RoleDashboardData {
-  title: string;
-  eyebrow: string;
-  description: string;
-  metrics: DashboardMetric[];
-  actions: DashboardAction[];
-  activities: DashboardActivity[];
-  bars: DashboardBar[];
-}
+export type {
+  DashboardAction,
+  DashboardActivity,
+  DashboardBar,
+  DashboardMetric,
+  DashboardTone,
+  RoleDashboardData,
+} from "@/types/dashboard";
 
 export const dashboardData: Record<string, RoleDashboardData> = {
   owner: {
@@ -129,9 +93,9 @@ export const dashboardData: Record<string, RoleDashboardData> = {
       },
     ],
     bars: [
-      { label: "Phones", value: 82, caption: "Top sales category" },
+      { label: "Men's Clothing", value: 82, caption: "Top sales category" },
       { label: "Accessories", value: 64, caption: "Fastest moving" },
-      { label: "Laptops", value: 48, caption: "Stable demand" },
+      { label: "Footwear", value: 48, caption: "Stable demand" },
     ],
   },
   manager: {
@@ -194,7 +158,7 @@ export const dashboardData: Record<string, RoleDashboardData> = {
       },
       {
         title: "Critical stock alert",
-        detail: "Samsung A15 screen protectors are below reorder point.",
+        detail: "Classic Oxford shirts are below reorder point.",
         time: "21 min ago",
         tone: "red",
       },
@@ -419,27 +383,27 @@ export const dashboardData: Record<string, RoleDashboardData> = {
     activities: [
       {
         title: "Low stock threshold crossed",
-        detail: "iPhone chargers require reorder approval.",
+        detail: "Leather sneakers require reorder approval.",
         time: "9 min ago",
         tone: "red",
       },
       {
         title: "Stock count completed",
-        detail: "Phones category count variance is within tolerance.",
+        detail: "Men's clothing count variance is within tolerance.",
         time: "24 min ago",
         tone: "emerald",
       },
       {
         title: "Variant update",
-        detail: "Samsung A35 storage variants were refreshed.",
+        detail: "Denim jacket size variants were refreshed.",
         time: "53 min ago",
         tone: "blue",
       },
     ],
     bars: [
-      { label: "Phones", value: 69, caption: "Stock coverage" },
+      { label: "Men's Clothing", value: 69, caption: "Stock coverage" },
       { label: "Accessories", value: 42, caption: "Stock coverage" },
-      { label: "Laptops", value: 76, caption: "Stock coverage" },
+      { label: "Footwear", value: 76, caption: "Stock coverage" },
     ],
   },
 };

@@ -15,10 +15,9 @@ import {
   Trash2,
 } from "lucide-react";
 import ModalFrame from "./modalFrame";
-import { LineItem, Order, OrderStatus, PaymentType } from "../../../../../../types/orderTypes";
-import { formatCurrency, generateOrderId } from "../../../../../../lib/orderUtils";
+import { formatCurrency } from "../../../../../../lib/orderUtils";
 import type { Customer } from "@/types/customer";
-import { DEMO_VARIANTS, generateCustomerId, getPaymentScoreFromRisk } from "@/lib/customerUtils";
+import { DEMO_VARIANTS } from "@/data/customers";
 
 interface LineItemRow {
   id: number;
@@ -97,16 +96,12 @@ function FormField({
 }
 
 export default function AddOrderModal({
-  orders,
   customers,
   onAdd,
-  onAddCustomer,
   onClose,
 }: {
-  orders: Order[];
   customers: Customer[];
-  onAdd: (order: Order) => void;
-  onAddCustomer: (customer: Customer) => void;
+  onAdd: () => void;
   onClose: () => void;
 }) {
   const [lineItems, setLineItems] = useState<LineItemRow[]>([createBlankLineItem()]);
@@ -187,61 +182,8 @@ export default function AddOrderModal({
 
     if (validLineItems.length === 0) return;
 
-    const orderLineItems: LineItem[] = validLineItems.map((item) => {
-      const variant = getVariant(item.variantId);
-      const effectivePrice = getEffectivePrice(item);
-
-      return {
-        variantId: item.variantId,
-        productId: variant?.productId ?? item.variantId,
-        sku: variant?.sku ?? item.variantId,
-        name: variant?.name ?? "Selected product",
-        qty: item.qty,
-        price: effectivePrice,
-        originalPrice: item.originalPrice || effectivePrice,
-      };
-    });
-
-    const total = orderLineItems.reduce(
-      (sum, item) => sum + item.qty * item.price,
-      0,
-    );
-    const amountPaid = paymentType === "full" ? total : 0;
-    const remainingAmount = Math.max(0, total - amountPaid);
-    const createdAt = new Date().toISOString().slice(0, 10);
-    const customer =
-      selectedCustomer ??
-      createCustomerFromForm(values, customers, total, paymentType, createdAt);
-
-    if (isNewCustomer) {
-      onAddCustomer(customer);
-    }
-
-    onAdd({
-      id: generateOrderId(orders),
-      customerId: customer.id,
-      customer: customer.name,
-      email: customer.email,
-      phone: customer.phone,
-      shippingAddress: customer.address,
-      paymentType,
-      installmentPlan:
-        paymentType === "installment"
-          ? values.installmentPlan
-          : undefined,
-      installmentStartDate:
-        paymentType === "installment"
-          ? values.installmentStartDate
-          : undefined,
-      status: values.status as OrderStatus,
-      createdAt,
-      lineItems: orderLineItems,
-      items: orderLineItems.reduce((sum, item) => sum + item.qty, 0),
-      total,
-      amountPaid,
-      remainingAmount,
-      paymentStatus: remainingAmount > 0 ? "partial" : "paid",
-    });
+    void values;
+    onAdd();
   };
 
   return (
@@ -529,30 +471,4 @@ export default function AddOrderModal({
       </form>
     </ModalFrame>
   );
-}
-
-function createCustomerFromForm(
-  values: AddOrderFormValues,
-  customers: Customer[],
-  orderTotal: number,
-  paymentType: PaymentType,
-  createdAt: string,
-): Customer {
-  const activeInstallments = paymentType === "installment" ? 1 : 0;
-
-  return {
-    id: generateCustomerId(customers),
-    name: values.customer,
-    email: values.email,
-    phone: values.phone,
-    address: values.address,
-    segment: "New",
-    riskLevel: "low",
-    paymentScore: getPaymentScoreFromRisk("low"),
-    totalOrders: 1,
-    totalSpent: orderTotal,
-    activeInstallments,
-    joinedDate: createdAt,
-    lastPurchase: createdAt,
-  };
 }

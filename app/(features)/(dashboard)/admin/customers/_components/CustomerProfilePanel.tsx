@@ -1,6 +1,6 @@
 import { Mail, Phone, MapPin, ShieldCheck, TrendingUp } from "lucide-react";
 import type { Customer } from "@/types/customer";
-import { RISK_CONFIG, SEGMENT_CONFIG } from "@/types/customer";
+import { RISK_CONFIG, SEGMENT_CONFIG } from "@/data/customer-config";
 import { getInitials, getLoyaltyStatus, getLoyaltyProgress } from "@/lib/customerUtils";
 
 export function CustomerProfilePanel({ customer: c }: { customer: Customer }) {
