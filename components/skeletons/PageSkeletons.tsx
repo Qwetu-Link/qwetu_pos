@@ -52,7 +52,7 @@ export function CategoryPageSkeleton() {
       <PageHeaderSkeleton actions={1} />
       <StatCardsSkeleton count={3} />
       <FilterBarSkeleton controls={1} />
-      <TableSkeleton rows={6} columns={5} />
+      <CardGridSkeleton count={6} />
     </main>
   );
 }
