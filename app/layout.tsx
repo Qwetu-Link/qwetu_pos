@@ -3,7 +3,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "QwetuLinks | Clothing Store POS",
+  title: "QwetuLinks | Store POS",
   description: "Manage apparel inventory, orders, customers, and Lipa Mdogo collections for QwetuLinks.",
 };
 

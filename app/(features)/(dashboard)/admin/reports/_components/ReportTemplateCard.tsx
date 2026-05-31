@@ -11,16 +11,16 @@ export default function ReportTemplateCard({
   onRun: (report: ReportTemplate) => void;
 }) {
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md">
-      <div className="flex items-start justify-between gap-4">
+    <article className="flex h-full min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md">
+      <div className="flex min-w-0 items-start justify-between gap-4">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
           <FileText className="h-5 w-5" />
         </span>
-        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+        <span className="max-w-[70%] truncate rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
           {report.category}
         </span>
       </div>
-      <div className="mt-4">
+      <div className="mt-4 min-w-0">
         <h2 className="text-base font-semibold text-slate-900">
           {report.title}
         </h2>
@@ -38,9 +38,9 @@ export default function ReportTemplateCard({
           </span>
         ))}
       </div>
-      <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
-        <p className="text-xs text-slate-500">{report.lastGenerated}</p>
-        <div className="flex items-center gap-2">
+      <div className="mt-auto flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="min-w-0 text-xs text-slate-500">{report.lastGenerated}</p>
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => onDownload(report)}

@@ -11,9 +11,9 @@ export default function GeneratedReportsTable({
   onDownload: (report: GeneratedReport) => void;
 }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
-        <div>
+    <section className="min-w-0 rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex min-w-0 items-center justify-between gap-3 border-b border-slate-100 px-4 py-4 sm:px-5">
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold text-slate-900">
             Recent Reports
           </h2>
@@ -23,7 +23,7 @@ export default function GeneratedReportsTable({
         </div>
       </div>
       {reports.length === 0 ? (
-        <div className="p-5">
+        <div className="p-4 sm:p-5">
           <EmptyState
             compact
             icon={Download}
@@ -32,7 +32,7 @@ export default function GeneratedReportsTable({
           />
         </div>
       ) : (
-      <div className="overflow-x-auto">
+      <div className="min-w-0 overflow-x-auto">
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead>
             <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-500">

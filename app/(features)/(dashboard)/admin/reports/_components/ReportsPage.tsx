@@ -134,22 +134,22 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-      <header className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-        <div>
-          <h1 className="flex items-center gap-3 text-3xl font-extrabold text-black">
-            <FileText className="h-8 w-8 text-emerald-600" />
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <header className="flex min-w-0 flex-col justify-between gap-4 lg:flex-row lg:items-center">
+        <div className="min-w-0">
+          <h1 className="flex min-w-0 items-center gap-3 text-2xl font-extrabold text-black sm:text-3xl">
+            <FileText className="h-7 w-7 shrink-0 text-emerald-600 sm:h-8 sm:w-8" />
             Reports Center
           </h1>
           <p className="mt-1 text-slate-500">
             Generate, schedule, and review operational business reports.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
           <button
             type="button"
             onClick={() => setShowFilters((current) => !current)}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto"
           >
             <SlidersHorizontal className="h-4 w-4" />
             Filters
@@ -157,7 +157,7 @@ export default function ReportsPage() {
           <button
             type="button"
             onClick={exportReportPack}
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:w-auto"
           >
             <DownloadCloud className="h-4 w-4" />
             Export Pack
@@ -205,7 +205,7 @@ export default function ReportsPage() {
         </section>
       ) : null}
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] gap-4">
         {reportMetrics.map((metric, index) => (
           <ReportMetricCard
             key={metric.label}
@@ -244,7 +244,7 @@ export default function ReportsPage() {
             }
           />
         ) : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,260px),1fr))] items-stretch gap-4">
             {filteredTemplates.map((report) => (
               <ReportTemplateCard
                 key={report.title}
@@ -257,7 +257,7 @@ export default function ReportsPage() {
         )}
       </section>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(320px,360px)]">
         <GeneratedReportsTable
           reports={filteredReports}
           onDownload={downloadGeneratedReport}
