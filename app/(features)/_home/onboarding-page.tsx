@@ -12,16 +12,21 @@ export default function FinOnboardingPage() {
   };
 
   return (
-    // Clean, crisp light background matching your overview page structure
-    <div className="relative flex min-h-screen items-center justify-center bg-white px-4 py-12 text-slate-900 overflow-hidden">
-      {/* Reintroduced the subtle brand radial gradient background to keep the depth uniform */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.12),_transparent_40%),linear-gradient(135deg,_#f8fafc_0%,_#ecfdf5_40%,_#ffffff_100%)] z-0" />
-
-      <div className="relative z-10 w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl shadow-emerald-100/40 transition-all">
+    /* BACKGROUND LAYER:
+       Switched entirely to a solid block of your mid-tone blue: #1A2846 (Steel Navy)
+    */
+    <div className="relative flex min-h-screen items-center justify-center bg-[#1A2846] px-4 py-12 overflow-hidden">
+      
+      {/* SURFACE CARD:
+         Uses #0C0F1D (Midnight Blue) to sit perfectly on top of the lighter blue background,
+         with a clean border separating them.
+      */}
+      <div className="relative z-10 w-full max-w-md rounded-3xl border border-[#42688C]/30 bg-[#0C0F1D] p-8 shadow-2xl shadow-[#050724]/40 transition-all">
+        
         {/* Header Section */}
         <div className="mb-8 text-center">
-          {/* Brand Accent Icon Box - Replaced generic secondary/primary with Emerald tokens */}
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100">
+          {/* Brand Accent Icon Box - Uses the light blue color as a subtle base */}
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#42688C]/20 text-[#E2F4DF] border border-[#42688C]/40">
             <svg
               className="h-8 w-8"
               fill="none"
@@ -36,10 +41,10 @@ export default function FinOnboardingPage() {
               />
             </svg>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-slate-950">
-            Welcome to Qwetu<span className="text-emerald-600">Links</span>
+          <h1 className="text-3xl font-black tracking-tight text-white">
+            Welcome to Qwetu<span className="text-[#42688C]">Links</span>
           </h1>
-          <p className="mt-2 text-sm font-medium text-slate-500">
+          <p className="mt-2 text-sm font-medium text-[#42688C]">
             Financial Management System
           </p>
         </div>
@@ -61,15 +66,15 @@ export default function FinOnboardingPage() {
             },
           ].map((item, i) => (
             <div key={i} className="flex gap-4 items-start">
-              {/* Step badging uses the signature high-contrast light emerald / dark emerald style */}
-              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100 font-bold text-emerald-700 text-sm">
+              {/* Step badging uses the light blue background with crisp white text */}
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-[#42688C]/30 border border-[#42688C]/50 font-bold text-white text-sm">
                 {i + 1}
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 leading-snug">
+                <h3 className="font-bold text-slate-100 leading-snug">
                   {item.title}
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                <p className="text-xs text-[#42688C] mt-0.5 leading-relaxed">
                   {item.desc}
                 </p>
               </div>
@@ -77,20 +82,17 @@ export default function FinOnboardingPage() {
           ))}
         </div>
 
-        {/* Action Button - Explicitly overrides theme defaults to use your core primary emerald colors */}
+        {/* ACTION BUTTON:
+           Solid background using your Light Blue (#42688C).
+           Text flips to #050724 (or white) to ensure proper accessibility contrast.
+        */}
         <Button
           onClick={handleContinue}
           size="lg"
-          className="w-full bg-emerald-600 font-bold tracking-wide text-white transition hover:bg-emerald-700 rounded-xl py-6 shadow-sm"
+          className="w-full bg-[#42688C] font-bold tracking-wide text-[#050724] transition-all duration-200 hover:bg-[#42688C]/80 rounded-xl py-6 shadow-md active:scale-[0.99]"
         >
           Proceed to Financial Manager
         </Button>
-
-        {/* Info footer with a clean system-ready check badge alignment style */}
-        <p className="mt-6 flex items-center justify-center gap-1.5 text-center text-xs text-slate-400 tracking-normal">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-          This onboarding configuration will not appear again
-        </p>
       </div>
     </div>
   );

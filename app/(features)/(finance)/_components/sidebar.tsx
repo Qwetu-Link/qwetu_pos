@@ -5,16 +5,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
-  Users,
-  ShoppingCart,
-  DollarSign,
   TrendingUp,
-  Banknote,
   Briefcase,
   FileText,
   LogOut,
-  Users2,
   RotateCcw,
+  Coins,
+  Receipt,
+  Wallet,
+  BarChart2,
+  PieChartIcon,
+  Building2,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -32,48 +33,60 @@ export function Sidebar({ open }: SidebarProps) {
       icon: BarChart3,
       href: "/finance-erp",
     },
-    {
-      section: "sales",
-      label: "Sales",
-      icon: ShoppingCart,
+        {
+      section: "revenue",
+      label: "Revenue",
+      icon: TrendingUp,
       href: "/finance-erp/sales",
-    },
-    {
-      section: "customer",
-      label: "Customers",
-      icon: Users2,
-      href: "/finance-erp/customer-wallets",
-    },
-    {
-      section: "accounts-receivable",
-      label: "Accounts Receivable",
-      icon: Users,
-      href: "/finance-erp/accounts-receivable",
     },
     {
       section: "accounts-payable",
       label: "Accounts Payable",
-      icon: Briefcase,
+      icon: Receipt,
       href: "/finance-erp/accounts-payable",
     },
     {
-      section: "cash",
-      label: "Cash Management",
-      icon: DollarSign,
-      href: "/finance-erp/cash",
+      section: "accounts-receivable",
+      label: "Accounts Receivable",
+      icon: FileText,
+      href: "/finance-erp/accounts-receivable",
     },
     {
-      section: "mpesa",
-      label: "M-Pesa",
-      icon: Banknote,
-      href: "/finance-erp/mpesa",
+      section: "customer-wallet",
+      label: "Customers Wallet",
+      icon: Wallet,
+      href: "/finance-erp/customer-wallets",
     },
     {
-      section: "banking",
-      label: "Bank",
+      section: "salary-payroll",
+      label: "Salary & Payroll",
+      icon: Coins,
+      href: "/finance-erp/payroll",
+    },
+    {
+      section: "expense",
+      label: "Expense",
       icon: Briefcase,
-      href: "/finance-erp/banking",
+      href: "/finance-erp/expense",
     },
+    // {
+    //   section: "cash",
+    //   label: "Cash Management",
+    //   icon: DollarSign,
+    //   href: "/finance-erp/cash",
+    // },
+    // {
+    //   section: "mpesa",
+    //   label: "M-Pesa",
+    //   icon: Banknote,
+    //   href: "/finance-erp/mpesa",
+    // },
+    // {
+    //   section: "banking",
+    //   label: "Bank",
+    //   icon: Briefcase,
+    //   href: "/finance-erp/banking",
+    // },
     {
       section: "refunds",
       label: "Refunds",
@@ -87,10 +100,22 @@ export function Sidebar({ open }: SidebarProps) {
       href: "/finance-erp/reconciliation",
     },
     {
+      section: "budgeting",
+      label: "Budgeting",
+      icon: BarChart2,
+      href: "/finance-erp/budgeting",
+    },
+    {
       section: "reports",
       label: "Reports",
-      icon: FileText,
+      icon: PieChartIcon,
       href: "/finance-erp/reports",
+    },
+    {
+      section: "entity",
+      label: "Entities & Branches",
+      icon: Building2,
+      href: "/finance-erp/entity",
     },
   ];
 
@@ -102,7 +127,6 @@ export function Sidebar({ open }: SidebarProps) {
     >
       {/* Branding and Navigation Container */}
       <div className="flex flex-col flex-1 min-h-0">
-        
         {/* Logo Area matches your premium branding setup */}
         <div className="p-4 border-b border-slate-100 flex items-center gap-3 h-[77px] flex-shrink-0">
           <div className="w-11 h-11 flex-shrink-0 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 font-bold text-sm">
@@ -128,7 +152,7 @@ export function Sidebar({ open }: SidebarProps) {
               pathname === menu.href || pathname.startsWith(menu.href + "/");
 
             return (
-              <Link key={menu.section} href={menu.href} passHref >
+              <Link key={menu.section} href={menu.href} passHref>
                 <button
                   title={!open ? menu.label : undefined}
                   className={`w-full flex items-center gap-3 rounded-xl text-sm font-medium transition-all group duration-200 ${
@@ -160,14 +184,18 @@ export function Sidebar({ open }: SidebarProps) {
 
       {/* User Workspace Profile Footer */}
       <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex-shrink-0">
-        <button 
+        <button
           className={`w-full flex items-center gap-3 rounded-xl text-sm font-bold transition-colors py-2 text-slate-500 hover:text-red-600 hover:bg-red-50/80 ${
             !open ? "justify-center px-0" : "px-4"
           }`}
           title="Logout Profile"
         >
           <LogOut className="h-5 w-5 flex-shrink-0" />
-          {open && <span className="flex-1 text-left transition-opacity duration-200">Logout</span>}
+          {open && (
+            <span className="flex-1 text-left transition-opacity duration-200">
+              Logout
+            </span>
+          )}
         </button>
       </div>
     </aside>
