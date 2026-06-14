@@ -4,6 +4,7 @@ import React from "react";
 import { usePathname } from "next/navigation";
 import { UserRole } from "@/app/config/roles";
 import Sidebar from "./_sidebar/sidebar";
+import { Analytics } from '@vercel/analytics/next'
 
 export default function DashboardLayout({
   children,
@@ -30,6 +31,7 @@ export default function DashboardLayout({
       >
         <main className="custom-scrollbar min-h-0 flex-1 overflow-y-auto">
           {children}
+          {process.env.NODE_ENV === 'production' && <Analytics />}
         </main>
       </div>
     </div>

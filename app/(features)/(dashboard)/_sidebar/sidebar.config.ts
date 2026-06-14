@@ -55,6 +55,12 @@ export const ALL_NAV_ITEMS: NavItemConfig[] = [
         href: "/admin/mdogo",
     },
     {
+        label: "Finance ERP",
+        tab: "finance",
+        icon: "FileSpreadsheet",
+        href: "/onboarding",
+    },
+    {
         label: "Analytics Engine",
         tab: "analytics",
         icon: "ChartPie",

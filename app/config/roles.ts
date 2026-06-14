@@ -34,6 +34,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
         "customers",
         "transactions",
         "installments",
+        "finance",
         "analytics",
         "reports",
         "settings",

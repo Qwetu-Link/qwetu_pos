@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import DashboardPageClient from "./_components/DashboardPageClient";
+import { Metadata } from "next";
+import FinOnboardingPage from "../_home/onboarding-page";
 
 export const metadata: Metadata = {
-  title: "Dashboard | QwetuLinks Clothing POS",
+  title: "Qwetulink Finance ERP",
   description:
-    "Role-based overview for sales, stock, customers, and apparel store performance.",
+    "Enterprise-grade financial management, accounting, and business ERP dashboard",
   generator: "Outside Of Time",
   icons: {
     icon: [
@@ -20,6 +20,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function DashboardPage() {
-  return <DashboardPageClient />;
+export default function OnboardingPage() {
+  return <FinOnboardingPage />;
 }
