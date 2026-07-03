@@ -1,10 +1,16 @@
 import { pgTable, varchar, timestamp, uuid, integer, boolean } from "drizzle-orm/pg-core";
 import { categoryTable } from "./category";
 import { relations } from "drizzle-orm/_relations";
+import { businessTable } from "./business";
 
 
 export const productImages = pgTable("product_images", {
     id: uuid("id").defaultRandom().primaryKey(),
+    businessId: uuid("business_id")
+    .notNull()
+    .references(() => businessTable.id, {
+        onDelete: "cascade",
+    }),
     productId: uuid("product_id")
         .notNull()
         .references(() => productsTable.id, {
@@ -61,6 +67,11 @@ export const productImageRelations = relations(
 
 export const productsTable = pgTable("products", {
     id: uuid("id").defaultRandom().primaryKey(),
+    businessId: uuid("business_id")
+    .notNull()
+    .references(() => businessTable.id, {
+        onDelete: "cascade",
+    }),
     name: varchar("name", {
         length: 255,
     }).notNull(),

@@ -6,9 +6,15 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { roleTable } from "./roles";
+import { businessTable } from "./business";
 
-export const businessUserTable = pgTable("business_users", {
+export const businessTeamTable = pgTable("business_team", {
   id: uuid("id").defaultRandom().primaryKey(),
+  businessId: uuid("business_id")
+    .notNull()
+    .references(() => businessTable.id, {
+        onDelete: "cascade",
+    }),
   firstName: varchar("first_name", { length: 100 }).notNull(),
   lastName: varchar("last_name", { length: 100 }).notNull(),
   email: varchar("email", { length: 255 })

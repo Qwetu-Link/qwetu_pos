@@ -5,9 +5,15 @@ import {
     uuid,
     varchar,
 } from "drizzle-orm/pg-core";
+import { businessTable } from "./business";
 
 export const roleTable = pgTable("roles", {
     id: uuid("id").defaultRandom().primaryKey(),
+    businessId: uuid("business_id")
+    .notNull()
+    .references(() => businessTable.id, {
+        onDelete: "cascade",
+    }),
     name: varchar("name", { length: 50 })
         .notNull()
         .unique(),

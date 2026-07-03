@@ -1,11 +1,17 @@
 import { integer, pgEnum, pgTable, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 import { productsTable } from "./products";
+import { businessTable } from "./business";
 
 export const inventoryStatusEnum = pgEnum("status", ["healthy", "low", "critical", "reorder"]);
 
 // Storage Locations Table
 export const locationTable = pgTable("locations", {
     id: uuid("id").defaultRandom().primaryKey(),
+    businessId: uuid("business_id")
+        .notNull()
+        .references(() => businessTable.id, {
+            onDelete: "cascade",
+        }),
     name: varchar("name", { length: 255 }).notNull().unique(),
     stock: integer("stock").default(0).notNull(),
     reorderPoint: integer("reorder_point").default(0).notNull(),
@@ -15,6 +21,11 @@ export const locationTable = pgTable("locations", {
 // Variants  records
 export const variantInventoryTable = pgTable("variant_inventory", {
     id: uuid("id").defaultRandom().primaryKey(),
+    businessId: uuid("business_id")
+        .notNull()
+        .references(() => businessTable.id, {
+            onDelete: "cascade",
+        }),
     variantId: uuid("variant_id")
         .notNull()
         .references(() => variantsTable.id, {
@@ -36,6 +47,11 @@ export const variantInventoryTable = pgTable("variant_inventory", {
 // Product Variants Table
 export const variantsTable = pgTable("variants", {
     id: uuid("id").defaultRandom().primaryKey(),
+    businessId: uuid("business_id")
+        .notNull()
+        .references(() => businessTable.id, {
+            onDelete: "cascade",
+        }),
     sku: varchar("sku").notNull().unique(),
     color: varchar("color").notNull(),
     size: varchar("size").notNull(),
@@ -45,4 +61,5 @@ export const variantsTable = pgTable("variants", {
     createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
     uniqueVariant: uniqueIndex("unique_variant").on(table.productId, table.color, table.size),
+    uniqueSku: uniqueIndex("unique_sku").on(table.sku, table.businessId),
 }));

@@ -3,10 +3,12 @@ import {
     pgEnum,
     pgTable,
     timestamp,
+    uniqueIndex,
     uuid,
     varchar,
 } from "drizzle-orm/pg-core";
 import { orderTable } from "./orders";
+import { businessTable } from "./business";
 
 export const invoiceStatusEnum = pgEnum("invoice_status", [
     "draft",
@@ -19,6 +21,11 @@ export const invoiceStatusEnum = pgEnum("invoice_status", [
 
 export const invoiceTable = pgTable("invoices", {
     id: uuid("id").defaultRandom().primaryKey(),
+    businessId: uuid("business_id")
+        .notNull()
+        .references(() => businessTable.id, {
+            onDelete: "cascade",
+        }),
     orderId: uuid("order_id")
         .notNull()
         .references(() => orderTable.id, {
@@ -45,4 +52,7 @@ export const invoiceTable = pgTable("invoices", {
     createdAt: timestamp("created_at")
         .defaultNow()
         .notNull(),
-});
+}, (table) => ({
+    uniqueInvoice: uniqueIndex("business_invoice")
+        .on(table.businessId, table.invoiceNumber)
+}));

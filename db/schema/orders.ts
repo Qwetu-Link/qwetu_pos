@@ -3,11 +3,17 @@ import { paymentStatusEnum, paymentTypeEnum } from "./payments";
 import { customerTable } from "./customers";
 import { productsTable } from "./products";
 import { variantsTable } from "./variants";
+import { businessTable } from "./business";
 
 export const orderStatusEnum = pgEnum("order_status", ["pending", "processing", "shipped", "delivered", "cancelled"]);
 
 export const orderItemTable = pgTable("order_items", {
     id: uuid("id").defaultRandom().primaryKey(),
+    businessId: uuid("business_id")
+    .notNull()
+    .references(() => businessTable.id, {
+        onDelete: "cascade",
+    }),
     variantId: uuid("variant_id").notNull().references(() => variantsTable.id, {
         onDelete: "restrict", // Prevent deleting products with existing order items
     }),
@@ -34,6 +40,11 @@ export const orderItemTable = pgTable("order_items", {
 // Orders Table
 export const orderTable = pgTable("orders", {
     id: uuid("id").defaultRandom().primaryKey(),
+    businessId: uuid("business_id")
+    .notNull()
+    .references(() => businessTable.id, {
+        onDelete: "cascade",
+    }),
     customerId: uuid("customer_id")
         .notNull()
         .references(() => customerTable.id, {
