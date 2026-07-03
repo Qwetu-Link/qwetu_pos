@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import type { InventoryItem } from "@/types/inventory";
-import { DEMO_INVENTORY, filterItems, recalcTotalStock } from "@/lib/inventory-utils";
+import { DEMO_INVENTORY, filterItems, recalcTotalStock } from "@/utils/inventory-utils";
 
 function getInitialItems(): InventoryItem[] {
   return DEMO_INVENTORY.map((item) => recalcTotalStock(structuredClone(item)));

@@ -1,5 +1,5 @@
+import ProductCategories from "@/features/category/ProductCategories";
 import type { Metadata } from "next";
-import ProductCategories from "./_components/ProductCategories";
 
 export const metadata: Metadata = {
   title: "Categories | QwetuLinks Clothing POS",

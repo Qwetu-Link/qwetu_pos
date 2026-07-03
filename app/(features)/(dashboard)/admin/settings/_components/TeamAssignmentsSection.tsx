@@ -1,6 +1,6 @@
 import { Plus, Users } from "lucide-react";
-import { businessRoles } from "@/lib/pos-details-data";
-import type { TeamUser } from "@/lib/pos-details-data";
+import { businessRoles } from "@/utils/pos-details-data";
+import type { TeamUser } from "@/utils/pos-details-data";
 import SectionCard from "./SectionCard";
 
 export default function TeamAssignmentsSection({

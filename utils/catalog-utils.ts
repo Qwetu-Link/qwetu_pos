@@ -1,11 +1,11 @@
+import { VariantFormValues } from "@/schemas/variantSchema";
 import type {
   Product,
   ProductVariant,
   CatalogStats,
   VariantInventory,
-  NewVariantFormValues,
 } from "@/types/catalog";
-import { formatCurrency } from "@/lib/formatters";
+import { formatCurrency } from "@/utils/formatters";
 
 // ---- SKU auto-generation ----
 
@@ -76,7 +76,7 @@ export function computeInventoryStatus(
 
 export function buildVariant(
   productName: string,
-  values: NewVariantFormValues
+  values: VariantFormValues
 ): ProductVariant {
   const { color, size, buyPrice, sellPrice, mainStock } = values;
   const sku = autoGenerateSku(productName, color, size);

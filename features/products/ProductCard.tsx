@@ -6,7 +6,7 @@ import {
   getProductImageSrc,
   getProductTotalStock,
   getProductUniqueSizes,
-} from "@/lib/catalog-utils";
+} from "@/utils/catalog-utils";
 import { AlertTriangle, Box, Edit, Trash2 } from "lucide-react";
 
 interface Props {

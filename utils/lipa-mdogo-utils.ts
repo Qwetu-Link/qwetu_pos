@@ -5,7 +5,7 @@ export {
   formatCompactCurrency,
   formatCurrency,
   formatDate,
-} from "@/lib/formatters";
+} from "@/utils/formatters";
 
 export function getPlanReceipts(planId: string) {
   return receipts

@@ -1,4 +1,4 @@
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import { Activity } from "lucide-react";
 import type { DashboardActivity, DashboardTone } from "@/data/dashboard-data";
 

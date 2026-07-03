@@ -1,4 +1,4 @@
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import { ChartNoAxesColumnIncreasing } from "lucide-react";
 import type { DashboardBar } from "@/data/dashboard-data";
 

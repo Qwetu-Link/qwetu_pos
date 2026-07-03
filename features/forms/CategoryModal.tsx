@@ -3,8 +3,7 @@
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
-import type { Category, CategoryFormValues } from "@/types/categories";
+import type { Category } from "@/types/categories";
 import {
   Activity,
   Baby,
@@ -20,6 +19,7 @@ import {
   UserRound,
   type LucideIcon,
 } from "lucide-react";
+import { CategoryFormValues, categorySchema } from "@/schemas/categorySchema";
 
 interface Props {
   /** null = add mode, Category = edit mode */
@@ -30,11 +30,6 @@ interface Props {
 
 const DEFAULT_ICON = "fas fa-tag";
 
-const categorySchema = z.object({
-  name: z.string().trim().min(1, "Category name is required"),
-  description: z.string().trim(),
-  icon: z.string().trim().min(1),
-});
 
 const iconMap: Record<string, LucideIcon> = {
   "fas fa-tshirt": Shirt,

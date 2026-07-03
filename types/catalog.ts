@@ -63,14 +63,6 @@ export interface ProductFormValues {
   imageUrl: string | null;
 }
 
-export interface NewVariantFormValues {
-  color: string;
-  size: string;
-  buyPrice: number;
-  sellPrice: number;
-  mainStock: number;
-}
-
 // ---- Catalog stats ----
 
 export interface CatalogStats {

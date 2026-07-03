@@ -1,6 +1,6 @@
 
+import ProductCatalog from "@/features/products/ProductCatalog";
 import type { Metadata } from "next";
-import ProductCatalog from "./_components/ProductCatalog";
 
 export const metadata: Metadata = {
   title: "Product Catalog | QwetuLinks Clothing POS",

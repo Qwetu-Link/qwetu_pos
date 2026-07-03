@@ -1,4 +1,5 @@
-import type { Category, CategoryFormValues, CategoryStats } from "@/types/categories";
+import { CategoryFormValues } from "@/schemas/categorySchema";
+import type { Category,CategoryStats } from "@/types/categories";
 
 // ---- ID generation ----
 

@@ -17,8 +17,8 @@ import {
   paymentMethodData,
   previousRevenueData,
   revenueData,
-} from "@/lib/pos-details-data";
-import EmptyState from "@/components/EmptyState";
+} from "@/utils/pos-details-data";
+import EmptyState from "@/components/common/EmptyState";
 import CategoryRingChart from "./CategoryRingChart";
 import CollectionTrendChart from "./CollectionTrendChart";
 import InfoRow from "./InfoRow";

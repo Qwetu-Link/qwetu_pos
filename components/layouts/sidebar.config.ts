@@ -13,6 +13,12 @@ export const ALL_NAV_ITEMS: NavItemConfig[] = [
         href: "/dashboard",
     },
     {
+        label: "Product Categories",
+        tab: "category",
+        icon: "Folder",
+        href: "/admin/category",
+    },
+    {
         label: "Product Catalog",
         tab: "catalog",
         icon: "Tags",

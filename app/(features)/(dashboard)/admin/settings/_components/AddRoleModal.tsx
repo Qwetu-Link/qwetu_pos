@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Save, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { rolePermissionOptions } from "@/lib/pos-details-data";
+import { rolePermissionOptions } from "@/utils/pos-details-data";
 import FormField from "./FormField";
 
 const addRoleSchema = z.object({

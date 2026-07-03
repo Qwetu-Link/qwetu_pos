@@ -1,6 +1,6 @@
 import type { Order, OrderStatus } from "../types/orderTypes";
 import { ORDER_STATUS_CONFIG } from "@/data/customer-config";
-import { formatCurrency } from "@/lib/formatters";
+import { formatCurrency } from "@/utils/formatters";
 
 export const statusStyles: Record<OrderStatus, string> = {
   delivered: ORDER_STATUS_CONFIG.delivered.color,

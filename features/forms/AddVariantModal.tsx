@@ -1,28 +1,18 @@
 "use client";
 
-import { NewVariantFormValues, ProductCategory } from "@/types/catalog";
+import { VariantFormValues, variantSchema } from "@/schemas/variantSchema";
+import { ProductCategory } from "@/types/catalog";
+import { CLOTHING_SIZES, FOOTWEAR_SIZES } from "@/utils/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Puzzle } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 interface Props {
   productName: string;
   category: ProductCategory;
-  onAdd: (values: NewVariantFormValues) => void;
+  onAdd: (values: VariantFormValues) => void;
   onClose: () => void;
 }
-
-const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "One Size"];
-const FOOTWEAR_SIZES = Array.from({ length: 13 }, (_, i) => String(i + 36));
-
-const variantSchema = z.object({
-  color: z.string().trim().min(1, "Color is required"),
-  size: z.string().trim().min(1, "Size is required"),
-  buyPrice: z.number().min(0, "Buy price cannot be negative"),
-  sellPrice: z.number().min(0, "Sell price cannot be negative"),
-  mainStock: z.number().int().min(0, "Stock cannot be negative"),
-});
 
 export default function AddVariantModal({ productName, category, onAdd, onClose }: Props) {
   const isFootwear = category === "Footwear";
@@ -31,7 +21,7 @@ export default function AddVariantModal({ productName, category, onAdd, onClose 
     formState: { errors },
     handleSubmit,
     register,
-  } = useForm<NewVariantFormValues>({
+  } = useForm<VariantFormValues>({
     resolver: zodResolver(variantSchema),
     defaultValues: {
       color: "",
@@ -42,7 +32,7 @@ export default function AddVariantModal({ productName, category, onAdd, onClose 
     },
   });
 
-  function submitVariant(values: NewVariantFormValues) {
+  function submitVariant(values: VariantFormValues) {
     onAdd(values);
   }
 

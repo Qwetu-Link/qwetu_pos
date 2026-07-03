@@ -1,5 +1,5 @@
 import { Download } from "lucide-react";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import type { GeneratedReport } from "@/types/reports";
 import ReportStatusBadge from "./ReportStatusBadge";
 

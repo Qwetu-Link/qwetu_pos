@@ -2,7 +2,7 @@
 
 import { JSX, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { UserRole } from "@/app/config/roles";
+import { UserRole } from "@/utils/roles";
 import AccountantDashboard from "../analytics/accountant_dashboard";
 import CashierDashboard from "../analytics/cashier_dashboard";
 import ManagerDashboard from "../analytics/manager_dashboard";

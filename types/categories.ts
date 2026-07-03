@@ -6,18 +6,8 @@ export interface Category {
   id: number;
   name: string;
   description: string;
-  /** Font Awesome class string e.g. "fas fa-tshirt" */
   icon: string;
-  /** Number of products assigned to this category */
   productCount: number;
-}
-
-// ---- Form values ----
-
-export interface CategoryFormValues {
-  name: string;
-  description: string;
-  icon: string;
 }
 
 // ---- Stats ----

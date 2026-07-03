@@ -28,6 +28,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     Owner: [
         "dashboard",
         "catalog",
+        "category",
         "variants",
         "inventory",
         "orders",

@@ -1,5 +1,5 @@
 import { Plus, ShieldCheck } from "lucide-react";
-import { businessRoles } from "@/lib/pos-details-data";
+import { businessRoles } from "@/utils/pos-details-data";
 import SectionCard from "./SectionCard";
 
 export default function RolesPermissionsSection({

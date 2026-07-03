@@ -6,7 +6,7 @@ import { initialOrders } from "../data/orderData";
 import {
   DEMO_CUSTOMERS,
   filterCustomers, computeOrderTotal,
-} from "../lib/customerUtils";
+} from "../utils/customerUtils";
 
 export function useCustomers() {
   const customers = DEMO_CUSTOMERS;

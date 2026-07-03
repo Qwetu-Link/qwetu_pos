@@ -15,7 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 import ModalFrame from "./modalFrame";
-import { formatCurrency } from "../../../../../../lib/orderUtils";
+import { formatCurrency } from "../../../../../../utils/orderUtils";
 import type { Customer } from "@/types/customer";
 import { DEMO_VARIANTS } from "@/data/customers";
 

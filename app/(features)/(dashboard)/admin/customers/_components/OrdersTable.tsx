@@ -1,5 +1,5 @@
 import Link from "next/link";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import { Eye, ShoppingBag } from "lucide-react";
 import type { Order } from "@/types/customer";
 import { ORDER_STATUS_CONFIG } from "@/data/customer-config";

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import {
   ArrowLeft,
   Coins,

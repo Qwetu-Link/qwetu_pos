@@ -1,4 +1,4 @@
-export { formatCompactCurrency, formatCurrency } from "@/lib/formatters";
+export { formatCompactCurrency, formatCurrency } from "@/utils/formatters";
 export {
   businessProfile,
   businessRoles,

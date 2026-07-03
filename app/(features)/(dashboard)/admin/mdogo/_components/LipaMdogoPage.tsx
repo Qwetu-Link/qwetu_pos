@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import type { PaymentPlan } from "@/data/lipa-mdogo-data";
 import {
   formatCompactCurrency,
@@ -18,7 +18,7 @@ import {
   HandCoins,
   MoneyBill,
 } from "./icons";
-import Pagination from "@/components/Pagination";
+import Pagination from "@/components/common/Pagination";
 import PaymentPlanCard from "./PaymentPlanCard";
 import RecordPaymentModal from "./RecordPaymentModal";
 import ReminderModal from "./ReminderModal";

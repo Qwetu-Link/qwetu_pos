@@ -11,8 +11,8 @@ import {
   ShieldAlert,
   X,
 } from "lucide-react";
-import { ROLE_PERMISSIONS, UserRole } from "@/app/config/roles";
-import { DynamicIcon } from "@/components/DynamicIcon";
+import { ROLE_PERMISSIONS, UserRole } from "@/utils/roles";
+import { DynamicIcon } from "@/components/common/DynamicIcon";
 import { ALL_NAV_ITEMS } from "./sidebar.config";
 
 interface SidebarProps {

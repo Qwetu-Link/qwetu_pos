@@ -3,12 +3,13 @@
 import { Trash2 } from "lucide-react";
 
 interface Props {
-  productName: string;
+  name: string;
+  title?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-export default function DeleteModal({ productName, onConfirm, onCancel }: Props) {
+export default function DeleteModal({ name, title, onConfirm, onCancel }: Props) {
   return (
     <div
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -20,10 +21,12 @@ export default function DeleteModal({ productName, onConfirm, onCancel }: Props)
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-3xl"><Trash2 color="red" /></span>
         </div>
-        <h3 className="text-xl font-bold text-gray-800 mb-2">Delete Product</h3>
+        <h3 className="text-xl font-bold text-gray-800 mb-2">
+          {title || "Delete Item"}
+        </h3>
         <p className="text-gray-500 mb-6">
           Are you sure you want to delete{" "}
-          <span className="font-semibold text-gray-700">`{productName}`</span>?
+          <span className="font-semibold text-gray-700">`{name}`</span>?
           This action cannot be undone.
         </p>
         <div className="flex gap-3">

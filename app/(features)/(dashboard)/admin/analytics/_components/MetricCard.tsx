@@ -1,6 +1,6 @@
 import { TrendingDown, TrendingUp } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { getPercentChange } from "@/lib/pos-details-data";
+import { getPercentChange } from "@/utils/pos-details-data";
 
 export default function MetricCard({
   label,

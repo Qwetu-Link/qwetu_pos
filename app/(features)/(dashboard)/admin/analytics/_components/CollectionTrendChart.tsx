@@ -1,5 +1,5 @@
-import { collectionData } from "@/lib/pos-details-data";
-import EmptyState from "@/components/EmptyState";
+import { collectionData } from "@/utils/pos-details-data";
+import EmptyState from "@/components/common/EmptyState";
 import { TrendingUp } from "lucide-react";
 
 export default function CollectionTrendChart() {

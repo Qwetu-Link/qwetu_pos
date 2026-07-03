@@ -3,8 +3,8 @@
 import { CreditCard, MessageCircle, Settings, ShieldCheck, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
-import { businessProfile, teamUsers } from "@/lib/pos-details-data";
-import type { TeamUser } from "@/lib/pos-details-data";
+import { businessProfile, teamUsers } from "@/utils/pos-details-data";
+import type { TeamUser } from "@/utils/pos-details-data";
 import AddRoleModal from "./AddRoleModal";
 import AddTeamUserModal from "./AddTeamUserModal";
 import BillingSection from "./BillingSection";

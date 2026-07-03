@@ -1,6 +1,6 @@
 import { Building2, Mail, MapPin, Pencil, Phone } from "lucide-react";
-import { getInitials } from "@/lib/pos-details-data";
-import type { businessProfile } from "@/lib/pos-details-data";
+import { getInitials } from "@/utils/pos-details-data";
+import type { businessProfile } from "@/utils/pos-details-data";
 import ProfileTile from "./ProfileTile";
 import SectionCard from "./SectionCard";
 

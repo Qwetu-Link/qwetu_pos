@@ -10,7 +10,7 @@ import {
   TrendingUp,
   XCircle,
 } from "lucide-react";
-import Pagination from "@/components/Pagination";
+import Pagination from "@/components/common/Pagination";
 import {
   formatCurrency,
   transactions,

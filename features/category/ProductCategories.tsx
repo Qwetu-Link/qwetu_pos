@@ -6,14 +6,14 @@ import { dummyCategories } from "@/data/categories";
 import {
   computeCategoryStats,
   filterCategories,
-} from "@/lib/category-utils";
+} from "@/utils/category-utils";
 import CategoryStatsCards from "./CategoryStatsCards";
 import CategoryCard from "./CategoryCard";
-import CategoryModal from "./CategoryModal";
-import DeleteCategoryModal from "./DeleteCategoryModal";
-import EmptyState from "@/components/EmptyState";
-import Pagination from "@/components/Pagination";
+import CategoryModal from "../forms/CategoryModal";
+import EmptyState from "@/components/common/EmptyState";
+import Pagination from "@/components/common/Pagination";
 import { FolderOpen, Plus, Search } from "lucide-react";
+import DeleteModal from "@/components/common/DeleteModal";
 
 export default function ProductCategories() {
   const categories = dummyCategories;
@@ -160,8 +160,9 @@ export default function ProductCategories() {
       )}
 
       {deleteTarget && (
-        <DeleteCategoryModal
-          categoryName={deleteTarget.name}
+        <DeleteModal
+          name={deleteTarget.name}
+          title="Delete Category"
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteTarget(null)}
         />

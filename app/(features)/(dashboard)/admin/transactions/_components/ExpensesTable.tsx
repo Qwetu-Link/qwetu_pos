@@ -2,7 +2,7 @@ import {
   formatCurrency,
   formatDate,
 } from "@/data/transaction-data";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import { WalletCards } from "lucide-react";
 import type { Expense } from "@/types/transactions";
 import ExpenseStatusBadge from "./ExpenseStatusBadge";

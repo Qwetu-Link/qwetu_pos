@@ -21,7 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { initialOrders } from "@/data/orderData";
-import { findOrderById, formatCurrency, formatDate } from "@/lib/orderUtils";
+import { findOrderById, formatCurrency, formatDate } from "@/utils/orderUtils";
 import type { Order, OrderStatus } from "@/types/customer";
 import { ORDER_STATUS_CONFIG } from "@/data/customer-config";
 

@@ -1,5 +1,5 @@
 import { OrderStatus } from "@/data/order-options";
-import { statusStyles } from "../../../../../../lib/orderUtils";
+import { statusStyles } from "../../../../../../utils/orderUtils";
 
 export default function StatusBadge({ status }: { status: OrderStatus }) {
   return (

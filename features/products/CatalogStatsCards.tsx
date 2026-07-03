@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCompactCurrency } from "@/lib/catalog-utils";
+import { formatCompactCurrency } from "@/utils/catalog-utils";
 import { CatalogStats } from "@/types/catalog";
 import { BadgeAlert, Box, ChartColumnIncreasing, Tag } from "lucide-react";
 

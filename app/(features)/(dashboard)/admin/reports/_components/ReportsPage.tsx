@@ -19,7 +19,7 @@ import {
   type ReportStatus,
   type ReportTemplate,
 } from "@/data/report-center-data";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import GeneratedReportsTable from "./GeneratedReportsTable";
 import ReportMetricCard from "./ReportMetricCard";
 import ReportTemplateCard from "./ReportTemplateCard";

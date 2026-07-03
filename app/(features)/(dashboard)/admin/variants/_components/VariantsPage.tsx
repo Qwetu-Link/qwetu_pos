@@ -11,11 +11,11 @@ import {
   PackageOpen,
 } from "lucide-react";
 import { dummyProducts } from "@/data/products";
-import EmptyState from "@/components/EmptyState";
-import { computeStats, flattenVariants } from "@/lib/variant-utils";
+import EmptyState from "@/components/common/EmptyState";
+import { computeStats, flattenVariants } from "@/utils/variant-utils";
 import StatCard from "./StatCard";
 import VariantCard from "./VariantCard";
-import Pagination from "@/components/Pagination";
+import Pagination from "@/components/common/Pagination";
 import EditModal from "./EditModal";
 import DeleteModal from "./DeleteModal";
 

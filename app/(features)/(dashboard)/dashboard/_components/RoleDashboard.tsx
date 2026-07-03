@@ -1,5 +1,5 @@
 import { LayoutDashboard } from "lucide-react";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import type { RoleDashboardData } from "@/data/dashboard-data";
 import DashboardActions from "./DashboardActions";
 import DashboardActivityPanel from "./DashboardActivityPanel";

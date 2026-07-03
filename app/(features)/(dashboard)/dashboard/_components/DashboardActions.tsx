@@ -1,5 +1,5 @@
 import Link from "next/link";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import { ArrowRight, ListChecks } from "lucide-react";
 import type { DashboardAction } from "@/data/dashboard-data";
 

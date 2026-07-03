@@ -4,8 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { businessRoles } from "@/lib/pos-details-data";
-import type { TeamUser } from "@/lib/pos-details-data";
+import { businessRoles } from "@/utils/pos-details-data";
+import type { TeamUser } from "@/utils/pos-details-data";
 import FormField from "./FormField";
 
 const teamUserSchema = z.object({

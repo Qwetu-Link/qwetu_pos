@@ -10,7 +10,7 @@ import {
   WalletCards,
   XCircle,
 } from "lucide-react";
-import Pagination from "@/components/Pagination";
+import Pagination from "@/components/common/Pagination";
 import {
   expenses,
   formatCurrency,

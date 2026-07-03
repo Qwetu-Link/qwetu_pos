@@ -1,6 +1,6 @@
 import type { Expense, Transaction } from "@/types/transactions";
 
-export { formatCurrency, formatDate } from "@/lib/formatters";
+export { formatCurrency, formatDate } from "@/utils/formatters";
 export type {
   Expense,
   ExpenseStatus,

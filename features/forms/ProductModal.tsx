@@ -5,33 +5,16 @@ import AddVariantModal from "./AddVariantModal";
 import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
 import {
-  NewVariantFormValues,
   Product,
-  ProductCategory,
   ProductVariant,
 } from "@/types/catalog";
-import { buildVariant, getProductImageSrc } from "@/lib/catalog-utils";
+import { buildVariant, getProductImageSrc } from "@/utils/catalog-utils";
 import { AlertTriangle, ArrowRight, Edit, Plus, Puzzle, Save, Trash2 } from "lucide-react";
+import { ProductDetailsFormValues, productSchema } from "@/schemas/productSchema";
+import { CATEGORIES } from "@/utils/select";
+import { VariantFormValues } from "@/schemas/variantSchema";
 
-const CATEGORIES = [
-  "Men's Clothing",
-  "Women's Clothing",
-  "Accessories",
-  "Footwear",
-  "Kids Wear",
-  "Outerwear",
-] as const satisfies readonly ProductCategory[];
-
-const productSchema = z.object({
-  name: z.string().trim().min(1, "Product name is required"),
-  category: z.enum(CATEGORIES),
-  brand: z.string().trim().min(1, "Supplier / brand is required"),
-  description: z.string().trim(),
-});
-
-type ProductDetailsFormValues = z.infer<typeof productSchema>;
 
 interface Props {
   product: Product | null; // null = new product
@@ -105,7 +88,7 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
     setStep(2);
   }
 
-  function handleAddVariant(values: NewVariantFormValues) {
+  function handleAddVariant(values: VariantFormValues) {
     const variant = buildVariant(name, values);
     setVariants((prev) => [...prev, variant]);
     setAlertMessage("");
@@ -168,11 +151,10 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
             {/* Step Indicator */}
             <div className="flex items-center gap-3 mb-6">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${
-                  step === 1
-                    ? "bg-emerald-600 text-white"
-                    : "bg-emerald-100 text-emerald-700"
-                }`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${step === 1
+                  ? "bg-emerald-600 text-white"
+                  : "bg-emerald-100 text-emerald-700"
+                  }`}
               >
                 {step > 1 ? "✓" : "1"}
               </div>
@@ -183,11 +165,10 @@ export default function ProductModal({ product, onSave, onClose }: Props) {
               </span>
               <div className="w-8 h-px bg-gray-300" />
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${
-                  step === 2
-                    ? "bg-emerald-600 text-white"
-                    : "bg-gray-200 text-gray-500"
-                }`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${step === 2
+                  ? "bg-emerald-600 text-white"
+                  : "bg-gray-200 text-gray-500"
+                  }`}
               >
                 2
               </div>

@@ -2,16 +2,16 @@
 
 import { useState } from "react";
 import { Boxes, PackageOpen } from "lucide-react";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import { useInventory } from "@/hooks/useInventory";
 import type { InventoryItem } from "@/types/inventory";
 import { StatsRow } from "./StatsRow";
 import { FilterBar } from "./FilterBar";
 import { InventoryCard } from "./InventoryCard";
-import { Pagination } from "@/components/Pagination";
+import { Pagination } from "@/components/common/Pagination";
 import { AdjustModal } from "./AdjustModal";
 import { TransferModal } from "./TransferModal";
-import { computeStats } from "@/lib/inventory-utils";
+import { computeStats } from "@/utils/inventory-utils";
 
 export function InventoryIntelligence() {
   const {

@@ -2,8 +2,8 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { UserRole } from "@/app/config/roles";
-import Sidebar from "./_sidebar/sidebar";
+import { UserRole } from "@/utils/roles";
+import Sidebar from "../../../components/layouts/sidebar";
 import { Analytics } from '@vercel/analytics/next'
 
 export default function DashboardLayout({

@@ -13,7 +13,7 @@ import {
 import AddOrderModal from "./addOrderModal";
 import { initialOrders } from "../../../../../../data/orderData";
 import OrderFilters from "./orderFilters";
-import Pagination from "@/components/Pagination";
+import Pagination from "@/components/common/Pagination";
 import OrderStatsCards from "./orderStatsCards";
 import { OrderStatus } from "@/data/order-options";
 import OrdersTable, { OrderViewMode } from "./ordersTable";

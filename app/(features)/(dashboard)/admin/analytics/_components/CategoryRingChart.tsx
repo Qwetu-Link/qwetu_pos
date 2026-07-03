@@ -1,9 +1,9 @@
 import { PieChart } from "lucide-react";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import {
   categoryData,
   formatCompactCurrency,
-} from "@/lib/pos-details-data";
+} from "@/utils/pos-details-data";
 
 export default function CategoryRingChart() {
   const total = categoryData.reduce((sum, item) => sum + item.value, 0);

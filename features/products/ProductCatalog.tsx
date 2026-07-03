@@ -3,14 +3,14 @@
 import { useState, useMemo, useCallback } from "react";
 import CatalogStatsCards from "./CatalogStatsCards";
 import ProductCard from "./ProductCard";
-import ProductModal from "./ProductModal";
-import DeleteModal from "./DeleteModal";
-import EmptyState from "@/components/EmptyState";
-import Pagination from "@/components/Pagination";
+import ProductModal from "../forms/ProductModal";
+import EmptyState from "@/components/common/EmptyState";
+import Pagination from "@/components/common/Pagination";
 import { CatalogFilters, Product, ProductCategory } from "@/types/catalog";
 import { dummyProducts } from "@/data/products";
-import { computeCatalogStats, exportProductsToCSV } from "@/lib/catalog-utils";
+import { computeCatalogStats, exportProductsToCSV } from "@/utils/catalog-utils";
 import { LucideDownload, Package, PlusIcon, Search, Tag } from "lucide-react";
+import DeleteModal from "@/components/common/DeleteModal";
 
 const CATEGORIES: ProductCategory[] = [
   "Men's Clothing",
@@ -200,7 +200,8 @@ export default function ProductCatalog() {
       {/* ---- Delete Modal ---- */}
       {deleteTarget && (
         <DeleteModal
-          productName={deleteTarget.name}
+          name={deleteTarget.name}
+          title="Delete Product"
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteTarget(null)}
         />

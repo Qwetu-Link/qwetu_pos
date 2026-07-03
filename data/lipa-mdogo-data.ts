@@ -4,7 +4,7 @@ export {
   formatCompactCurrency,
   formatCurrency,
   formatDate,
-} from "@/lib/formatters";
+} from "@/utils/formatters";
 export {
   getInstallmentSchedule,
   getNextDueDate,
@@ -12,7 +12,7 @@ export {
   getPlanReceipts,
   getPlanStatus,
   getRemainingAmount,
-} from "@/lib/lipa-mdogo-utils";
+} from "@/utils/lipa-mdogo-utils";
 export type { PaymentPlan, PlanStatus, Receipt } from "@/types/lipa-mdogo";
 
 export const paymentPlans: PaymentPlan[] = [

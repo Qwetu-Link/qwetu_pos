@@ -3,13 +3,13 @@
 import { useState, useCallback } from "react";
 import { Search, UserPlus, Users2 } from "lucide-react";
 import { useCustomersContext } from "./CustomersContext";
-import { computeStats } from "@/lib/customerUtils";
+import { computeStats } from "@/utils/customerUtils";
 import type { Customer, CustomerFormData } from "@/types/customer";
 import { CustomerStatsRow } from "./CustomerStatsRow";
 import { CustomerCard } from "./CustomerCard";
 import { CustomerFormModal } from "./CustomerFormModal";
-import EmptyState from "@/components/EmptyState";
-import { Pagination } from "@/components/Pagination";
+import EmptyState from "@/components/common/EmptyState";
+import { Pagination } from "@/components/common/Pagination";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 
 export function CustomerManagement() {

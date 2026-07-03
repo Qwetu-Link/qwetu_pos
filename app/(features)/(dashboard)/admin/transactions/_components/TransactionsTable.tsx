@@ -1,4 +1,4 @@
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import { Banknote, ReceiptText } from "lucide-react";
 import {
   formatCurrency,

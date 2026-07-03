@@ -7,11 +7,11 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import EmptyState from "@/components/EmptyState";
+import EmptyState from "@/components/common/EmptyState";
 import { Eye, Inbox } from "lucide-react";
 import StatusBadge from "./statusBadge";
 import { Order } from "@/types/orderTypes";
-import { formatCurrency, formatDate } from "@/lib/orderUtils";
+import { formatCurrency, formatDate } from "@/utils/orderUtils";
 
 export type OrderViewMode = "table" | "card" | "list";
 
