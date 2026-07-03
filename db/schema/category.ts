@@ -1,6 +1,6 @@
 import { integer, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
-import { products } from "./products";
 import { relations } from "drizzle-orm/_relations";
+import { productsTable } from "./products";
 
 
 export const categoryTable = pgTable("category", {
@@ -12,5 +12,5 @@ export const categoryTable = pgTable("category", {
 }) 
 
 export const categoryRelations = relations(categoryTable, ({ many }) => ({
-  products: many(products),
+  products: many(productsTable),
 }));

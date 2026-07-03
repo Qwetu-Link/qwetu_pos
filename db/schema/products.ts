@@ -7,7 +7,7 @@ export const productImages = pgTable("product_images", {
     id: uuid("id").defaultRandom().primaryKey(),
     productId: uuid("product_id")
         .notNull()
-        .references(() => products.id, {
+        .references(() => productsTable.id, {
             onDelete: "cascade",
         }),
 
@@ -51,15 +51,15 @@ export const productImages = pgTable("product_images", {
 export const productImageRelations = relations(
     productImages,
     ({ one }) => ({
-        product: one(products, {
+        product: one(productsTable, {
             fields: [productImages.productId],
-            references: [products.id],
+            references: [productsTable.id],
         }),
     })
 );
 
 
-export const products = pgTable("products", {
+export const productsTable = pgTable("products", {
     id: uuid("id").defaultRandom().primaryKey(),
     name: varchar("name", {
         length: 255,
@@ -76,9 +76,9 @@ export const products = pgTable("products", {
         .notNull(),
 });
 
-export const productRelations = relations(products, ({ one, many }) => ({
+export const productRelations = relations(productsTable, ({ one, many }) => ({
     category: one(categoryTable, {
-        fields: [products.categoryId],
+        fields: [productsTable.categoryId],
         references: [categoryTable.id],
     }),
     images: many(productImages),

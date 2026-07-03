@@ -1,5 +1,5 @@
 import { integer, pgEnum, pgTable, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
-import { products } from "./products";
+import { productsTable } from "./products";
 
 export const inventoryStatusEnum = pgEnum("status", ["healthy", "low", "critical", "reorder"]);
 
@@ -41,7 +41,7 @@ export const variantsTable = pgTable("variants", {
     size: varchar("size").notNull(),
     buyPrice: integer("buy_price").default(0).notNull(),
     sellPrice: integer("sell_price").default(0).notNull(),
-    productId: uuid("product_id").notNull().references(() => products.id, { onDelete: 'cascade' }),
+    productId: uuid("product_id").notNull().references(() => productsTable.id, { onDelete: 'cascade' }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
     uniqueVariant: uniqueIndex("unique_variant").on(table.productId, table.color, table.size),

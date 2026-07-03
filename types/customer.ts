@@ -9,6 +9,7 @@ export interface Customer {
   name: string;
   email: string;
   phone: string;
+  address: string;
   totalOrders: number;
   totalSpent: number;
   activeInstallments: number;
@@ -17,7 +18,6 @@ export interface Customer {
   segment: Segment;
   joinedDate: string;
   lastPurchase: string;
-  address: string;
 }
 
 export interface CustomerFormData {
