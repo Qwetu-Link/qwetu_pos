@@ -60,6 +60,9 @@ export const businessTable = pgTable("business", {
     invoiceTerms: varchar("invoice_terms", {
         length: 1000,
     }),
+    password: varchar("password", {
+        length: 255,
+    }).notNull(),
 
     isActive: boolean("is_active")
         .default(true)
