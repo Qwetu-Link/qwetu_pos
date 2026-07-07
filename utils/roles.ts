@@ -1,4 +1,5 @@
 export type UserRole =
+    | "SAdmin"
     | "Accountant"
     | "Cashier"
     | "Inventory"
@@ -40,4 +41,12 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
         "reports",
         "settings",
     ],
+    SAdmin: [
+        "Overview",
+        "Businesses",
+        "Subscriptions",
+        "Reorts",
+        "Settings"
+
+    ]
 };

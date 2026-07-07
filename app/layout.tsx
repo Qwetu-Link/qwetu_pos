@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { SessionProvider } from "next-auth/react";
 import "@/styles/globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/utils/utils";
+import { TRPCReactProvider } from '@/trpc/client';
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -20,9 +22,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("h-full antialiased", "font-sans", geist.variable)}>
       <body className="min-h-full flex flex-col">
-        {children}
+        <TRPCReactProvider>
+        <SessionProvider>{children}</SessionProvider>
+        </TRPCReactProvider>
         <Analytics />
       </body>
     </html>
   );
 }
+
+
+ 

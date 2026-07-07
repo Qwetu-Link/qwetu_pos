@@ -11,9 +11,9 @@ import {
 } from "@/types/catalog";
 import { buildVariant, getProductImageSrc } from "@/utils/catalog-utils";
 import { AlertTriangle, ArrowRight, Edit, Plus, Puzzle, Save, Trash2 } from "lucide-react";
-import { ProductDetailsFormValues, productSchema } from "@/schemas/productSchema";
+import { ProductDetailsFormValues, productSchema } from "@/validators/product";
 import { CATEGORIES } from "@/utils/select";
-import { VariantFormValues } from "@/schemas/variantSchema";
+import { VariantFormValues } from "@/validators/variant";
 
 
 interface Props {

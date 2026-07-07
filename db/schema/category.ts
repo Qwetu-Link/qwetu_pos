@@ -1,5 +1,5 @@
 import { integer, pgTable, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm/_relations";
+import { relations } from "drizzle-orm";
 import { productsTable } from "./products";
 import { businessTable } from "./business";
 

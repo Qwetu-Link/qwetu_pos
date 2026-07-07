@@ -2,7 +2,7 @@ import { integer, pgEnum, pgTable, timestamp, uniqueIndex, uuid, varchar } from 
 import { productsTable } from "./products";
 import { businessTable } from "./business";
 
-export const inventoryStatusEnum = pgEnum("status", ["healthy", "low", "critical", "reorder"]);
+export const inventoryStatusEnum = pgEnum("inventory_status", ["healthy", "low", "critical", "reorder"]);
 
 // Storage Locations Table
 export const locationTable = pgTable("locations", {
@@ -35,7 +35,7 @@ export const variantInventoryTable = pgTable("variant_inventory", {
     totalStock: integer("total_stock").default(0).notNull(),
     reorderPoint: integer("reorder_point").default(0).notNull(),
     lastRestocked: timestamp("last_restocked"),
-    status: inventoryStatusEnum().default("healthy").notNull(),
+    status: inventoryStatusEnum("status").default("healthy").notNull(),
 },
     (table) => ({
         uniqueVariantLocation: uniqueIndex("variant_location_unique").on(

@@ -1,6 +1,6 @@
 "use client";
 
-import { VariantFormValues, variantSchema } from "@/schemas/variantSchema";
+import { VariantFormValues, variantSchema } from "@/validators/variant";
 import { ProductCategory } from "@/types/catalog";
 import { CLOTHING_SIZES, FOOTWEAR_SIZES } from "@/utils/select";
 import { zodResolver } from "@hookform/resolvers/zod";

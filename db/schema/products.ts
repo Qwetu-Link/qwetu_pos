@@ -1,6 +1,6 @@
 import { pgTable, varchar, timestamp, uuid, integer, boolean } from "drizzle-orm/pg-core";
 import { categoryTable } from "./category";
-import { relations } from "drizzle-orm/_relations";
+import { relations } from "drizzle-orm";
 import { businessTable } from "./business";
 
 

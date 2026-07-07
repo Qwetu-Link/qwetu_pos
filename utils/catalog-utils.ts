@@ -1,4 +1,4 @@
-import { VariantFormValues } from "@/schemas/variantSchema";
+import { VariantFormValues } from "@/validators/variant";
 import type {
   Product,
   ProductVariant,

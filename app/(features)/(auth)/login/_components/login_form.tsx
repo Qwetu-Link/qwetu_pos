@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { signIn } from "next-auth/react"; // Import Auth.js Client Connector
 import {
   AlertTriangle,
   ArrowRightToLine,
@@ -19,11 +21,8 @@ import AuthHeader from "../../_components/AuthHeader";
 import AuthLayout from "../../_components/AuthLayout";
 import AuthSubmitButton from "../../_components/AuthSubmitButton";
 
-const VALID_EMAIL = "admin@lipamdogo.com";
-const VALID_PASSWORD = "admin123";
-
 const loginSchema = z.object({
-  email: z.email("Enter a valid email address").trim(),
+  email: z.string().email("Enter a valid email address").trim(),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -31,9 +30,11 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const {
     formState: { errors },
     handleSubmit,
@@ -46,28 +47,37 @@ export default function LoginForm() {
     },
   });
 
-  function showError(message: string) {
-    setError(message);
-  }
-
-  function submitLogin(values: LoginFormValues) {
+  async function submitLogin(values: LoginFormValues) {
     setError("");
-
-    if (values.email !== VALID_EMAIL) {
-      showError("Invalid email address");
-      return;
-    }
-
-    if (values.password !== VALID_PASSWORD) {
-      showError("Invalid password");
-      return;
-    }
-
     setIsSubmitting(true);
 
-    window.setTimeout(() => {
+    try {
+      // Execute Auth.js Client Credentials Authentication Provider
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        redirect: false, // Prevents full-page hard refreshes
+      });
+
+      if (result?.error) {
+        setError("Invalid email address or password configuration.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      router.refresh();
+
+      const roleName = session?.user?.roleName;
+      if (roleName === "Super Admin") {
+        router.push("/superadmin");
+        return;
+      }
+
       router.push("/dashboard");
-    }, 800);
+    } catch {
+      setError("An unexpected authentication error occurred.");
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -87,7 +97,7 @@ export default function LoginForm() {
           type="email"
           {...register("email", { onChange: () => setError("") })}
           onFocus={() => setError("")}
-          placeholder="admin@lipamdogo.com"
+          placeholder="yourname@business.com"
         />
         {errors.email ? (
           <p className="-mt-2 text-xs text-red-600">{errors.email.message}</p>
@@ -99,7 +109,7 @@ export default function LoginForm() {
           type={showPassword ? "text" : "password"}
           {...register("password", { onChange: () => setError("") })}
           onFocus={() => setError("")}
-          placeholder="Password"
+          placeholder="••••••••"
           rightElement={
             <button
               type="button"
@@ -133,19 +143,6 @@ export default function LoginForm() {
           )}
         </AuthSubmitButton>
       </form>
-
-      <div className="mt-5 border-t border-slate-100 pt-5 text-center">
-        <p className="mb-2 text-xs text-slate-500">Demo Credentials</p>
-        <div className="flex flex-col gap-1 rounded-lg bg-slate-50 p-2.5 text-xs text-slate-600">
-          <p>
-            <span className="text-emerald-700">Email:</span>{" "}
-            admin@lipamdogo.com
-          </p>
-          <p>
-            <span className="text-emerald-700">Password:</span> admin123
-          </p>
-        </div>
-      </div>
 
       {error ? (
         <div className="mt-3 animate-[shake_0.4s_ease-in-out] rounded-lg border border-red-200 bg-red-50 p-2.5 text-center">
