@@ -1,159 +1,142 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { PageLayout } from '../../../_components/page-layout';
-import { 
-  Download, 
-  Calendar, 
-  Plus, 
-  Filter, 
-  Eye, 
-  Printer, 
-  BarChart2, 
-  Landmark, 
-  ArrowLeftRight, 
-  PieChart as PieChartIcon, 
-  FileText, 
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { PageLayout } from "../../../_components/page-layout";
+import {
+  ArrowLeftRight,
+  BarChart2,
+  Calendar,
+  Download,
+  Eye,
+  FileText,
+  Filter,
+  Landmark,
+  PieChart as PieChartIcon,
+  Plus,
+  Printer,
   ShieldCheck,
-} from 'lucide-react';
+} from "lucide-react";
+import type { FinanceReport, FinanceReportStatus, FinanceReportTemplate } from "@/types/finance";
 
-// ── CONSOLIDATED RAW DATA STRUCTURES ──
-const reportList = [
-  { id: "RPT-2026-Q2", name: "Q2 2026 Financial Statements", type: "Financial", generated: "2026-06-14", size: "4.2 MB", status: "paid" as const },
-  { id: "RPT-2026-Q1", name: "Q1 2026 Financial Statements", type: "Financial", generated: "2026-03-31", size: "3.9 MB", status: "paid" as const },
-  { id: "RPT-TAX-Q2", name: "Q2 Tax Filing Package", type: "Tax", generated: "2026-06-10", size: "8.1 MB", status: "scheduled" as const },
-  { id: "RPT-AUDIT-2025", name: "FY 2025 Audit Report", type: "Compliance", generated: "2026-02-28", size: "12.4 MB", status: "paid" as const },
-  { id: "RPT-CONSOL", name: "Consolidated Balance Sheet", type: "Financial", generated: "2026-06-13", size: "1.8 MB", status: "paid" as const },
-  { id: "RPT-CF-MAY", name: "Cash Flow Statement — May", type: "Financial", generated: "2026-06-01", size: "2.1 MB", status: "paid" as const },
-  { id: "RPT-VARIANCE", name: "Budget Variance Analysis Q2", type: "Management", generated: "2026-06-12", size: "3.3 MB", status: "failed" as const },
+const reportList: FinanceReport[] = [
+  { id: "RPT-2026-Q2", name: "Q2 2026 Financial Statements", type: "Financial", generated: "2026-06-14", size: "4.2 MB", status: "paid" },
+  { id: "RPT-2026-Q1", name: "Q1 2026 Financial Statements", type: "Financial", generated: "2026-03-31", size: "3.9 MB", status: "paid" },
+  { id: "RPT-TAX-Q2", name: "Q2 Tax Filing Package", type: "Tax", generated: "2026-06-10", size: "8.1 MB", status: "scheduled" },
+  { id: "RPT-AUDIT-2025", name: "FY 2025 Audit Report", type: "Compliance", generated: "2026-02-28", size: "12.4 MB", status: "paid" },
+  { id: "RPT-CONSOL", name: "Consolidated Balance Sheet", type: "Financial", generated: "2026-06-13", size: "1.8 MB", status: "paid" },
+  { id: "RPT-CF-MAY", name: "Cash Flow Statement - May", type: "Financial", generated: "2026-06-01", size: "2.1 MB", status: "paid" },
+  { id: "RPT-VARIANCE", name: "Budget Variance Analysis Q2", type: "Management", generated: "2026-06-12", size: "3.3 MB", status: "failed" },
 ];
 
-const templateCards = [
-  { icon: <BarChart2 size={18} />, title: "P&L Statement", desc: "Income, COGS, gross profit, operating expenses, net income", type: "Financial" },
-  { icon: <Landmark size={18} />, title: "Balance Sheet", desc: "Assets, liabilities, and shareholders equity snapshot", type: "Financial" },
-  { icon: <ArrowLeftRight size={18} />, title: "Cash Flow Statement", desc: "Operating, investing, and financing activities", type: "Financial" },
-  { icon: <PieChartIcon size={18} />, title: "Budget Variance Report", desc: "Actual vs budget by department and cost center", type: "Management" },
-  { icon: <FileText size={18} />, title: "Tax Package", desc: "Consolidated tax filings — regional statutory allocations", type: "Tax" },
-  { icon: <ShieldCheck size={18} />, title: "Audit Report", desc: "External auditor findings and management responses", type: "Compliance" },
+const templateCards: FinanceReportTemplate[] = [
+  { icon: BarChart2, title: "P&L Statement", desc: "Income, COGS, gross profit, operating expenses, and net income", type: "Financial" },
+  { icon: Landmark, title: "Balance Sheet", desc: "Assets, liabilities, and shareholder equity snapshot", type: "Financial" },
+  { icon: ArrowLeftRight, title: "Cash Flow Statement", desc: "Operating, investing, and financing activities", type: "Financial" },
+  { icon: PieChartIcon, title: "Budget Variance Report", desc: "Actual vs budget by department and cost center", type: "Management" },
+  { icon: FileText, title: "Tax Package", desc: "Consolidated tax filings and regional statutory allocations", type: "Tax" },
+  { icon: ShieldCheck, title: "Audit Report", desc: "External auditor findings and management responses", type: "Compliance" },
 ];
 
-// ── STATUS BADGE MATCHING THE RESTRUCTURED SCHEMATIC ──
-const StatusBadge = ({ status }: { status: "paid" | "scheduled" | "failed" }) => {
+function StatusBadge({ status }: { status: FinanceReportStatus }) {
   const styles = {
-    paid: 'bg-green-500/10 text-green-600 border-green-500/20 dark:text-green-400',
-    scheduled: 'bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400',
-    failed: 'bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400',
+    paid: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100",
+    scheduled: "bg-amber-50 text-amber-700 ring-1 ring-amber-100",
+    failed: "bg-red-50 text-red-700 ring-1 ring-red-100",
   };
 
-  const labelMapping = {
-    paid: 'cleared',
-    scheduled: 'pending',
-    failed: 'draft'
+  const labels = {
+    paid: "cleared",
+    scheduled: "pending",
+    failed: "draft",
   };
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] uppercase tracking-wider font-semibold ${styles[status]}`}>
-      {labelMapping[status]}
+    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${styles[status]}`}>
+      {labels[status]}
     </span>
   );
-};
+}
 
 export default function ReportsPage() {
-  const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>("all");
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState("all");
 
-  const filteredLibrary = reportList.filter(r => {
+  const filteredLibrary = reportList.filter((report) => {
     if (selectedTypeFilter === "all") return true;
-    return r.type.toLowerCase() === selectedTypeFilter.toLowerCase();
+    return report.type.toLowerCase() === selectedTypeFilter.toLowerCase();
   });
 
   return (
     <PageLayout
       title="Financial Reports Center"
-      subtitle="Statements · Statutory Tax Compliance · Audit Packages · Ad-hoc Inquiries"
+      subtitle="Statements, statutory tax compliance, audit packages, and ad-hoc inquiries"
       actions={
         <>
-          <Button variant="outline" className="gap-2 text-xs font-sans">
-            <Calendar className="h-3.5 w-3.5" /> Schedule Automation
+          <Button variant="outline" className="gap-2">
+            <Calendar className="h-4 w-4" /> Schedule Automation
           </Button>
-          <Button className="gap-2 text-xs font-sans">
-            <Plus className="h-3.5 w-3.5" /> Generate Report
+          <Button className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700">
+            <Plus className="h-4 w-4" /> Generate Report
           </Button>
         </>
       }
     >
-      {/* Root configuration tied to --font-sans layout variables */}
-      <div className="space-y-6 font-sans">
-        
-        {/* ── HIGH LEVEL EXECUTIVE KPI METRICS ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Reports Generated</p>
-            <p className="text-2xl font-bold text-foreground mt-2 tracking-tight">142</p>
-            <p className="text-[10px] text-green-600 dark:text-green-400 mt-1 font-medium">+18.3% Year to Date</p>
-          </div>
+      <div className="space-y-6">
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            { label: "Reports Generated", value: "142", helper: "+18.3% year to date" },
+            { label: "Pending Queue", value: "3", helper: "Awaiting generation run" },
+            { label: "Last Ledger Close", value: "Jun 1", helper: "Q2 cycle, 2 days early" },
+            { label: "Next Scheduled Run", value: "Jul 1", helper: "Consolidated financial package" },
+          ].map((metric) => (
+            <div key={metric.label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-sm font-medium text-slate-500">{metric.label}</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900">{metric.value}</p>
+              <p className="mt-1 text-xs text-slate-500">{metric.helper}</p>
+            </div>
+          ))}
+        </section>
 
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Pending Queue</p>
-            <p className="text-2xl font-bold text-foreground mt-2 tracking-tight">3</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Awaiting generation run</p>
+        <section>
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-slate-900">Available Core Templates</h2>
+            <p className="text-sm text-slate-500">Run common finance, tax, audit, and management reports.</p>
           </div>
-
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Last Ledger Close</p>
-            <p className="text-2xl font-bold text-foreground mt-2 tracking-tight">Jun 1</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Q2 Cycle · 2 days early</p>
-          </div>
-
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Next Scheduled Run</p>
-            <p className="text-2xl font-bold text-foreground mt-2 tracking-tight">Jul 1</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Consolidated Financial Package</p>
-          </div>
-        </div>
-
-        {/* ── REPORT ARCHETYPE TEMPLATES GRID ── */}
-        <div>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-3">Available Core Templates</p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {templateCards.map((t) => (
-              <div 
-                key={t.title} 
-                className="bg-card border border-border rounded-lg p-4 hover:border-primary/40 transition-all cursor-pointer group flex flex-col justify-between"
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {templateCards.map(({ icon: Icon, ...template }) => (
+              <article
+                key={template.title}
+                className="group flex min-h-44 flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md"
               >
                 <div>
-                  <div className="text-muted-foreground group-hover:text-primary transition-colors mb-2.5">
-                    {t.icon}
-                  </div>
-                  <h3 className="text-xs font-semibold text-foreground mb-1">{t.title}</h3>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed mb-4">{t.desc}</p>
+                  <Icon className="mb-3 h-5 w-5 text-slate-500 transition group-hover:text-emerald-600" />
+                  <h3 className="text-base font-semibold text-slate-900">{template.title}</h3>
+                  <p className="mt-2 text-sm leading-5 text-slate-500">{template.desc}</p>
                 </div>
-                <div>
-                  <span className="text-[9px] font-semibold font-sans px-2 py-0.5 rounded bg-muted border border-border text-muted-foreground uppercase tracking-wider">
-                    {t.type}
-                  </span>
-                </div>
-              </div>
+                <span className="mt-4 inline-flex w-fit rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
+                  {template.type}
+                </span>
+              </article>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* ── CONSOLIDATED RE-ENGINEERED LIBRARY ARCHIVE TABLE ── */}
-        <div className="rounded-lg border border-border bg-card overflow-hidden">
-          
-          {/* Filtering Header Interface */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Report Library Data Archive</p>
-            <div className="flex items-center gap-1.5">
-              <Filter size={12} className="text-muted-foreground mr-1" />
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Report Library</h2>
+              <p className="text-sm text-slate-500">Generated reports, file sizes, and processing status.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Filter className="mr-1 h-4 w-4 text-slate-500" />
               {["all", "financial", "management", "tax", "compliance"].map((type) => (
                 <button
                   key={type}
                   onClick={() => setSelectedTypeFilter(type)}
-                  className={`text-[10px] px-2.5 py-1 rounded-md border font-medium transition-colors capitalize font-sans ${
+                  className={`rounded-lg border px-3 py-1.5 text-xs font-semibold capitalize transition-colors ${
                     selectedTypeFilter === type
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-background text-muted-foreground border-border hover:text-foreground"
+                      ? "border-emerald-600 bg-emerald-600 text-white"
+                      : "border-slate-200 bg-white text-slate-500 hover:text-slate-900"
                   }`}
                 >
                   {type}
@@ -162,63 +145,59 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          {/* Interactive Library Table */}
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="border-b border-border bg-muted/50">
-                <tr>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Report ID</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Name</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Classification Type</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Generated On</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">File Allocation</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
-                  <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">Action Links</th>
+            <table className="w-full min-w-[920px] text-left text-sm">
+              <thead className="border-b border-slate-200 bg-slate-50">
+                <tr className="text-xs uppercase tracking-wide text-slate-500">
+                  <th className="px-5 py-3">Report ID</th>
+                  <th className="px-5 py-3">Name</th>
+                  <th className="px-5 py-3">Type</th>
+                  <th className="px-5 py-3">Generated</th>
+                  <th className="px-5 py-3">Size</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredLibrary.map((r) => (
-                  <tr key={r.id} className="border-b border-border hover:bg-muted/30 transition-colors">
-                    <td className="px-5 py-3 text-xs font-medium text-muted-foreground tracking-tight">{r.id}</td>
-                    <td className="px-5 py-3 text-xs font-semibold text-foreground">{r.name}</td>
-                    <td className="px-5 py-3 text-xs text-muted-foreground font-medium">{r.type}</td>
-                    <td className="px-5 py-3 text-xs text-muted-foreground">{r.generated}</td>
-                    <td className="px-5 py-3 text-xs text-muted-foreground font-medium">{r.size}</td>
-                    <td className="px-5 py-3"><StatusBadge status={r.status} /></td>
-                    <td className="px-5 py-3">
+                {filteredLibrary.map((report) => (
+                  <tr key={report.id} className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50">
+                    <td className="px-5 py-4 text-xs font-medium text-slate-500">{report.id}</td>
+                    <td className="px-5 py-4 font-semibold text-slate-900">{report.name}</td>
+                    <td className="px-5 py-4 text-slate-600">{report.type}</td>
+                    <td className="px-5 py-4 text-slate-500">{report.generated}</td>
+                    <td className="px-5 py-4 text-slate-500">{report.size}</td>
+                    <td className="px-5 py-4"><StatusBadge status={report.status} /></td>
+                    <td className="px-5 py-4">
                       <div className="flex items-center justify-center gap-3">
-                        <button title="View Preview" className="text-muted-foreground hover:text-primary transition-colors">
-                          <Eye size={13} />
+                        <button title="View Preview" className="text-slate-500 transition-colors hover:text-emerald-600">
+                          <Eye className="h-4 w-4" />
                         </button>
-                        <button title="Download Package" className="text-muted-foreground hover:text-primary transition-colors">
-                          <Download size={13} />
+                        <button title="Download Package" className="text-slate-500 transition-colors hover:text-emerald-600">
+                          <Download className="h-4 w-4" />
                         </button>
-                        <button title="Print Physical Copy" className="text-muted-foreground hover:text-primary transition-colors">
-                          <Printer size={13} />
+                        <button title="Print Physical Copy" className="text-slate-500 transition-colors hover:text-emerald-600">
+                          <Printer className="h-4 w-4" />
                         </button>
                       </div>
                     </td>
                   </tr>
                 ))}
-                {filteredLibrary.length === 0 && (
+                {filteredLibrary.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-5 py-8 text-center text-xs text-muted-foreground">
-                      No report logs found matching the selected type filter criteria.
+                    <td colSpan={7} className="px-5 py-8 text-center text-sm text-slate-500">
+                      No report logs found matching the selected type filter.
                     </td>
                   </tr>
-                )}
+                ) : null}
               </tbody>
             </table>
           </div>
 
-          {/* Table Data Footer context */}
-          <div className="px-5 py-3 border-t border-border bg-muted/10 flex items-center justify-between text-[10px] text-muted-foreground">
-            <span>Synchronized with central Qwetulink ERP Ledger</span>
+          <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/70 px-5 py-3 text-xs text-slate-500">
+            <span>Updated from Qwetu POS sales, expenses, payroll, and branch records</span>
             <span>Showing {filteredLibrary.length} of {reportList.length} total entries</span>
           </div>
-          
-        </div>
-
+        </section>
       </div>
     </PageLayout>
   );

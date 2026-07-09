@@ -2,14 +2,7 @@
 
 import React from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-
-interface PaginationProps {
-  currentPage: number
-  totalPages: number
-  onPageChange: (page: number) => void
-  totalItems?: number
-  itemsPerPage?: number
-}
+import type { FinancePaginationProps } from '@/types/finance'
 
 export function Pagination({
   currentPage,
@@ -17,7 +10,7 @@ export function Pagination({
   onPageChange,
   totalItems,
   itemsPerPage = 10,
-}: PaginationProps) {
+}: FinancePaginationProps) {
   const startItem = (currentPage - 1) * itemsPerPage + 1
   const endItem = Math.min(currentPage * itemsPerPage, totalItems || 0)
 
@@ -74,7 +67,7 @@ export function Pagination({
     <div className="flex flex-col gap-4 py-4">
       {/* Items info */}
       {totalItems && (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-slate-500">
           Showing {startItem} to {endItem} of {totalItems} items
         </div>
       )}
@@ -94,7 +87,7 @@ export function Pagination({
           {getPageNumbers().map((page, index) => {
             if (page === '...') {
               return (
-                <span key={`ellipsis-${index}`} className="px-2 py-1 text-muted-foreground">
+                <span key={`ellipsis-${index}`} className="px-2 py-1 text-slate-500">
                   ...
                 </span>
               )
@@ -106,8 +99,8 @@ export function Pagination({
                 onClick={() => onPageChange(page as number)}
                 className={`h-8 w-8 rounded border transition-colors ${
                   currentPage === page
-                    ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border bg-background hover:bg-muted'
+                    ? 'border-emerald-600 bg-emerald-600 text-white'
+                    : 'border-slate-200 bg-white hover:bg-slate-50'
                 }`}
               >
                 {page}

@@ -1,251 +1,213 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { PageLayout } from '../../../_components/page-layout';
-import { 
-  Download, 
-  Plus, 
-  Eye, 
-  Edit3, 
-  Building2, 
-  TrendingUp, 
-  Users, 
-  Globe 
-} from 'lucide-react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
-} from 'recharts';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { PageLayout } from "../../../_components/page-layout";
+import {
+  Building2,
+  Download,
+  Edit3,
+  Eye,
+  Globe,
+  Plus,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import type { FinanceEntity, FinanceEntityStatus } from "@/types/finance";
 
-// ── EXTRACTED ENTITIES ALIGNED WITH QWETULINKS CAMPUS PROPERTY VARIATIONS ──
-const entities = [
-  { id: "ENT-001", name: "Qwetu Aberdare Heights (USIU)", type: "Premium Hub", country: "Kenya", currency: "KES", employees: 142, revenue: 62300000, status: "paid" as const },
-  { id: "ENT-002", name: "Qwetu Hurlingham Hub", type: "Standard Hub", country: "Kenya", currency: "KES", employees: 86, revenue: 18400000, status: "paid" as const },
-  { id: "ENT-003", name: "Qwetu Jogoo Road Residence", type: "Standard Hub", country: "Kenya", currency: "KES", employees: 94, revenue: 9200000, status: "paid" as const },
-  { id: "ENT-004", name: "Qwetu Parklands Properties", type: "Premium Hub", country: "Kenya", currency: "KES", employees: 72, revenue: 5800000, status: "scheduled" as const },
-  { id: "ENT-005", name: "Qwetu Ruaraka Residences", type: "JV Portfolio", country: "Kenya", currency: "KES", employees: 24, revenue: 2100000, status: "scheduled" as const },
-  { id: "ENT-006", name: "Qwetu Catholic University Link", type: "Standard Hub", country: "Kenya", currency: "KES", employees: 38, revenue: 3400000, status: "failed" as const },
+const entities: FinanceEntity[] = [
+  { id: "ENT-001", name: "Qwetu Aberdare Heights (USIU)", type: "Premium Hub", country: "Kenya", currency: "KES", employees: 142, revenue: 62300000, status: "paid" },
+  { id: "ENT-002", name: "Qwetu Hurlingham Hub", type: "Standard Hub", country: "Kenya", currency: "KES", employees: 86, revenue: 18400000, status: "paid" },
+  { id: "ENT-003", name: "Qwetu Jogoo Road Residence", type: "Standard Hub", country: "Kenya", currency: "KES", employees: 94, revenue: 9200000, status: "paid" },
+  { id: "ENT-004", name: "Qwetu Parklands Properties", type: "Premium Hub", country: "Kenya", currency: "KES", employees: 72, revenue: 5800000, status: "scheduled" },
+  { id: "ENT-005", name: "Qwetu Ruaraka Residences", type: "JV Portfolio", country: "Kenya", currency: "KES", employees: 24, revenue: 2100000, status: "scheduled" },
+  { id: "ENT-006", name: "Qwetu Catholic University Link", type: "Standard Hub", country: "Kenya", currency: "KES", employees: 38, revenue: 3400000, status: "failed" },
 ];
 
-const StatusBadge = ({ status }: { status: "paid" | "scheduled" | "failed" }) => {
+function StatusBadge({ status }: { status: FinanceEntityStatus }) {
   const styles = {
-    paid: 'bg-green-500/10 text-green-600 border-green-500/20 dark:text-green-400',
-    scheduled: 'bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400',
-    failed: 'bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400',
+    paid: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100",
+    scheduled: "bg-amber-50 text-amber-700 ring-1 ring-amber-100",
+    failed: "bg-red-50 text-red-700 ring-1 ring-red-100",
   };
 
-  const labelMapping = {
-    paid: 'active',
-    scheduled: 'pending run',
-    failed: 'under review'
+  const labels = {
+    paid: "active",
+    scheduled: "pending",
+    failed: "review",
   };
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] uppercase tracking-wider font-semibold ${styles[status]}`}>
-      {labelMapping[status]}
+    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${styles[status]}`}>
+      {labels[status]}
     </span>
   );
-};
+}
 
-// ── CUSTOM REGIONAL EAST AFRICAN MONEY FORMATTER ──
-const fmtMoney = (val: number) => {
-  return `KES ${val.toLocaleString('en-KE', { maximumFractionDigits: 0 })}`;
-};
+function formatCurrency(value: number) {
+  return `KES ${value.toLocaleString("en-KE", { maximumFractionDigits: 0 })}`;
+}
 
 export default function EntitiesPage() {
-  const [filterType, setFilterType] = useState<string>("all");
+  const [filterType, setFilterType] = useState("all");
 
-  const filteredEntities = entities.filter(e => {
+  const filteredEntities = entities.filter((entity) => {
     if (filterType === "all") return true;
-    return e.type.toLowerCase().includes(filterType.toLowerCase());
+    return entity.type.toLowerCase().includes(filterType.toLowerCase());
   });
+
+  const totalStaff = entities.reduce((sum, entity) => sum + entity.employees, 0);
+  const totalRevenue = entities.reduce((sum, entity) => sum + entity.revenue, 0);
 
   return (
     <PageLayout
       title="Property Entities & Branches"
-      subtitle="Corporate portfolio configuration · Inter-branch allocations · Consolidated rental revenue"
+      subtitle="Corporate portfolio configuration, inter-branch allocations, and consolidated rental revenue"
       actions={
         <>
-          <Button variant="outline" className="gap-2 text-xs font-sans">
-            <Download className="h-3.5 w-3.5" /> Export Group Data
+          <Button variant="outline" className="gap-2">
+            <Download className="h-4 w-4" /> Export Group Data
           </Button>
-          <Button className="gap-2 text-xs font-sans">
-            <Plus className="h-3.5 w-3.5" /> Add New Branch
+          <Button className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700">
+            <Plus className="h-4 w-4" /> Add New Branch
           </Button>
         </>
       }
     >
-      {/* Container tracking font-sans tied directly to your defined --font-sans configuration */}
-      <div className="space-y-6 font-sans">
-        
-        {/* ── HIGHLIGHT METRICS (NORMALIZED TO LOCAL KES RUN RATES) ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-lg border border-border bg-card p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Total Branches</p>
-              <Building2 className="h-4 w-4 text-muted-foreground/60" />
-            </div>
-            <p className="text-2xl font-bold text-foreground mt-2 tracking-tight">6</p>
-            <p className="text-[10px] text-muted-foreground mt-1">2 Premium · 3 Standard · 1 JV</p>
-          </div>
-
-          <div className="rounded-lg border border-border bg-card p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Total Staffing</p>
-              <Users className="h-4 w-4 text-muted-foreground/60" />
-            </div>
-            <p className="text-2xl font-bold text-foreground mt-2 tracking-tight">456</p>
-            <p className="text-[10px] text-green-600 dark:text-green-400 mt-1 font-medium">+12.1% Operations Scale</p>
-          </div>
-
-          <div className="rounded-lg border border-border bg-card p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Consolidated Rev</p>
-              <TrendingUp className="h-4 w-4 text-muted-foreground/60" />
-            </div>
-            <p className="text-2xl font-bold text-foreground mt-2 tracking-tight">KES 101.2M</p>
-            <p className="text-[10px] text-green-600 dark:text-green-400 mt-1 font-medium">+14.2% FY2026 Run-rate</p>
-          </div>
-
-          <div className="rounded-lg border border-border bg-card p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Base Currency</p>
-              <Globe className="h-4 w-4 text-muted-foreground/60" />
-            </div>
-            <p className="text-2xl font-bold text-foreground mt-2 tracking-tight">KES</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Unified Regional Ledger</p>
-          </div>
-        </div>
-
-        {/* ── SEGMENT FILTERS ── */}
-        <div className="flex items-center justify-between border-b border-border pb-2">
-          <div className="flex gap-2">
-            {[
-              { id: "all", label: "all portfolios" },
-              { id: "premium", label: "premium hubs" },
-              { id: "standard", label: "standard residences" },
-              { id: "jv", label: "joint ventures" }
-            ].map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setFilterType(t.id)}
-                className={`text-xs px-3 py-1.5 rounded-md transition-colors font-medium capitalize font-sans ${
-                  filterType === t.id 
-                    ? "bg-primary text-primary-foreground" 
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-          <span className="text-[10px] text-muted-foreground tracking-wide">Showing {filteredEntities.length} of 6 records</span>
-        </div>
-
-        {/* ── PROPERTY ENTITY CARDS LISTING ── */}
-        <div className="grid lg:grid-cols-2 gap-4">
-          {filteredEntities.map((e) => (
-            <div 
-              key={e.id} 
-              className="bg-card border border-border rounded-lg p-5 hover:border-primary/30 transition-all shadow-sm flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground tracking-tight">{e.name}</h3>
-                    <div className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1.5 font-sans">
-                      <span className="bg-muted px-1.5 py-0.5 rounded border border-border/60 font-semibold">{e.id}</span>
-                      <span>•</span>
-                      <span>{e.type}</span>
-                      <span>•</span>
-                      <span>{e.country}</span>
-                    </div>
-                  </div>
-                  <StatusBadge status={e.status} />
+      <div className="space-y-6">
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            { label: "Total Branches", value: String(entities.length), helper: "2 premium, 3 standard, 1 JV", icon: Building2 },
+            { label: "Total Staffing", value: totalStaff.toLocaleString(), helper: "+12.1% operations scale", icon: Users },
+            { label: "Consolidated Revenue", value: formatCurrency(totalRevenue), helper: "+14.2% FY2026 run-rate", icon: TrendingUp },
+            { label: "Base Currency", value: "KES", helper: "Used across all branches", icon: Globe },
+          ].map(({ label, value, helper, icon: Icon }) => (
+            <div key={label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-500">{label}</p>
+                  <p className="mt-2 text-2xl font-bold text-slate-900">{value}</p>
+                  <p className="mt-1 text-xs text-slate-500">{helper}</p>
                 </div>
-
-                <div className="grid grid-cols-3 gap-2 bg-muted/30 border border-border/50 rounded-md p-3">
-                  <div>
-                    <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Reporting Currency</div>
-                    <div className="text-xs font-bold text-foreground mt-0.5 tracking-tight">{e.currency}</div>
-                  </div>
-                  <div>
-                    <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Operations Staff</div>
-                    <div className="text-xs font-bold text-foreground mt-0.5 tracking-tight">{e.employees.toLocaleString()}</div>
-                  </div>
-                  <div>
-                    <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">Annualized Revenue</div>
-                    <div className="text-xs font-bold text-foreground mt-0.5 tracking-tight">{fmtMoney(e.revenue)}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between mt-5 pt-3 border-t border-border/80">
-                <button className="text-[10px] font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-sans">
-                  <Eye size={12} /> View Ledger Balance
-                </button>
-                <button className="text-[10px] font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-sans">
-                  <Edit3 size={12} /> Property Configurations
-                </button>
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                  <Icon className="h-5 w-5" />
+                </span>
               </div>
             </div>
           ))}
-        </div>
+        </section>
 
-        {/* ── CHART TRACKING REVENUE PER CAMPUS LINK BRANCH ── */}
-        <div className="rounded-lg bg-card border border-border p-5">
-          <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-4">
-            Annualized Branch Portfolio Contribution (KES Millions)
-          </p>
-          <div className="w-full h-56">
+        <section className="flex flex-col gap-3 border-b border-slate-200 pb-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: "all", label: "All portfolios" },
+              { id: "premium", label: "Premium hubs" },
+              { id: "standard", label: "Standard residences" },
+              { id: "jv", label: "Joint ventures" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setFilterType(item.id)}
+                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
+                  filterType === item.id
+                    ? "bg-emerald-600 text-white"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <span className="text-sm text-slate-500">Showing {filteredEntities.length} of {entities.length} records</span>
+        </section>
+
+        <section className="grid gap-4 lg:grid-cols-2">
+          {filteredEntities.map((entity) => (
+            <article
+              key={entity.id}
+              className="flex min-w-0 flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md"
+            >
+              <div>
+                <div className="mb-5 flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <h2 className="text-base font-semibold text-slate-900">{entity.name}</h2>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">{entity.id}</span>
+                      <span>{entity.type}</span>
+                      <span>{entity.country}</span>
+                    </div>
+                  </div>
+                  <StatusBadge status={entity.status} />
+                </div>
+
+                <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:grid-cols-3">
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">Reporting Currency</p>
+                    <p className="mt-1 font-bold text-slate-900">{entity.currency}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">Operations Staff</p>
+                    <p className="mt-1 font-bold text-slate-900">{entity.employees.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">Annualized Revenue</p>
+                    <p className="mt-1 font-bold text-slate-900">{formatCurrency(entity.revenue)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <button className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition-colors hover:text-emerald-700">
+                  <Eye className="h-4 w-4" /> View Ledger Balance
+                </button>
+                <button className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition-colors hover:text-emerald-700">
+                  <Edit3 className="h-4 w-4" /> Property Configurations
+                </button>
+              </div>
+            </article>
+          ))}
+        </section>
+
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-slate-900">Annualized Branch Portfolio Contribution</h2>
+            <p className="text-sm text-slate-500">Revenue contribution shown in KES millions.</p>
+          </div>
+          <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={entities.map(e => ({ 
-                  shortName: e.name.replace("Qwetu ", "").split(" ")[0], 
-                  revenueKES: e.revenue / 1000000 
-                }))} 
+              <BarChart
+                data={entities.map((entity) => ({
+                  shortName: entity.name.replace("Qwetu ", "").split(" ")[0],
+                  revenueKES: entity.revenue / 1000000,
+                }))}
                 margin={{ left: -15, right: 5, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false} />
-                <XAxis 
-                  dataKey="shortName" 
-                  tick={{ fill: "#71717a", fontSize: 10, fontFamily: "var(--font-sans)" }} 
-                  axisLine={false} 
-                  tickLine={false} 
-                />
-                <YAxis 
-                  tick={{ fill: "#71717a", fontSize: 10, fontFamily: "var(--font-sans)" }} 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tickFormatter={v => `KSh ${v}M`} 
-                />
-                <Tooltip 
-                  cursor={{ fill: "rgba(0,0,0,0.02)" }}
-                  contentStyle={{ 
-                    background: "hsl(var(--card))", 
-                    borderRadius: "6px", 
-                    border: "1px solid hsl(var(--border))", 
-                    fontSize: "11px",
-                    fontFamily: "var(--font-sans)"
+                <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="shortName" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => `KES ${value}M`} />
+                <Tooltip
+                  cursor={{ fill: "#f8fafc" }}
+                  contentStyle={{
+                    background: "#ffffff",
+                    borderRadius: "8px",
+                    border: "1px solid #e2e8f0",
+                    fontSize: "12px",
                   }}
                 />
-                <Bar 
-                  dataKey="revenueKES" 
-                  name="Revenue Base (KES)" 
-                  fill="hsl(var(--primary))" 
-                  radius={[3, 3, 0, 0]} 
-                />
+                <Bar dataKey="revenueKES" name="Revenue Base (KES)" fill="#059669" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
-
+        </section>
       </div>
     </PageLayout>
   );

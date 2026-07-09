@@ -1,37 +1,27 @@
 import React from 'react'
+import type { FinancePageLayoutProps } from '@/types/finance'
 
-interface PageLayoutProps {
-  title: string
-  subtitle?: string
-  icon?: React.ComponentType<{ className?: string; size?: number }>
-  actions?: React.ReactNode
-  children: React.ReactNode
-}
-
-export function PageLayout({ title, subtitle, icon: Icon, actions, children }: PageLayoutProps) {
+export function PageLayout({ title, subtitle, icon: Icon, actions, children }: FinancePageLayoutProps) {
   return (
     <div className="space-y-6">
-      {/* Header Container */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-black flex items-center gap-2">
-            {Icon && <Icon className="text-emerald-600 flex-shrink-0" size={32} />}
+      <div className="flex min-w-0 flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="min-w-0">
+          <h1 className="flex min-w-0 items-center gap-3 text-2xl font-extrabold text-black sm:text-3xl">
+            {Icon && <Icon className="h-7 w-7 flex-shrink-0 text-emerald-600 sm:h-8 sm:w-8" />}
             {title}
           </h1>
           {subtitle && (
-            <p className="text-gray-500 mt-1">
+            <p className="mt-1 text-sm font-medium text-slate-500 sm:text-base">
               {subtitle}
             </p>
           )}
         </div>
-        
-        {/* Action Button Container - Automatically scales button layout heights */}
-        <div className="flex items-center gap-3 self-start sm:self-auto [&_button]:px-5 [&_button]:py-2.5 [&_button]:rounded-xl [&_button]:font-medium [&_button]:transition-all">
+
+        <div className="flex w-full flex-col gap-2 self-start sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end [&_button]:w-full [&_button]:gap-2 sm:[&_button]:w-auto">
           {actions}
         </div>
       </div>
 
-      {/* Main Content Body */}
       <div className="w-full">
         {children}
       </div>

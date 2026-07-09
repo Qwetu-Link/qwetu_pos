@@ -1,88 +1,222 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { PageLayout } from '../../../_components/page-layout';
-import { 
-  Download, 
-  UploadCloud, 
-  Send, 
-  Eye, 
-  EyeOff, 
-  ShieldCheck 
-} from 'lucide-react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
-} from 'recharts';
+import React, { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { PageLayout } from "../../../_components/page-layout";
+import {
+  Banknote,
+  CalendarClock,
+  Download,
+  Eye,
+  EyeOff,
+  FileText,
+  Send,
+  ShieldCheck,
+  UploadCloud,
+  Users,
+} from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import type {
+  PayRun,
+  PayrollComplianceItem,
+  PayrollDepartmentBreakdown,
+  PayrollEmployee,
+  PayrollMetricCardProps,
+  PayrollScheduleItem,
+  PayrollStatus,
+  PayrollTab,
+  PayrollTrendPoint,
+} from "@/types/finance";
 
-// ── CUSTOM STATUS BADGE FOR THE CHOSEN RESTRUCTURING ──
-const StatusBadge = ({ status }: { status: "paid" | "scheduled" | "failed" }) => {
-  const s = status.toLowerCase();
-  const styles: Record<string, string> = {
-    paid: 'bg-green-500/10 text-green-500 border-green-500/20',
-    scheduled: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-    failed: 'bg-red-500/10 text-red-500 border-red-500/20',
+const employees: PayrollEmployee[] = [
+  {
+    id: "EMP001",
+    name: "John Mwangi",
+    department: "Sales",
+    role: "Sales Manager",
+    salary: 45000,
+    advances: 0,
+    deductions: 10000,
+    netPay: 35000,
+    bank: "Equity Bank ****4321",
+    payDate: "2026-07-01",
+    status: "paid",
+  },
+  {
+    id: "EMP002",
+    name: "Sarah Kipchoge",
+    department: "G&A / Finance",
+    role: "Accountant",
+    salary: 38000,
+    advances: 5000,
+    deductions: 2400,
+    netPay: 30600,
+    bank: "KCB Bank ****8849",
+    payDate: "2026-07-01",
+    status: "paid",
+  },
+  {
+    id: "EMP003",
+    name: "James Kiplagat",
+    department: "Operations",
+    role: "Store Manager",
+    salary: 32000,
+    advances: 0,
+    deductions: 8000,
+    netPay: 24000,
+    bank: "Co-op Bank ****1102",
+    payDate: "2026-07-01",
+    status: "scheduled",
+  },
+  {
+    id: "EMP004",
+    name: "Mary Kariuki",
+    department: "Sales",
+    role: "Cashier",
+    salary: 18000,
+    advances: 2000,
+    deductions: 1200,
+    netPay: 14800,
+    bank: "NCBA Bank ****9931",
+    payDate: "2026-07-01",
+    status: "paid",
+  },
+  {
+    id: "EMP005",
+    name: "David Okoyo",
+    department: "Operations",
+    role: "Delivery Driver",
+    salary: 22000,
+    advances: 0,
+    deductions: 5000,
+    netPay: 17000,
+    bank: "Absa Bank ****5541",
+    payDate: "2026-07-01",
+    status: "failed",
+  },
+];
+
+const payRuns: PayRun[] = [
+  { id: "PR-2026-06", period: "June 2026", employees: 352, gross: 185000, deductions: 10200, net: 174800, status: "paid", date: "2026-06-01" },
+  { id: "PR-2026-05", period: "May 2026", employees: 341, gross: 179000, deductions: 9800, net: 169200, status: "paid", date: "2026-05-01" },
+  { id: "PR-2026-04", period: "April 2026", employees: 328, gross: 171000, deductions: 10000, net: 161000, status: "failed", date: "2026-04-01" },
+  { id: "PR-2026-03", period: "March 2026", employees: 321, gross: 166000, deductions: 9700, net: 156300, status: "paid", date: "2026-03-01" },
+];
+
+const payrollTrend: PayrollTrendPoint[] = [
+  { month: "Jan", payroll: 142000 },
+  { month: "Feb", payroll: 145000 },
+  { month: "Mar", payroll: 148000 },
+  { month: "Apr", payroll: 151000 },
+  { month: "May", payroll: 153000 },
+  { month: "Jun", payroll: 155000 },
+];
+
+const departments: PayrollDepartmentBreakdown[] = [
+  { name: "Sales", count: 84, share: 24 },
+  { name: "Operations", count: 78, share: 22 },
+  { name: "Store Teams", count: 68, share: 19 },
+  { name: "Finance", count: 22, share: 6 },
+  { name: "Logistics", count: 38, share: 11 },
+  { name: "Support", count: 62, share: 18 },
+];
+
+const scheduleItems: PayrollScheduleItem[] = [
+  { label: "July 2026 base payroll", date: "2026-07-01", amount: 180000, status: "scheduled" },
+  { label: "August 2026 base payroll", date: "2026-08-01", amount: 182500, status: "scheduled" },
+  { label: "Q3 commissions and bonuses", date: "2026-09-15", amount: 45000, status: "scheduled" },
+];
+
+const complianceItems: PayrollComplianceItem[] = [
+  { label: "PAYE tax settlement", due: "2026-06-30", tag: "KRA" },
+  { label: "SHIF health insurance contribution", due: "2026-07-09", tag: "SHA" },
+  { label: "NSSF Tier I and II remittance", due: "2026-07-09", tag: "NSSF" },
+  { label: "Housing levy filing", due: "2026-07-20", tag: "KRA" },
+];
+
+function formatCurrency(value: number) {
+  return `KES ${value.toLocaleString()}`;
+}
+
+function masked(show: boolean, value: number, short = false) {
+  if (show) return formatCurrency(value);
+  return short ? "****" : "******";
+}
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("");
+}
+
+function StatusBadge({ status }: { status: PayrollStatus }) {
+  const styles: Record<PayrollStatus, string> = {
+    paid: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100",
+    scheduled: "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
+    failed: "bg-red-50 text-red-700 ring-1 ring-red-100",
   };
+
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] capitalize font-medium ${styles[s] || 'bg-muted text-muted-foreground border-border'}`}>
+    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${styles[status]}`}>
       {status}
     </span>
   );
-};
+}
+
+function MetricCard({
+  label,
+  value,
+  helper,
+  icon: Icon,
+}: PayrollMetricCardProps) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-slate-500">{label}</p>
+          <p className="mt-2 text-2xl font-bold tracking-tight text-slate-900">{value}</p>
+          <p className="mt-1 text-xs text-slate-500">{helper}</p>
+        </div>
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+          <Icon className="h-5 w-5" />
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default function PayrollPage() {
-  const [tab, setTab] = useState<"payroll" | "history" | "schedule">("payroll");
-  const [showBalance, setShowBalance] = useState(true);
+  const [tab, setTab] = useState<PayrollTab>("employees");
+  const [showTableFigures, setShowTableFigures] = useState(true);
 
-  // ── ORIGINAL TABLE DATA 1: EMPLOYEES (STATUS ALIGNED TO DESIGN CONSTRAINTS) ──
-  const employees: Array<{
-    id: string;
-    name: string;
-    dept: string;
-    position: string;
-    salary: number;
-    status: "paid" | "scheduled" | "failed";
-    advances: number;
-    loans: number;
-    bank: string;
-    payDate: string;
-  }> = [
-    { id: 'EMP001', name: 'John Mwangi', dept: 'Sales', position: 'Sales Manager', salary: 45000, status: 'paid', advances: 0, loans: 10000, bank: 'Equity Bank ****4321', payDate: '2026-07-01' },
-    { id: 'EMP002', name: 'Sarah Kipchoge', dept: 'G&A / Finance', position: 'Accountant', salary: 38000, status: 'paid', advances: 5000, loans: 0, bank: 'KCB Bank ****8849', payDate: '2026-07-01' },
-    { id: 'EMP003', name: 'James Kiplagat', dept: 'Operations', position: 'Store Manager', salary: 32000, status: 'scheduled', advances: 0, loans: 8000, bank: 'Co-op Bank ****1102', payDate: '2026-07-01' },
-    { id: 'EMP004', name: 'Mary Kariuki', dept: 'Sales', position: 'Cashier', salary: 18000, status: 'paid', advances: 2000, loans: 0, bank: 'NCBA Bank ****9931', payDate: '2026-07-01' },
-    { id: 'EMP005', name: 'David Okoyo', dept: 'Operations', position: 'Delivery Driver', salary: 22000, status: 'failed', advances: 0, loans: 5000, bank: 'Absa Bank ****5541', payDate: '2026-07-01' },
+  const totals = useMemo(() => {
+    const gross = employees.reduce((sum, employee) => sum + employee.salary, 0);
+    const advances = employees.reduce((sum, employee) => sum + employee.advances, 0);
+    const deductions = employees.reduce((sum, employee) => sum + employee.deductions, 0);
+    const net = employees.reduce((sum, employee) => sum + employee.netPay, 0);
+
+    return { gross, advances, deductions, net };
+  }, []);
+
+  const tabs: Array<{ id: PayrollTab; label: string }> = [
+    { id: "employees", label: "Employee Directory" },
+    { id: "history", label: "Payment History" },
+    { id: "schedule", label: "Pay Schedule & Compliance" },
   ];
-
-  // ── ORIGINAL SUMMARY & BREAKDOWNS ──
-  const payrollSummary = {
-    totalPayroll: 155000,
-    upcomingPayroll: 180000,
-    advances: 7000,
-    loans: 23000,
-  };
-
-  const payrollHistory = [
-    { month: 'Jan', total: 142000 },
-    { month: 'Feb', total: 145000 },
-    { month: 'Mar', total: 148000 },
-    { month: 'Apr', total: 151000 },
-    { month: 'May', total: 153000 },
-    { month: 'Jun', total: 155000 },
-  ];
-
-  const fmt = (val: number) => `KES ${val.toLocaleString()}`;
 
   return (
     <PageLayout
       title="Salary & Payroll Management"
-      subtitle="Employee compensation · Salary advances · Deductions · Pay runs"
+      subtitle="Employee compensation, advances, deductions, and pay runs"
       actions={
         <>
           <Button variant="outline" className="gap-2 text-xs">
@@ -91,201 +225,186 @@ export default function PayrollPage() {
           <Button variant="outline" className="gap-2 text-xs">
             <Download className="h-3.5 w-3.5" /> Export Payslips
           </Button>
-          <Button className="gap-2 text-xs">
+          <Button className="gap-2 bg-emerald-600 text-xs text-white hover:bg-emerald-700">
             <Send className="h-3.5 w-3.5" /> Process Payroll
           </Button>
         </>
       }
     >
-      <div className="space-y-6 font-sans">
-        
-        {/* ── HIGHLIGHT METRICS ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Monthly Payroll Cost</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{fmt(payrollSummary.totalPayroll)}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">June 2026 cycle · 352 employees total</p>
-          </div>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Upcoming Pay Run</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{fmt(payrollSummary.upcomingPayroll)}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Scheduled for July 1, 2026</p>
-          </div>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Salary Advances</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{fmt(payrollSummary.advances)}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Active payroll deductions</p>
-          </div>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Outstanding Loans</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{fmt(payrollSummary.loans)}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Company financed employee assets</p>
-          </div>
-        </div>
+      <div className="space-y-6">
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label="Monthly Payroll Cost"
+            value={formatCurrency(totals.gross)}
+            helper="June 2026 cycle"
+            icon={Banknote}
+          />
+          <MetricCard
+            label="Upcoming Pay Run"
+            value={formatCurrency(180000)}
+            helper="Scheduled for July 1, 2026"
+            icon={CalendarClock}
+          />
+          <MetricCard
+            label="Salary Advances"
+            value={formatCurrency(totals.advances)}
+            helper="Active payroll deductions"
+            icon={FileText}
+          />
+          <MetricCard
+            label="Net Release"
+            value={formatCurrency(totals.net)}
+            helper="After advances and deductions"
+            icon={Users}
+          />
+        </section>
 
-        {/* ── VISUAL INSIGHTS & BREAKDOWNS ── */}
-        <div className="grid lg:grid-cols-3 gap-4">
-          
-          {/* Card 1: Next Pay Run Structure */}
-          <div className="rounded-lg bg-card border border-border p-5 flex flex-col justify-between">
+        <section className="grid gap-4 lg:grid-cols-3">
+          <div className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Next Pay Run Breakdown</p>
-                <span className="text-[10px] text-primary font-semibold">Jul 1, 2026</span>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Next Pay Run</p>
+                  <h2 className="mt-2 text-2xl font-bold text-slate-900">{formatCurrency(180000)}</h2>
+                </div>
+                <StatusBadge status="scheduled" />
               </div>
-              <div className="text-2xl font-bold mt-2 mb-1 text-foreground">
-                {showBalance ? fmt(180000) : "••••••••••"}
-              </div>
-              <div className="text-[10px] text-muted-foreground">Direct Bank Deposit Cycle</div>
-              
-              <div className="mt-4 space-y-2 border-t border-border pt-3">
+
+              <div className="mt-5 space-y-3 border-t border-slate-100 pt-4">
                 {[
-                  { label: "Base Salaries", value: 155000 },
-                  { label: "Bonuses & Commissions", value: 32000 },
-                  { label: "Salary Advance Offsets", value: -7000 },
-                  { label: "Loan Deductions", value: -3200 },
-                ].map(item => (
-                  <div key={item.label} className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">{item.label}</span>
-                    <span className="text-foreground font-medium">{showBalance ? fmt(item.value) : "••••"}</span>
+                  { label: "Base salaries", value: totals.gross },
+                  { label: "Bonuses and commissions", value: 32000 },
+                  { label: "Salary advance offsets", value: -totals.advances },
+                  { label: "Statutory deductions", value: -totals.deductions },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between gap-4 text-sm">
+                    <span className="text-slate-500">{item.label}</span>
+                    <span className="font-semibold text-slate-900">{formatCurrency(item.value)}</span>
                   </div>
                 ))}
               </div>
             </div>
-            
-            <button className="w-full mt-4 py-2 border border-primary/30 text-primary text-xs hover:bg-primary/5 transition-colors rounded-md font-medium">
-              Preview & Approve →
+
+            <button className="mt-5 inline-flex h-10 items-center justify-center rounded-lg border border-emerald-200 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50">
+              Preview and approve
             </button>
           </div>
 
-          {/* Card 2: Headcount Breakdown */}
-          <div className="rounded-lg bg-card border border-border p-5">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-3">Headcount Breakdown</p>
-            {[
-              { dept: "Engineering", count: 142, pct: 40 },
-              { dept: "Sales", count: 84, pct: 24 },
-              { dept: "R&D", count: 48, pct: 14 },
-              { dept: "Operations", count: 38, pct: 11 },
-              { dept: "G&A / Finance", count: 22, pct: 6 },
-              { dept: "Legal & HR", count: 18, pct: 5 },
-            ].map(d => (
-              <div key={d.dept} className="mb-2.5">
-                <div className="flex justify-between mb-1">
-                  <span className="text-xs text-muted-foreground">{d.dept}</span>
-                  <span className="text-xs text-foreground font-semibold">{d.count}</span>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Headcount Breakdown</p>
+            <div className="mt-4 space-y-3">
+              {departments.map((department) => (
+                <div key={department.name}>
+                  <div className="mb-1 flex items-center justify-between text-xs">
+                    <span className="font-medium text-slate-600">{department.name}</span>
+                    <span className="font-semibold text-slate-900">{department.count}</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-full rounded-full bg-emerald-600" style={{ width: `${department.share}%` }} />
+                  </div>
                 </div>
-                <div className="h-1 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary" style={{ width: `${d.pct}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Card 3: Expenditure Chart */}
-          <div className="rounded-lg bg-card border border-border p-5 flex flex-col justify-between">
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-3">Payroll Expenditure Trend</p>
-              <div className="w-full h-40">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={payrollHistory} margin={{ left: -20, right: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fill: "#71717a", fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "#71717a", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `K${(v / 1000)}k`} />
-                    <Tooltip cursor={{ fill: "rgba(0,0,0,0.01)" }} />
-                    <Bar dataKey="total" name="Payroll Cost" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-            <div className="flex justify-between mt-2 text-[10px] text-muted-foreground">
-              <span>YoY Headcount growth: +13%</span>
-              <span className="text-green-600 font-medium">352 active workers</span>
+              ))}
             </div>
           </div>
-        </div>
 
-        {/* ── TAB DETAILS VIEW ── */}
-        <div className="rounded-lg border border-border bg-card overflow-hidden">
-          
-          {/* Header Controls */}
-          <div className="flex items-center border-b border-border px-5 bg-muted/20">
-            <div className="flex gap-1">
-              {[
-                { id: "payroll", label: "Employee Directory" },
-                { id: "history", label: "Payment History" },
-                { id: "schedule", label: "Pay Schedule & Compliance" },
-              ].map(t => (
-                <button 
-                  key={t.id} 
-                  onClick={() => setTab(t.id as typeof tab)}
-                  className={`text-xs py-3.5 px-4 border-b-2 transition-colors font-medium -mb-[1px] ${
-                    tab === t.id 
-                      ? "border-primary text-foreground font-semibold" 
-                      : "border-transparent text-muted-foreground hover:text-foreground"
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Payroll Trend</p>
+                <p className="mt-1 text-sm text-slate-500">Last six payroll cycles</p>
+              </div>
+              <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
+                +9.2%
+              </span>
+            </div>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={payrollTrend} margin={{ left: -24, right: 8, top: 8, bottom: 0 }}>
+                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => `${Number(value) / 1000}k`} />
+                  <Tooltip
+                    cursor={{ fill: "#f8fafc" }}
+                    contentStyle={{
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                    }}
+                    formatter={(value) => formatCurrency(Number(value))}
+                  />
+                  <Bar dataKey="payroll" name="Payroll" fill="#059669" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </section>
+
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 px-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 overflow-x-auto">
+              {tabs.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setTab(item.id)}
+                  className={`shrink-0 border-b-2 px-4 py-3.5 text-xs font-semibold transition ${
+                    tab === item.id
+                      ? "border-emerald-600 text-slate-900"
+                      : "border-transparent text-slate-500 hover:text-slate-900"
                   }`}
                 >
-                  {t.label}
+                  {item.label}
                 </button>
               ))}
             </div>
-            
-            <div className="ml-auto">
-              <button 
-                onClick={() => setShowBalance(!showBalance)} 
-                className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors py-3"
-              >
-                {showBalance ? <Eye size={13} /> : <EyeOff size={13} />}
-                {showBalance ? "Hide" : "Show"} Figures
-              </button>
-            </div>
+            <button
+              onClick={() => setShowTableFigures((current) => !current)}
+              className="mb-3 inline-flex items-center gap-2 self-start rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-500 transition hover:bg-white hover:text-slate-900 sm:mb-0 sm:self-auto"
+            >
+              {showTableFigures ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+              {showTableFigures ? "Hide" : "Show"} table figures
+            </button>
           </div>
 
-          {/* Tab 1: Full Employee Directory Table Data */}
-          {tab === "payroll" && (
+          {tab === "employees" && (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="border-b border-border bg-muted/50">
-                  <tr>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Employee ID</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Name</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Department / Role</th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Base Salary</th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Advances</th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Loans</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pay Date</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+              <table className="w-full min-w-[920px] text-left text-sm">
+                <thead className="border-b border-slate-200 bg-slate-50">
+                  <tr className="text-xs uppercase tracking-wide text-slate-500">
+                    <th className="px-5 py-3">Employee</th>
+                    <th className="px-5 py-3">Department</th>
+                    <th className="px-5 py-3 text-right">Base Salary</th>
+                    <th className="px-5 py-3 text-right">Advances</th>
+                    <th className="px-5 py-3 text-right">Deductions</th>
+                    <th className="px-5 py-3 text-right">Net Pay</th>
+                    <th className="px-5 py-3">Pay Date</th>
+                    <th className="px-5 py-3">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {employees.map(emp => (
-                    <tr key={emp.id} className="border-b border-border hover:bg-muted/30 transition-colors">
-                      <td className="px-5 py-3 text-xs font-medium text-muted-foreground">{emp.id}</td>
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-6 h-6 bg-muted border border-border flex items-center justify-center text-[9px] font-bold text-foreground rounded-md shrink-0">
-                            {emp.name.split(" ").map(n => n[0]).join("")}
-                          </div>
-                          <div>
-                            <div className="text-xs font-semibold text-foreground">{emp.name}</div>
-                            <div className="text-[10px] text-muted-foreground/80">{emp.bank}</div>
+                  {employees.map((employee) => (
+                    <tr key={employee.id} className="border-b border-slate-100 transition last:border-0 hover:bg-slate-50">
+                      <td className="px-5 py-4">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-xs font-bold text-emerald-700">
+                            {initials(employee.name)}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-slate-900">{employee.name}</p>
+                            <p className="text-xs text-slate-500">{employee.id} - {employee.bank}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-3">
-                        <div className="text-xs text-foreground font-medium">{emp.position}</div>
-                        <div className="text-[10px] text-muted-foreground">{emp.dept}</div>
+                      <td className="px-5 py-4">
+                        <p className="font-medium text-slate-900">{employee.role}</p>
+                        <p className="text-xs text-slate-500">{employee.department}</p>
                       </td>
-                      <td className="px-5 py-3 text-right font-medium text-foreground">
-                        {showBalance ? fmt(emp.salary) : "••••••"}
-                      </td>
-                      <td className="px-5 py-3 text-right text-foreground">
-                        {emp.advances > 0 ? (showBalance ? fmt(emp.advances) : "••••") : "—"}
-                      </td>
-                      <td className="px-5 py-3 text-right text-foreground">
-                        {emp.loans > 0 ? (showBalance ? fmt(emp.loans) : "••••") : "—"}
-                      </td>
-                      <td className="px-5 py-3 text-xs text-muted-foreground">{emp.payDate}</td>
-                      <td className="px-5 py-3"><StatusBadge status={emp.status} /></td>
+                      <td className="px-5 py-4 text-right font-semibold text-slate-900">{masked(showTableFigures, employee.salary, true)}</td>
+                      <td className="px-5 py-4 text-right text-slate-600">{employee.advances ? masked(showTableFigures, employee.advances, true) : "-"}</td>
+                      <td className="px-5 py-4 text-right text-slate-600">{employee.deductions ? masked(showTableFigures, employee.deductions, true) : "-"}</td>
+                      <td className="px-5 py-4 text-right font-semibold text-emerald-700">{masked(showTableFigures, employee.netPay, true)}</td>
+                      <td className="px-5 py-4 text-slate-500">{employee.payDate}</td>
+                      <td className="px-5 py-4"><StatusBadge status={employee.status} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -293,36 +412,32 @@ export default function PayrollPage() {
             </div>
           )}
 
-          {/* Tab 2: Full Historic Run Processing Logs Table Data */}
           {tab === "history" && (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="border-b border-border bg-muted/50">
-                  <tr>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pay Run ID</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Period</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Processed Employees</th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Gross Payout</th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Net Released</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Settlement Date</th>
+              <table className="w-full min-w-[820px] text-left text-sm">
+                <thead className="border-b border-slate-200 bg-slate-50">
+                  <tr className="text-xs uppercase tracking-wide text-slate-500">
+                    <th className="px-5 py-3">Pay Run</th>
+                    <th className="px-5 py-3">Period</th>
+                    <th className="px-5 py-3 text-right">Employees</th>
+                    <th className="px-5 py-3 text-right">Gross</th>
+                    <th className="px-5 py-3 text-right">Deductions</th>
+                    <th className="px-5 py-3 text-right">Net Released</th>
+                    <th className="px-5 py-3">Status</th>
+                    <th className="px-5 py-3">Settlement</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { id: "PR-2026-06", period: "June 2026", emp: 352, gross: 185000, net: 174800, status: "paid" as const, date: "2026-06-01" },
-                    { id: "PR-2026-05", period: "May 2026", emp: 341, gross: 179000, net: 169200, status: "paid" as const, date: "2026-05-01" },
-                    { id: "PR-2026-04", period: "April 2026", emp: 328, gross: 171000, net: 161000, status: "failed" as const, date: "2026-04-01" },
-                    { id: "PR-2026-03", period: "March 2026", emp: 321, gross: 166000, net: 156300, status: "paid" as const, date: "2026-03-01" },
-                  ].map(pr => (
-                    <tr key={pr.id} className="border-b border-border hover:bg-muted/30 transition-colors">
-                      <td className="px-5 py-3 text-xs font-medium text-muted-foreground">{pr.id}</td>
-                      <td className="px-5 py-3 text-xs font-semibold text-foreground">{pr.period}</td>
-                      <td className="px-5 py-3 text-xs text-foreground">{pr.emp}</td>
-                      <td className="px-5 py-3 text-right text-red-600 font-medium">{showBalance ? fmt(pr.gross) : "••••"}</td>
-                      <td className="px-5 py-3 text-right text-emerald-600 font-semibold">{showBalance ? fmt(pr.net) : "••••"}</td>
-                      <td className="px-5 py-3"><StatusBadge status={pr.status} /></td>
-                      <td className="px-5 py-3 text-xs text-muted-foreground">{pr.date}</td>
+                  {payRuns.map((run) => (
+                    <tr key={run.id} className="border-b border-slate-100 transition last:border-0 hover:bg-slate-50">
+                      <td className="px-5 py-4 font-semibold text-slate-900">{run.id}</td>
+                      <td className="px-5 py-4 text-slate-600">{run.period}</td>
+                      <td className="px-5 py-4 text-right text-slate-600">{run.employees}</td>
+                      <td className="px-5 py-4 text-right font-semibold text-slate-900">{formatCurrency(run.gross)}</td>
+                      <td className="px-5 py-4 text-right text-red-600">{formatCurrency(run.deductions)}</td>
+                      <td className="px-5 py-4 text-right font-semibold text-emerald-700">{formatCurrency(run.net)}</td>
+                      <td className="px-5 py-4"><StatusBadge status={run.status} /></td>
+                      <td className="px-5 py-4 text-slate-500">{run.date}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -330,46 +445,40 @@ export default function PayrollPage() {
             </div>
           )}
 
-          {/* Tab 3: Remittance & Deadlines */}
           {tab === "schedule" && (
-            <div className="p-5">
-              <div className="grid lg:grid-cols-2 gap-6">
-                <div>
-                  <p className="text-[10px] text-muted-foreground mb-3 uppercase tracking-widest font-semibold">Upcoming Remittance Disbursals</p>
-                  {[
-                    { run: "July 2026 Cycle Base Payroll", date: "2026-07-01", amount: 180000, status: "scheduled" as const },
-                    { run: "August 2026 Cycle Base Payroll", date: "2026-08-01", amount: 182500, status: "scheduled" as const },
-                    { run: "Q3 Commission & Bonus Disbursal", date: "2026-09-15", amount: 45000, status: "scheduled" as const },
-                  ].map(s => (
-                    <div key={s.run} className="flex items-center gap-3 border border-border p-3 mb-2 rounded-lg bg-muted/10 hover:bg-muted/30 transition-colors">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                      <div className="flex-1">
-                        <div className="text-xs font-semibold text-foreground">{s.run}</div>
-                        <div className="text-[10px] text-muted-foreground">{s.date}</div>
+            <div className="grid gap-6 p-5 lg:grid-cols-2">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-900">Upcoming Disbursements</h2>
+                <div className="mt-3 space-y-3">
+                  {scheduleItems.map((item) => (
+                    <div key={item.label} className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3">
+                      <span className="h-2 w-2 rounded-full bg-emerald-600" />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-slate-900">{item.label}</p>
+                        <p className="text-xs text-slate-500">{item.date}</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-xs font-semibold text-foreground">{showBalance ? fmt(s.amount) : "••••"}</div>
-                        <div className="mt-1"><StatusBadge status={s.status} /></div>
+                        <p className="font-semibold text-slate-900">{formatCurrency(item.amount)}</p>
+                        <div className="mt-1"><StatusBadge status={item.status} /></div>
                       </div>
                     </div>
                   ))}
                 </div>
-                
-                <div>
-                  <p className="text-[10px] text-muted-foreground mb-3 uppercase tracking-widest font-semibold">Statutory & Regulatory Deadlines</p>
-                  {[
-                    { label: "PAYE Tax Settlement Deposit", due: "2026-06-30", type: "KRA" },
-                    { label: "SHIF Health Insurance Contribution", due: "2026-07-09", type: "SHA" },
-                    { label: "NSSF Tier I & II Savings Remittance", due: "2026-07-09", type: "Statutory" },
-                    { label: "Housing Levy Remittance Filing", due: "2026-07-20", type: "KRA" },
-                  ].map(c => (
-                    <div key={c.label} className="flex items-center gap-3 border border-border p-3 mb-2 rounded-lg bg-muted/10 hover:bg-muted/30 transition-colors">
-                      <ShieldCheck size={14} className="text-muted-foreground shrink-0" />
-                      <div className="flex-1">
-                        <div className="text-xs font-semibold text-foreground">{c.label}</div>
-                        <div className="text-[10px] text-muted-foreground">Due By: {c.due}</div>
+              </div>
+
+              <div>
+                <h2 className="text-sm font-semibold text-slate-900">Statutory Deadlines</h2>
+                <div className="mt-3 space-y-3">
+                  {complianceItems.map((item) => (
+                    <div key={item.label} className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3">
+                      <ShieldCheck className="h-4 w-4 text-slate-500" />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-slate-900">{item.label}</p>
+                        <p className="text-xs text-slate-500">Due by {item.due}</p>
                       </div>
-                      <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border">{c.type}</span>
+                      <span className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-500">
+                        {item.tag}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -377,26 +486,24 @@ export default function PayrollPage() {
             </div>
           )}
 
-          {/* Design 2 Layout Footer Controls */}
-          <div className="flex items-center justify-between px-5 py-3.5 border-t border-border bg-muted/10">
-            <span className="text-[10px] text-muted-foreground">Viewing data for the June 2026 financial settlement engine</span>
+          <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50/70 px-5 py-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+            <span>Viewing June 2026 payroll settlement data</span>
             <div className="flex items-center gap-1">
-              {["1", "2", "3", "…", "18"].map(p => (
-                <button 
-                  key={p} 
-                  className={`w-6 h-6 text-[10px] flex items-center justify-center border rounded-md transition-colors ${
-                    p === "1" 
-                      ? "border-primary text-primary bg-primary/10 font-bold" 
-                      : "border-border text-muted-foreground hover:bg-muted"
+              {["1", "2", "3", "...", "18"].map((page) => (
+                <button
+                  key={page}
+                  className={`flex h-7 w-7 items-center justify-center rounded-md border text-xs transition ${
+                    page === "1"
+                      ? "border-emerald-600 bg-emerald-50 font-bold text-emerald-700"
+                      : "border-slate-200 text-slate-500 hover:bg-white"
                   }`}
                 >
-                  {p}
+                  {page}
                 </button>
               ))}
             </div>
           </div>
-          
-        </div>
+        </section>
       </div>
     </PageLayout>
   );

@@ -1,326 +1,273 @@
 "use client";
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { PageLayout } from '../../../_components/page-layout';
-import { 
-  Filter, 
-  Download, 
-  Plus, 
-  TrendingUp, 
-  AlertTriangle,
-  ArrowUpRight,
-  ArrowDownRight
-} from 'lucide-react';
+import React from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { PageLayout } from "../../../_components/page-layout";
 import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
+  AlertTriangle,
+  ArrowDownRight,
+  ArrowUpRight,
+  Download,
+  Filter,
+  Plus,
+  TrendingUp,
+} from "lucide-react";
+import {
+  Area,
+  AreaChart,
   CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  AreaChart,
-  Area
-} from 'recharts';
+} from "recharts";
+import type { BudgetAllocation, BudgetTrendPoint, FinanceChartTooltipProps } from "@/types/finance";
 
-// ── TYPINGS FOR RECHARTS INTERNAL CUSTOM COMPONENT PAYLOADS ──
-interface ChartPayloadItem {
-  name: string;
-  value: number;
-  stroke?: string;
-  fill?: string;
+const monthlyBudgetData: BudgetTrendPoint[] = [
+  { month: "Jan", revenue: 4820000, expenses: 3140000, payroll: 1280000, budget: 4330000 },
+  { month: "Feb", revenue: 5210000, expenses: 3380000, payroll: 1310000, budget: 4370000 },
+  { month: "Mar", revenue: 4990000, expenses: 3520000, payroll: 1325000, budget: 4410000 },
+  { month: "Apr", revenue: 6340000, expenses: 3710000, payroll: 1360000, budget: 4450000 },
+  { month: "May", revenue: 7120000, expenses: 4020000, payroll: 1390000, budget: 4490000 },
+  { month: "Jun", revenue: 6880000, expenses: 3890000, payroll: 1410000, budget: 4530000 },
+];
+
+const forecastData: BudgetTrendPoint[] = [
+  ...monthlyBudgetData,
+  { month: "Jul", revenue: 9200000, expenses: 5100000, payroll: 1450000, budget: 4570000 },
+  { month: "Aug", revenue: 9500000, expenses: 5200000, payroll: 1480000, budget: 4610000 },
+  { month: "Sep", revenue: 9800000, expenses: 5300000, payroll: 1510000, budget: 4650000 },
+  { month: "Oct", revenue: 10200000, expenses: 5500000, payroll: 1540000, budget: 4690000 },
+  { month: "Nov", revenue: 10800000, expenses: 5700000, payroll: 1580000, budget: 4730000 },
+  { month: "Dec", revenue: 11400000, expenses: 5900000, payroll: 1620000, budget: 4770000 },
+];
+
+const initialAllocations: BudgetAllocation[] = [
+  { id: 1, scope: "Branch", name: "Nairobi CBD", payrollBudget: 1450000, expenseBudget: 2200000, owner: "Mary Kariuki" },
+  { id: 2, scope: "Branch", name: "Westlands", payrollBudget: 980000, expenseBudget: 1640000, owner: "James Kiplagat" },
+  { id: 3, scope: "Department", name: "Sales", payrollBudget: 1240000, expenseBudget: 1320000, owner: "John Mwangi" },
+  { id: 4, scope: "Department", name: "Operations", payrollBudget: 1880000, expenseBudget: 2410000, owner: "Sarah Kipchoge" },
+];
+
+function formatCurrency(value: number) {
+  return `KES ${value.toLocaleString()}`;
 }
 
-interface CustomChartTipProps {
-  active?: boolean;
-  payload?: ChartPayloadItem[];
-  label?: string;
+function formatCompact(value: number) {
+  return `${(value / 1000000).toFixed(1)}M`;
 }
 
-// ── RAW DATA LOGIC ──
-const revenueMonthly = [
-  { month: "Jan", revenue: 4820000, expenses: 3140000, net: 1680000, budget: 4330000 },
-  { month: "Feb", revenue: 5210000, expenses: 3380000, net: 1830000, budget: 4370000 },
-  { month: "Mar", revenue: 4990000, expenses: 3520000, net: 1470000, budget: 4410000 },
-  { month: "Apr", revenue: 6340000, expenses: 3710000, net: 2630000, budget: 4450000 },
-  { month: "May", revenue: 7120000, expenses: 4020000, net: 310000,  budget: 4490000 },
-  { month: "Jun", revenue: 6880000, expenses: 3890000, net: 2990000, budget: 4530000 },
-];
+function CustomChartTip({ active, payload, label }: FinanceChartTooltipProps) {
+  if (!active || !payload?.length) return null;
 
-const forecastExtendedData = [
-  ...revenueMonthly,
-  { month: "Jul", revenue: 920000, expenses: 5100000, net: 4100000, budget: 4570000 },
-  { month: "Aug", revenue: 9500000, expenses: 5200000, net: 4300000, budget: 4610000 },
-  { month: "Sep", revenue: 9800000, expenses: 5300000, net: 4500000, budget: 4650000 },
-  { month: "Oct", revenue: 10200000, expenses: 5500000, net: 4700000, budget: 4690000 },
-  { month: "Nov", revenue: 10800000, expenses: 5700000, net: 5100000, budget: 4730000 },
-  { month: "Dec", revenue: 11400000, expenses: 5900000, net: 5500000, budget: 4770000 },
-];
-
-const departmentalUtilization = [
-  { dept: "Engineering", budget: 14200000, spent: 13840000, forecast: 14900000, variance: -700000, pct: -4.9 },
-  { dept: "Sales & Marketing", budget: 12400000, spent: 11980000, forecast: 12800000, variance: -400000, pct: -3.1 },
-  { dept: "R&D", budget: 8100000, spent: 8870000, forecast: 9400000, variance: 770000, pct: 9.5 },
-  { dept: "Operations", budget: 7200000, spent: 6840000, forecast: 7100000, variance: -200000, pct: -2.8 },
-  { dept: "G&A", budget: 5600000, spent: 4980000, forecast: 5400000, variance: -200000, pct: -3.6 },
-  { dept: "IT Infrastructure", budget: 4500000, spent: 4920000, forecast: 5200000, variance: 420000, pct: 9.3 },
-];
-
-// ── LOCAL HELPERS ──
-const formatCurrency = (val: number, precise = false) => {
-  if (Math.abs(val) >= 1000000) {
-    return `${val < 0 ? '-' : ''}$${(Math.abs(val) / 1000000).toFixed(1)}M`;
-  }
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: precise ? 0 : 2
-  }).format(val);
-};
-
-// ── CHART TOOLTIP ALIGNED TO THE GEIST ROOT HOOKS VARIABLE ──
-const CustomChartTip = ({ active, payload, label }: CustomChartTipProps) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-popover border border-border p-3 shadow-md rounded-md font-sans text-xs">
-        <p className="font-semibold text-foreground mb-1.5">{label}</p>
-        <div className="space-y-1">
-          {payload.map((p) => (
-            <div key={p.name} className="flex items-center justify-between gap-4">
-              <span className="text-muted-foreground flex items-center gap-1.5 font-sans">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.stroke || p.fill }} />
-                {p.name}:
-              </span>
-              <span className="font-mono font-medium text-foreground">
-                {formatCurrency(p.value)}
-              </span>
-            </div>
-          ))}
-        </div>
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3 text-xs shadow-md">
+      <p className="mb-2 font-semibold text-slate-900">{label}</p>
+      <div className="space-y-1.5">
+        {payload.map((item) => (
+          <div key={item.name} className="flex items-center justify-between gap-5">
+            <span className="flex items-center gap-2 text-slate-500">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.stroke || item.fill }} />
+              {item.name}
+            </span>
+            <span className="font-semibold text-slate-900">{formatCurrency(item.value)}</span>
+          </div>
+        ))}
       </div>
-    );
-  }
-  return null;
-};
+    </div>
+  );
+}
 
 export default function BudgetingPage() {
+  const allocations = initialAllocations;
+  const payroll = allocations.reduce((sum, allocation) => sum + allocation.payrollBudget, 0);
+  const expenses = allocations.reduce((sum, allocation) => sum + allocation.expenseBudget, 0);
+  const totals = {
+    payroll,
+    expenses,
+    budget: payroll + expenses,
+    branches: allocations.filter((allocation) => allocation.scope === "Branch").length,
+    departments: allocations.filter((allocation) => allocation.scope === "Department").length,
+  };
+
   return (
     <PageLayout
       title="Budgeting & Forecasting"
-      subtitle="FY 2026 · Distributed Resource Allocations & Predictive Financial Models"
+      subtitle="Plan payroll and operating expenses by branch or department"
       actions={
         <>
-          <Button variant="outline" className="gap-2 text-xs font-sans">
-            <Filter className="h-3.5 w-3.5" /> Fiscal Period
+          <Button variant="outline" className="gap-2">
+            <Filter className="h-4 w-4" /> Fiscal Period
           </Button>
-          <Button variant="outline" className="gap-2 text-xs font-sans">
-            <Download className="h-3.5 w-3.5" /> Export Schema
+          <Button variant="outline" className="gap-2">
+            <Download className="h-4 w-4" /> Export
           </Button>
-          <Button className="gap-2 text-xs font-sans">
-            <Plus className="h-3.5 w-3.5" /> Establish New Budget
-          </Button>
+          <Link
+            href="/finance-erp/budgeting/add"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-2.5 text-sm font-medium text-white transition hover:bg-emerald-700"
+          >
+            <Plus className="h-4 w-4" /> Add Budget Line
+          </Link>
         </>
       }
     >
-      {/* Container tracking font-sans tied directly to --font-sans variable definitions */}
-      <div className="space-y-6 font-sans">
-
-        {/* ── HIGH LEVEL FISCAL PERFORMANCE RUNWAY KPIs ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Total Budget FY26</p>
-            <p className="text-2xl font-bold text-foreground mt-2 tracking-tight">52.0M</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Approved Board Allocation Plan</p>
-          </div>
-
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">YTD Consolidated Spend</p>
-            <p className="text-2xl font-bold text-foreground mt-2 tracking-tight">47.6M</p>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-[10px] font-medium text-red-500 flex items-center gap-0.5">
-                <ArrowUpRight size={10} /> +8.2%
-              </span>
-              <span className="text-[10px] text-muted-foreground">91.5% of Runway Expended</span>
+      <div className="space-y-6">
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            { label: "Total Proposed Budget", value: formatCurrency(totals.budget), helper: `${totals.branches} branches / ${totals.departments} departments` },
+            { label: "Salary Payroll Budget", value: formatCurrency(totals.payroll), helper: "People cost allocation" },
+            { label: "Operating Expenses", value: formatCurrency(totals.expenses), helper: "Non-payroll spend plan" },
+            { label: "Forecast Variance", value: formatCurrency(2100000), helper: "Above approved baseline" },
+          ].map((metric) => (
+            <div key={metric.label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-sm font-medium text-slate-500">{metric.label}</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900">{metric.value}</p>
+              <p className="mt-1 text-xs text-slate-500">{metric.helper}</p>
             </div>
-          </div>
+          ))}
+        </section>
 
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Remaining Liquid Reserves</p>
-            <p className="text-2xl font-bold text-foreground mt-2 tracking-tight">4.4M</p>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-[10px] font-medium text-green-500 flex items-center gap-0.5">
-                <ArrowDownRight size={10} /> -64.8%
-              </span>
-              <span className="text-[10px] text-muted-foreground">6 Months Remaining cycle</span>
-            </div>
-          </div>
+        <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Budget Utilization by Unit</p>
+            <div className="mt-5 space-y-5">
+              {allocations.map((allocation) => {
+                const planned = allocation.payrollBudget + allocation.expenseBudget;
+                const consumed = allocation.expenseBudget * 0.72 + allocation.payrollBudget * 0.58;
+                const pctSpent = planned > 0 ? Math.round((consumed / planned) * 100) : 0;
 
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Forecast Variance Delta</p>
-            <p className="text-2xl font-bold text-foreground mt-2 tracking-tight">+$2.1M</p>
-            <div className="flex items-center gap-1 mt-1 text-amber-500">
-              <AlertTriangle size={11} />
-              <span className="text-[10px] font-medium">Over Approved Target Baseline</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── DETAILED DEPARTMENTAL LIQUID UTILIZATION ── */}
-        <div className="bg-card border border-border rounded-lg p-5">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold mb-4">
-            Budget Utilization & Over-Run Trajectories by Division
-          </p>
-          <div className="space-y-5">
-            {departmentalUtilization.map((d) => {
-              const pctSpent = Math.round((d.spent / d.budget) * 100);
-              const isOverBudget = d.spent > d.budget;
-
-              return (
-                <div key={d.dept} className="group">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1.5 gap-1">
-                    <span className="text-xs font-semibold text-foreground">{d.dept}</span>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-mono text-muted-foreground">
-                      <span>Budget: <strong className="text-foreground/80">{formatCurrency(d.budget, true)}</strong></span>
-                      <span className={`${isOverBudget ? "text-red-500 font-semibold" : "text-foreground/80"}`}>
-                        Spent: {formatCurrency(d.spent, true)}
-                      </span>
-                      <span>Forecasted Run: <strong className="text-foreground/80">{formatCurrency(d.forecast, true)}</strong></span>
-                    </div>
-                  </div>
-                  
-                  {/* Progress Matrix Rail */}
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden relative">
-                    <div 
-                      className={`h-full transition-all duration-500 rounded-full ${
-                        isOverBudget ? "bg-red-500" : "bg-amber-500"
-                      }`} 
-                      style={{ width: `${Math.min(pctSpent, 100)}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between mt-1 text-[9px] font-mono tracking-tight">
-                    <span className={isOverBudget ? "text-red-500 font-medium" : "text-muted-foreground"}>
-                      {pctSpent}% capacity consumed
-                    </span>
-                    {isOverBudget && (
-                      <span className="text-red-400 font-medium animate-pulse flex items-center gap-0.5">
-                        Budget Threshold Violated
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── TWO-COLUMN CHARTS ANALYSIS BLOCK ── */}
-        <div className="grid lg:grid-cols-2 gap-4">
-          
-          {/* Monthly Operational Burn Graph */}
-          <div className="bg-card border border-border rounded-lg p-5">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold mb-4">
-              Monthly Operational Burn Profile vs Baseline Target
-            </p>
-            <div className="w-full h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={revenueMonthly} margin={{ left: -20, right: 10, top: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
-                  <XAxis 
-                    dataKey="month" 
-                    tick={{ fill: "#71717a", fontSize: 10, fontFamily: "var(--font-sans)" }} 
-                    axisLine={false} 
-                    tickLine={false} 
-                  />
-                  <YAxis 
-                    tick={{ fill: "#71717a", fontSize: 10, fontFamily: "var(--font-sans)" }} 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tickFormatter={(v) => `$${(v / 1000000).toFixed(1)}M`}
-                  />
-                  <Tooltip content={<CustomChartTip />} />
-                  <Line type="monotone" dataKey="expenses" name="Actual Ledger Expenditure" stroke="var(--primary)" strokeWidth={2} dot={{ r: 3 }} />
-                  <Line type="monotone" dataKey="budget" name="Approved Plan Target" stroke="currentColor" className="text-muted" strokeWidth={1.5} strokeDasharray="5 5" dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Departmental Variance Logs */}
-          <div className="bg-card border border-border rounded-lg p-5">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold mb-4">
-              Fiscal Variance Account Summaries
-            </p>
-            <div className="divide-y divide-border">
-              {departmentalUtilization.map((v) => {
-                const isOverBudgetDelta = v.variance > 0;
                 return (
-                  <div key={v.dept} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
-                    <span className="text-xs text-foreground font-medium">{v.dept}</span>
-                    <div className="flex items-center gap-3">
-                      <span className={`text-xs font-mono font-semibold ${isOverBudgetDelta ? "text-red-500" : "text-green-500"}`}>
-                        {v.variance > 0 ? '+' : ''}{formatCurrency(v.variance, true)}
-                      </span>
-                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-medium ${
-                        isOverBudgetDelta ? "text-red-500 bg-red-500/10" : "text-green-500 bg-green-500/10"
-                      }`}>
-                        {v.pct > 0 ? '+' : ''}{v.pct}%
-                      </span>
+                  <div key={allocation.id}>
+                    <div className="mb-2 flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{allocation.name}</p>
+                        <p className="text-xs text-slate-500">{allocation.scope} / {allocation.owner}</p>
+                      </div>
+                      <div className="text-sm font-semibold text-slate-900">{formatCurrency(planned)}</div>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-full rounded-full bg-emerald-600" style={{ width: `${Math.min(pctSpent, 100)}%` }} />
+                    </div>
+                    <div className="mt-1 flex justify-between text-xs text-slate-500">
+                      <span>{pctSpent}% consumed</span>
+                      <span>Payroll {formatCurrency(allocation.payrollBudget)} / Expenses {formatCurrency(allocation.expenseBudget)}</span>
                     </div>
                   </div>
                 );
               })}
             </div>
           </div>
-        </div>
 
-        {/* ── ADVANCED FORECASTING HORIZON ── */}
-        <div className="bg-card border border-border rounded-lg p-5">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold">
-              12-Month Rolling Forecast Horizon & Scalability Model
-            </p>
-            <div className="flex items-center gap-1.5 text-xs text-primary font-medium font-sans">
-              <TrendingUp size={13} />
-              <span>Predictive AI Trend</span>
+          <aside className="space-y-6">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-lg font-semibold text-slate-900">Allocation Mix</h2>
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <span className="text-sm text-slate-600">Payroll share</span>
+                  <span className="font-semibold text-slate-900">{totals.budget ? Math.round((totals.payroll / totals.budget) * 100) : 0}%</span>
+                </div>
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <span className="text-sm text-slate-600">Expense share</span>
+                  <span className="font-semibold text-slate-900">{totals.budget ? Math.round((totals.expenses / totals.budget) * 100) : 0}%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Highest allocation</span>
+                  <span className="font-semibold text-slate-900">
+                    {allocations.reduce((top, item) => (item.payrollBudget + item.expenseBudget > top.payrollBudget + top.expenseBudget ? item : top), allocations[0])?.name}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-amber-100 bg-amber-50 p-5 shadow-sm">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+                <div>
+                  <h2 className="font-semibold text-slate-900">Review Thresholds</h2>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Any branch or department above KES 4M should be reviewed by finance before approval.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-2">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Monthly Burn vs Budget</p>
+            <div className="mt-4 h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={monthlyBudgetData} margin={{ left: -20, right: 10, top: 5 }}>
+                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => formatCompact(Number(value))} />
+                  <Tooltip content={<CustomChartTip />} />
+                  <Line type="monotone" dataKey="expenses" name="Operating Expenses" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="payroll" name="Salary Payroll" stroke="#0f766e" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="budget" name="Approved Budget" stroke="#94a3b8" strokeWidth={1.5} strokeDasharray="5 5" dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
-          <div className="w-full h-[220px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={forecastExtendedData} margin={{ left: -20, right: 10, top: 5 }}>
-                <defs>
-                  <linearGradient id="qForecastFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.15}/>
-                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
-                <XAxis 
-                  dataKey="month" 
-                  tick={{ fill: "#71717a", fontSize: 10, fontFamily: "var(--font-sans)" }} 
-                  axisLine={false} 
-                  tickLine={false} 
-                />
-                <YAxis 
-                  tick={{ fill: "#71717a", fontSize: 10, fontFamily: "var(--font-sans)" }} 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tickFormatter={(v) => `$${(v / 1000000).toFixed(0)}M`}
-                />
-                <Tooltip content={<CustomChartTip />} />
-                <Area 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  name="Gross Target Revenue" 
-                  stroke="var(--primary)" 
-                  strokeWidth={2} 
-                  fill="url(#qForecastFill)" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
 
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">12-Month Forecast</p>
+              <div className="flex items-center gap-1.5 text-sm font-semibold text-emerald-700">
+                <TrendingUp className="h-4 w-4" />
+                Predictive trend
+              </div>
+            </div>
+            <div className="mt-4 h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={forecastData} margin={{ left: -20, right: 10, top: 5 }}>
+                  <defs>
+                    <linearGradient id="budgetForecastFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#059669" stopOpacity={0.18} />
+                      <stop offset="95%" stopColor="#059669" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => formatCompact(Number(value))} />
+                  <Tooltip content={<CustomChartTip />} />
+                  <Area type="monotone" dataKey="revenue" name="Revenue Forecast" stroke="#059669" strokeWidth={2} fill="url(#budgetForecastFill)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-2 text-sm font-semibold text-red-600">
+              <ArrowUpRight className="h-4 w-4" />
+              Expense growth
+            </div>
+            <p className="mt-2 text-2xl font-bold text-slate-900">+8.2%</p>
+            <p className="mt-1 text-xs text-slate-500">Against previous fiscal cycle</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+              <ArrowDownRight className="h-4 w-4" />
+              Reserve use
+            </div>
+            <p className="mt-2 text-2xl font-bold text-slate-900">-14.8%</p>
+            <p className="mt-1 text-xs text-slate-500">Projected improvement after allocation controls</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-2 text-sm font-semibold text-amber-700">
+              <AlertTriangle className="h-4 w-4" />
+              Approval status
+            </div>
+            <p className="mt-2 text-2xl font-bold text-slate-900">Draft</p>
+            <p className="mt-1 text-xs text-slate-500">Ready for finance manager review</p>
+          </div>
+        </section>
       </div>
     </PageLayout>
   );

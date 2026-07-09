@@ -1,7 +1,7 @@
 import PayrollPage from "./PayrollPage";
 
 export const metadata = {
-  title: "Payroll - Qwetulink Finance ERP",
+  title: "Payroll - Qwetu POS Financial Management",
   description: "Employee payroll management and salary processing",
 };
 

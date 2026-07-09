@@ -7,49 +7,32 @@ import {
   BarChart3,
   TrendingUp,
   Briefcase,
-  FileText,
   LogOut,
   RotateCcw,
   Coins,
-  Receipt,
+  CreditCard,
   Wallet,
   BarChart2,
   PieChartIcon,
   Building2,
 } from "lucide-react";
+import type { FinanceNavItem, FinanceSidebarProps } from "@/types/finance";
 
-interface SidebarProps {
-  open: boolean;
-  onToggle: () => void;
-}
-
-export function Sidebar({ open }: SidebarProps) {
+export function Sidebar({ open }: FinanceSidebarProps) {
   const pathname = usePathname();
 
-  const menuItems = [
+  const menuItems: FinanceNavItem[] = [
     {
       section: "dashboard",
-      label: "Dashboard",
+      label: "Overview",
       icon: BarChart3,
       href: "/finance-erp",
     },
-        {
+    {
       section: "revenue",
-      label: "Revenue",
+      label: "Sales Money",
       icon: TrendingUp,
       href: "/finance-erp/sales",
-    },
-    {
-      section: "accounts-payable",
-      label: "Accounts Payable",
-      icon: Receipt,
-      href: "/finance-erp/accounts-payable",
-    },
-    {
-      section: "accounts-receivable",
-      label: "Accounts Receivable",
-      icon: FileText,
-      href: "/finance-erp/accounts-receivable",
     },
     {
       section: "customer-wallet",
@@ -59,34 +42,22 @@ export function Sidebar({ open }: SidebarProps) {
     },
     {
       section: "salary-payroll",
-      label: "Salary & Payroll",
+      label: "Payroll",
       icon: Coins,
       href: "/finance-erp/payroll",
     },
     {
+      section: "payments",
+      label: "Payments",
+      icon: CreditCard,
+      href: "/finance-erp/payments",
+    },
+    {
       section: "expense",
-      label: "Expense",
+      label: "Expenses",
       icon: Briefcase,
       href: "/finance-erp/expense",
     },
-    // {
-    //   section: "cash",
-    //   label: "Cash Management",
-    //   icon: DollarSign,
-    //   href: "/finance-erp/cash",
-    // },
-    // {
-    //   section: "mpesa",
-    //   label: "M-Pesa",
-    //   icon: Banknote,
-    //   href: "/finance-erp/mpesa",
-    // },
-    // {
-    //   section: "banking",
-    //   label: "Bank",
-    //   icon: Briefcase,
-    //   href: "/finance-erp/banking",
-    // },
     {
       section: "refunds",
       label: "Refunds",
@@ -94,14 +65,8 @@ export function Sidebar({ open }: SidebarProps) {
       href: "/finance-erp/refunds",
     },
     {
-      section: "reconciliation",
-      label: "Reconciliation",
-      icon: TrendingUp,
-      href: "/finance-erp/reconciliation",
-    },
-    {
       section: "budgeting",
-      label: "Budgeting",
+      label: "Budgets",
       icon: BarChart2,
       href: "/finance-erp/budgeting",
     },
@@ -113,7 +78,7 @@ export function Sidebar({ open }: SidebarProps) {
     },
     {
       section: "entity",
-      label: "Entities & Branches",
+      label: "Branches",
       icon: Building2,
       href: "/finance-erp/entity",
     },
@@ -137,8 +102,8 @@ export function Sidebar({ open }: SidebarProps) {
               <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
                 Qwetu<span className="text-emerald-600">Links</span>
               </h1>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Finance ERP
+              <p className="text-sm font-medium text-slate-500">
+                Financial Management
               </p>
             </div>
           )}
