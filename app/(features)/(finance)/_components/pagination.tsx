@@ -67,7 +67,7 @@ export function Pagination({
     <div className="flex flex-col gap-4 py-4">
       {/* Items info */}
       {totalItems && (
-        <div className="text-sm text-slate-500">
+        <div className="text-sm text-[#9CB4CA]">
           Showing {startItem} to {endItem} of {totalItems} items
         </div>
       )}
@@ -87,7 +87,7 @@ export function Pagination({
           {getPageNumbers().map((page, index) => {
             if (page === '...') {
               return (
-                <span key={`ellipsis-${index}`} className="px-2 py-1 text-slate-500">
+                <span key={`ellipsis-${index}`} className="px-2 py-1 text-[#9CB4CA]">
                   ...
                 </span>
               )
@@ -99,8 +99,8 @@ export function Pagination({
                 onClick={() => onPageChange(page as number)}
                 className={`h-8 w-8 rounded border transition-colors ${
                   currentPage === page
-                    ? 'border-emerald-600 bg-emerald-600 text-white'
-                    : 'border-slate-200 bg-white hover:bg-slate-50'
+                    ? 'border-[#42688C] bg-[#42688C] text-white'
+                    : 'border-[#42688C]/30 bg-[#0C0F1D] hover:bg-[#13203A]'
                 }`}
               >
                 {page}

@@ -16,45 +16,45 @@ export function RevenueChart() {
   ]
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">Sales This Week</h3>
-          <p className="text-sm text-slate-500">Daily sales compared with the target</p>
+          <h3 className="text-lg font-semibold text-white">Sales This Week</h3>
+          <p className="text-sm text-[#9CB4CA]">Daily sales compared with the target</p>
         </div>
         <div className="flex gap-2">
-          <button className="rounded px-3 py-1 text-sm font-medium text-slate-900 hover:bg-slate-100">Day</button>
-          <button className="rounded px-3 py-1 text-sm font-medium bg-emerald-600 text-white">Week</button>
-          <button className="rounded px-3 py-1 text-sm font-medium text-slate-900 hover:bg-slate-100">Month</button>
+          <button className="rounded px-3 py-1 text-sm font-medium text-white hover:bg-[#1A2846]">Day</button>
+          <button className="rounded px-3 py-1 text-sm font-medium bg-[#42688C] text-white">Week</button>
+          <button className="rounded px-3 py-1 text-sm font-medium text-white hover:bg-[#1A2846]">Month</button>
         </div>
       </div>
 
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-          <XAxis dataKey="day" stroke="#64748b" />
-          <YAxis stroke="#64748b" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#42688C" />
+          <XAxis dataKey="day" stroke="#9CB4CA" />
+          <YAxis stroke="#9CB4CA" />
           <Tooltip
             contentStyle={{
-              backgroundColor: '#ffffff',
-              border: '1px solid #e2e8f0',
+              backgroundColor: '#0C0F1D',
+              border: '1px solid #42688C',
               borderRadius: '6px',
             }}
-            labelStyle={{ color: '#0f172a' }}
+            labelStyle={{ color: '#ffffff' }}
           />
-          <Line type="monotone" dataKey="revenue" stroke="#059669" strokeWidth={2} dot={{ fill: '#059669' }} />
-          <Line type="monotone" dataKey="target" stroke="#e2e8f0" strokeWidth={2} strokeDasharray="5 5" />
+          <Line type="monotone" dataKey="revenue" stroke="#E2F4DF" strokeWidth={2} dot={{ fill: '#E2F4DF' }} />
+          <Line type="monotone" dataKey="target" stroke="#42688C" strokeWidth={2} strokeDasharray="5 5" />
         </LineChart>
       </ResponsiveContainer>
 
       <div className="mt-4 flex gap-6 text-sm">
         <div>
-          <span className="text-slate-500">Average Daily Revenue:</span>
-          <p className="text-lg font-semibold text-slate-900">KES 57,000</p>
+          <span className="text-[#9CB4CA]">Average Daily Revenue:</span>
+          <p className="text-lg font-semibold text-white">KES 57,000</p>
         </div>
         <div>
-          <span className="text-slate-500">Weekly Total:</span>
-          <p className="text-lg font-semibold text-emerald-600">KES 400,000</p>
+          <span className="text-[#9CB4CA]">Weekly Total:</span>
+          <p className="text-lg font-semibold text-[#E2F4DF]">KES 400,000</p>
         </div>
       </div>
     </div>

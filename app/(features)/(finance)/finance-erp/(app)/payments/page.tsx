@@ -38,9 +38,9 @@ function formatCurrency(value: number) {
 
 function StatusBadge({ status }: { status: PaymentStatus }) {
   const styles: Record<PaymentStatus, string> = {
-    Settled: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100",
-    Pending: "bg-amber-50 text-amber-700 ring-1 ring-amber-100",
-    Failed: "bg-red-50 text-red-700 ring-1 ring-red-100",
+    Settled: "bg-[#42688C]/20 text-[#E2F4DF] ring-1 ring-[#42688C]/30",
+    Pending: "bg-amber-400/15 text-amber-200 ring-1 ring-amber-300/25",
+    Failed: "bg-red-400/15 text-red-200 ring-1 ring-red-300/25",
   };
 
   return (
@@ -65,7 +65,7 @@ export default function PaymentsPage() {
       subtitle="Track customer receipts, payment methods, fees, and settlement status"
       actions={
         <>
-          <Button className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700">
+          <Button className="gap-2 bg-[#42688C] text-white hover:bg-[#52789B]">
             <Plus className="h-4 w-4" /> Record Payment
           </Button>
           <Button variant="outline" className="gap-2">
@@ -85,36 +85,36 @@ export default function PaymentsPage() {
             { label: "Processing Fees", value: formatCurrency(fees), helper: "Across all channels" },
             { label: "Success Rate", value: "80.0%", helper: "Last 24 hours" },
           ].map((metric) => (
-            <div key={metric.label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-slate-500">{metric.label}</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900">{metric.value}</p>
-              <p className="mt-1 text-xs text-slate-500">{metric.helper}</p>
+            <div key={metric.label} className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+              <p className="text-sm font-medium text-[#9CB4CA]">{metric.label}</p>
+              <p className="mt-2 text-2xl font-bold text-white">{metric.value}</p>
+              <p className="mt-1 text-xs text-[#9CB4CA]">{metric.helper}</p>
             </div>
           ))}
         </section>
 
         <section className="grid gap-4 lg:grid-cols-4">
           {methodSummary.map(({ label, value, count, icon: Icon }) => (
-            <div key={label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div key={label} className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">{label}</p>
-                  <p className="mt-1 text-xs text-slate-500">{count} payments</p>
+                  <p className="text-sm font-semibold text-white">{label}</p>
+                  <p className="mt-1 text-xs text-[#9CB4CA]">{count} payments</p>
                 </div>
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#42688C]/20 text-[#E2F4DF]">
                   <Icon className="h-5 w-5" />
                 </span>
               </div>
-              <p className="mt-4 text-xl font-bold text-slate-900">{formatCurrency(value)}</p>
+              <p className="mt-4 text-xl font-bold text-white">{formatCurrency(value)}</p>
             </div>
           ))}
         </section>
 
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+        <section className="overflow-hidden rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] shadow-sm">
+          <div className="flex items-center justify-between gap-3 border-b border-[#42688C]/20 px-5 py-4">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">Payment Ledger</h2>
-              <p className="text-sm text-slate-500">Latest receipts by invoice and settlement channel</p>
+              <h2 className="text-lg font-semibold text-white">Payment Ledger</h2>
+              <p className="text-sm text-[#9CB4CA]">Latest receipts by invoice and settlement channel</p>
             </div>
             <Button variant="outline" size="sm" className="gap-2">
               <RefreshCcw className="h-4 w-4" /> Reconcile
@@ -122,8 +122,8 @@ export default function PaymentsPage() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[920px] text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50">
-                <tr className="text-xs uppercase tracking-wide text-slate-500">
+              <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
+                <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
                   <th className="px-5 py-3">Payment</th>
                   <th className="px-5 py-3">Customer</th>
                   <th className="px-5 py-3">Method</th>
@@ -135,20 +135,20 @@ export default function PaymentsPage() {
               </thead>
               <tbody>
                 {payments.map((payment) => (
-                  <tr key={payment.id} className="border-b border-slate-100 transition last:border-0 hover:bg-slate-50">
+                  <tr key={payment.id} className="border-b border-[#42688C]/20 transition last:border-0 hover:bg-[#13203A]">
                     <td className="px-5 py-4">
-                      <p className="font-semibold text-slate-900">{payment.id}</p>
-                      <p className="text-xs text-slate-500">{payment.date} / {payment.invoice}</p>
+                      <p className="font-semibold text-white">{payment.id}</p>
+                      <p className="text-xs text-[#9CB4CA]">{payment.date} / {payment.invoice}</p>
                     </td>
-                    <td className="px-5 py-4 font-medium text-slate-900">{payment.customer}</td>
+                    <td className="px-5 py-4 font-medium text-white">{payment.customer}</td>
                     <td className="px-5 py-4">
-                      <p className="font-medium text-slate-900">{payment.method}</p>
-                      <p className="text-xs text-slate-500">{payment.channel}</p>
+                      <p className="font-medium text-white">{payment.method}</p>
+                      <p className="text-xs text-[#9CB4CA]">{payment.channel}</p>
                     </td>
-                    <td className="px-5 py-4 text-right font-semibold text-slate-900">{formatCurrency(payment.amount)}</td>
-                    <td className="px-5 py-4 text-right text-slate-500">{formatCurrency(payment.fee)}</td>
+                    <td className="px-5 py-4 text-right font-semibold text-white">{formatCurrency(payment.amount)}</td>
+                    <td className="px-5 py-4 text-right text-[#9CB4CA]">{formatCurrency(payment.fee)}</td>
                     <td className="px-5 py-4"><StatusBadge status={payment.status} /></td>
-                    <td className="px-5 py-4 text-xs font-medium text-slate-500">{payment.reference}</td>
+                    <td className="px-5 py-4 text-xs font-medium text-[#9CB4CA]">{payment.reference}</td>
                   </tr>
                 ))}
               </tbody>

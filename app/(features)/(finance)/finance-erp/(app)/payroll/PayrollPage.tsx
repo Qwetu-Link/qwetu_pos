@@ -160,9 +160,9 @@ function initials(name: string) {
 
 function StatusBadge({ status }: { status: PayrollStatus }) {
   const styles: Record<PayrollStatus, string> = {
-    paid: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100",
-    scheduled: "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
-    failed: "bg-red-50 text-red-700 ring-1 ring-red-100",
+    paid: "bg-[#42688C]/20 text-[#E2F4DF] ring-1 ring-[#42688C]/30",
+    scheduled: "bg-[#1A2846] text-[#D3E3F0] ring-1 ring-[#42688C]/30",
+    failed: "bg-red-400/15 text-red-200 ring-1 ring-red-300/25",
   };
 
   return (
@@ -179,14 +179,14 @@ function MetricCard({
   icon: Icon,
 }: PayrollMetricCardProps) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-slate-900">{value}</p>
-          <p className="mt-1 text-xs text-slate-500">{helper}</p>
+          <p className="text-sm font-medium text-[#9CB4CA]">{label}</p>
+          <p className="mt-2 text-2xl font-bold tracking-tight text-white">{value}</p>
+          <p className="mt-1 text-xs text-[#9CB4CA]">{helper}</p>
         </div>
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#42688C]/20 text-[#E2F4DF]">
           <Icon className="h-5 w-5" />
         </span>
       </div>
@@ -225,7 +225,7 @@ export default function PayrollPage() {
           <Button variant="outline" className="gap-2 text-xs">
             <Download className="h-3.5 w-3.5" /> Export Payslips
           </Button>
-          <Button className="gap-2 bg-emerald-600 text-xs text-white hover:bg-emerald-700">
+          <Button className="gap-2 bg-[#42688C] text-xs text-white hover:bg-[#52789B]">
             <Send className="h-3.5 w-3.5" /> Process Payroll
           </Button>
         </>
@@ -260,17 +260,17 @@ export default function PayrollPage() {
         </section>
 
         <section className="grid gap-4 lg:grid-cols-3">
-          <div className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col justify-between rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
             <div>
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Next Pay Run</p>
-                  <h2 className="mt-2 text-2xl font-bold text-slate-900">{formatCurrency(180000)}</h2>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9CB4CA]">Next Pay Run</p>
+                  <h2 className="mt-2 text-2xl font-bold text-white">{formatCurrency(180000)}</h2>
                 </div>
                 <StatusBadge status="scheduled" />
               </div>
 
-              <div className="mt-5 space-y-3 border-t border-slate-100 pt-4">
+              <div className="mt-5 space-y-3 border-t border-[#42688C]/20 pt-4">
                 {[
                   { label: "Base salaries", value: totals.gross },
                   { label: "Bonuses and commissions", value: 32000 },
@@ -278,70 +278,70 @@ export default function PayrollPage() {
                   { label: "Statutory deductions", value: -totals.deductions },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between gap-4 text-sm">
-                    <span className="text-slate-500">{item.label}</span>
-                    <span className="font-semibold text-slate-900">{formatCurrency(item.value)}</span>
+                    <span className="text-[#9CB4CA]">{item.label}</span>
+                    <span className="font-semibold text-white">{formatCurrency(item.value)}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <button className="mt-5 inline-flex h-10 items-center justify-center rounded-lg border border-emerald-200 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50">
+            <button className="mt-5 inline-flex h-10 items-center justify-center rounded-lg border border-[#42688C]/50 px-4 text-sm font-semibold text-[#E2F4DF] transition hover:bg-[#42688C]/20">
               Preview and approve
             </button>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Headcount Breakdown</p>
+          <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#9CB4CA]">Headcount Breakdown</p>
             <div className="mt-4 space-y-3">
               {departments.map((department) => (
                 <div key={department.name}>
                   <div className="mb-1 flex items-center justify-between text-xs">
-                    <span className="font-medium text-slate-600">{department.name}</span>
-                    <span className="font-semibold text-slate-900">{department.count}</span>
+                    <span className="font-medium text-[#B8CBE0]">{department.name}</span>
+                    <span className="font-semibold text-white">{department.count}</span>
                   </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
-                    <div className="h-full rounded-full bg-emerald-600" style={{ width: `${department.share}%` }} />
+                  <div className="h-1.5 overflow-hidden rounded-full bg-[#1A2846]">
+                    <div className="h-full rounded-full bg-[#42688C]" style={{ width: `${department.share}%` }} />
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Payroll Trend</p>
-                <p className="mt-1 text-sm text-slate-500">Last six payroll cycles</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CB4CA]">Payroll Trend</p>
+                <p className="mt-1 text-sm text-[#9CB4CA]">Last six payroll cycles</p>
               </div>
-              <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
+              <span className="rounded-full bg-[#42688C]/20 px-2.5 py-1 text-xs font-semibold text-[#E2F4DF] ring-1 ring-[#42688C]/30">
                 +9.2%
               </span>
             </div>
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={payrollTrend} margin={{ left: -24, right: 8, top: 8, bottom: 0 }}>
-                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => `${Number(value) / 1000}k`} />
+                  <CartesianGrid stroke="#42688C" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#9CB4CA", fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#9CB4CA", fontSize: 11 }} tickFormatter={(value) => `${Number(value) / 1000}k`} />
                   <Tooltip
-                    cursor={{ fill: "#f8fafc" }}
+                    cursor={{ fill: "#1A2846" }}
                     contentStyle={{
-                      backgroundColor: "#ffffff",
-                      border: "1px solid #e2e8f0",
+                      backgroundColor: "#0C0F1D",
+                      border: "1px solid #42688C",
                       borderRadius: "8px",
                       fontSize: "12px",
                     }}
                     formatter={(value) => formatCurrency(Number(value))}
                   />
-                  <Bar dataKey="payroll" name="Payroll" fill="#059669" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="payroll" name="Payroll" fill="#42688C" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 px-4 sm:flex-row sm:items-center sm:justify-between">
+        <section className="overflow-hidden rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-[#42688C]/30 bg-[#13203A] px-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 overflow-x-auto">
               {tabs.map((item) => (
                 <button
@@ -349,8 +349,8 @@ export default function PayrollPage() {
                   onClick={() => setTab(item.id)}
                   className={`shrink-0 border-b-2 px-4 py-3.5 text-xs font-semibold transition ${
                     tab === item.id
-                      ? "border-emerald-600 text-slate-900"
-                      : "border-transparent text-slate-500 hover:text-slate-900"
+                      ? "border-[#42688C] text-white"
+                      : "border-transparent text-[#9CB4CA] hover:text-white"
                   }`}
                 >
                   {item.label}
@@ -359,7 +359,7 @@ export default function PayrollPage() {
             </div>
             <button
               onClick={() => setShowTableFigures((current) => !current)}
-              className="mb-3 inline-flex items-center gap-2 self-start rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-500 transition hover:bg-white hover:text-slate-900 sm:mb-0 sm:self-auto"
+              className="mb-3 inline-flex items-center gap-2 self-start rounded-lg px-2 py-1.5 text-xs font-semibold text-[#9CB4CA] transition hover:bg-[#0C0F1D] hover:text-white sm:mb-0 sm:self-auto"
             >
               {showTableFigures ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
               {showTableFigures ? "Hide" : "Show"} table figures
@@ -369,8 +369,8 @@ export default function PayrollPage() {
           {tab === "employees" && (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[920px] text-left text-sm">
-                <thead className="border-b border-slate-200 bg-slate-50">
-                  <tr className="text-xs uppercase tracking-wide text-slate-500">
+                <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
+                  <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
                     <th className="px-5 py-3">Employee</th>
                     <th className="px-5 py-3">Department</th>
                     <th className="px-5 py-3 text-right">Base Salary</th>
@@ -383,27 +383,27 @@ export default function PayrollPage() {
                 </thead>
                 <tbody>
                   {employees.map((employee) => (
-                    <tr key={employee.id} className="border-b border-slate-100 transition last:border-0 hover:bg-slate-50">
+                    <tr key={employee.id} className="border-b border-[#42688C]/20 transition last:border-0 hover:bg-[#13203A]">
                       <td className="px-5 py-4">
                         <div className="flex min-w-0 items-center gap-3">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-xs font-bold text-emerald-700">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#42688C]/20 text-xs font-bold text-[#E2F4DF]">
                             {initials(employee.name)}
                           </span>
                           <div className="min-w-0">
-                            <p className="font-semibold text-slate-900">{employee.name}</p>
-                            <p className="text-xs text-slate-500">{employee.id} - {employee.bank}</p>
+                            <p className="font-semibold text-white">{employee.name}</p>
+                            <p className="text-xs text-[#9CB4CA]">{employee.id} - {employee.bank}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-5 py-4">
-                        <p className="font-medium text-slate-900">{employee.role}</p>
-                        <p className="text-xs text-slate-500">{employee.department}</p>
+                        <p className="font-medium text-white">{employee.role}</p>
+                        <p className="text-xs text-[#9CB4CA]">{employee.department}</p>
                       </td>
-                      <td className="px-5 py-4 text-right font-semibold text-slate-900">{masked(showTableFigures, employee.salary, true)}</td>
-                      <td className="px-5 py-4 text-right text-slate-600">{employee.advances ? masked(showTableFigures, employee.advances, true) : "-"}</td>
-                      <td className="px-5 py-4 text-right text-slate-600">{employee.deductions ? masked(showTableFigures, employee.deductions, true) : "-"}</td>
-                      <td className="px-5 py-4 text-right font-semibold text-emerald-700">{masked(showTableFigures, employee.netPay, true)}</td>
-                      <td className="px-5 py-4 text-slate-500">{employee.payDate}</td>
+                      <td className="px-5 py-4 text-right font-semibold text-white">{masked(showTableFigures, employee.salary, true)}</td>
+                      <td className="px-5 py-4 text-right text-[#B8CBE0]">{employee.advances ? masked(showTableFigures, employee.advances, true) : "-"}</td>
+                      <td className="px-5 py-4 text-right text-[#B8CBE0]">{employee.deductions ? masked(showTableFigures, employee.deductions, true) : "-"}</td>
+                      <td className="px-5 py-4 text-right font-semibold text-[#E2F4DF]">{masked(showTableFigures, employee.netPay, true)}</td>
+                      <td className="px-5 py-4 text-[#9CB4CA]">{employee.payDate}</td>
                       <td className="px-5 py-4"><StatusBadge status={employee.status} /></td>
                     </tr>
                   ))}
@@ -415,8 +415,8 @@ export default function PayrollPage() {
           {tab === "history" && (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[820px] text-left text-sm">
-                <thead className="border-b border-slate-200 bg-slate-50">
-                  <tr className="text-xs uppercase tracking-wide text-slate-500">
+                <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
+                  <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
                     <th className="px-5 py-3">Pay Run</th>
                     <th className="px-5 py-3">Period</th>
                     <th className="px-5 py-3 text-right">Employees</th>
@@ -429,15 +429,15 @@ export default function PayrollPage() {
                 </thead>
                 <tbody>
                   {payRuns.map((run) => (
-                    <tr key={run.id} className="border-b border-slate-100 transition last:border-0 hover:bg-slate-50">
-                      <td className="px-5 py-4 font-semibold text-slate-900">{run.id}</td>
-                      <td className="px-5 py-4 text-slate-600">{run.period}</td>
-                      <td className="px-5 py-4 text-right text-slate-600">{run.employees}</td>
-                      <td className="px-5 py-4 text-right font-semibold text-slate-900">{formatCurrency(run.gross)}</td>
-                      <td className="px-5 py-4 text-right text-red-600">{formatCurrency(run.deductions)}</td>
-                      <td className="px-5 py-4 text-right font-semibold text-emerald-700">{formatCurrency(run.net)}</td>
+                    <tr key={run.id} className="border-b border-[#42688C]/20 transition last:border-0 hover:bg-[#13203A]">
+                      <td className="px-5 py-4 font-semibold text-white">{run.id}</td>
+                      <td className="px-5 py-4 text-[#B8CBE0]">{run.period}</td>
+                      <td className="px-5 py-4 text-right text-[#B8CBE0]">{run.employees}</td>
+                      <td className="px-5 py-4 text-right font-semibold text-white">{formatCurrency(run.gross)}</td>
+                      <td className="px-5 py-4 text-right text-red-200">{formatCurrency(run.deductions)}</td>
+                      <td className="px-5 py-4 text-right font-semibold text-[#E2F4DF]">{formatCurrency(run.net)}</td>
                       <td className="px-5 py-4"><StatusBadge status={run.status} /></td>
-                      <td className="px-5 py-4 text-slate-500">{run.date}</td>
+                      <td className="px-5 py-4 text-[#9CB4CA]">{run.date}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -448,17 +448,17 @@ export default function PayrollPage() {
           {tab === "schedule" && (
             <div className="grid gap-6 p-5 lg:grid-cols-2">
               <div>
-                <h2 className="text-sm font-semibold text-slate-900">Upcoming Disbursements</h2>
+                <h2 className="text-sm font-semibold text-white">Upcoming Disbursements</h2>
                 <div className="mt-3 space-y-3">
                   {scheduleItems.map((item) => (
-                    <div key={item.label} className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3">
-                      <span className="h-2 w-2 rounded-full bg-emerald-600" />
+                    <div key={item.label} className="flex items-center gap-3 rounded-lg border border-[#42688C]/30 bg-[#1A2846]/70 p-3">
+                      <span className="h-2 w-2 rounded-full bg-[#42688C]" />
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-slate-900">{item.label}</p>
-                        <p className="text-xs text-slate-500">{item.date}</p>
+                        <p className="font-semibold text-white">{item.label}</p>
+                        <p className="text-xs text-[#9CB4CA]">{item.date}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-slate-900">{formatCurrency(item.amount)}</p>
+                        <p className="font-semibold text-white">{formatCurrency(item.amount)}</p>
                         <div className="mt-1"><StatusBadge status={item.status} /></div>
                       </div>
                     </div>
@@ -467,16 +467,16 @@ export default function PayrollPage() {
               </div>
 
               <div>
-                <h2 className="text-sm font-semibold text-slate-900">Statutory Deadlines</h2>
+                <h2 className="text-sm font-semibold text-white">Statutory Deadlines</h2>
                 <div className="mt-3 space-y-3">
                   {complianceItems.map((item) => (
-                    <div key={item.label} className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3">
-                      <ShieldCheck className="h-4 w-4 text-slate-500" />
+                    <div key={item.label} className="flex items-center gap-3 rounded-lg border border-[#42688C]/30 bg-[#1A2846]/70 p-3">
+                      <ShieldCheck className="h-4 w-4 text-[#9CB4CA]" />
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-slate-900">{item.label}</p>
-                        <p className="text-xs text-slate-500">Due by {item.due}</p>
+                        <p className="font-semibold text-white">{item.label}</p>
+                        <p className="text-xs text-[#9CB4CA]">Due by {item.due}</p>
                       </div>
-                      <span className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-500">
+                      <span className="rounded-md border border-[#42688C]/30 bg-[#0C0F1D] px-2 py-1 text-xs font-semibold text-[#9CB4CA]">
                         {item.tag}
                       </span>
                     </div>
@@ -486,7 +486,7 @@ export default function PayrollPage() {
             </div>
           )}
 
-          <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50/70 px-5 py-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 border-t border-[#42688C]/30 bg-[#1A2846]/70 px-5 py-3 text-xs text-[#9CB4CA] sm:flex-row sm:items-center sm:justify-between">
             <span>Viewing June 2026 payroll settlement data</span>
             <div className="flex items-center gap-1">
               {["1", "2", "3", "...", "18"].map((page) => (
@@ -494,8 +494,8 @@ export default function PayrollPage() {
                   key={page}
                   className={`flex h-7 w-7 items-center justify-center rounded-md border text-xs transition ${
                     page === "1"
-                      ? "border-emerald-600 bg-emerald-50 font-bold text-emerald-700"
-                      : "border-slate-200 text-slate-500 hover:bg-white"
+                      ? "border-[#42688C] bg-[#42688C]/20 font-bold text-[#E2F4DF]"
+                      : "border-[#42688C]/30 text-[#9CB4CA] hover:bg-[#0C0F1D]"
                   }`}
                 >
                   {page}

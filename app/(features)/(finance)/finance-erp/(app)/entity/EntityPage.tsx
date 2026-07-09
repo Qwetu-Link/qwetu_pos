@@ -35,9 +35,9 @@ const entities: FinanceEntity[] = [
 
 function StatusBadge({ status }: { status: FinanceEntityStatus }) {
   const styles = {
-    paid: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100",
-    scheduled: "bg-amber-50 text-amber-700 ring-1 ring-amber-100",
-    failed: "bg-red-50 text-red-700 ring-1 ring-red-100",
+    paid: "bg-[#42688C]/20 text-[#E2F4DF] ring-1 ring-[#42688C]/30",
+    scheduled: "bg-amber-400/15 text-amber-200 ring-1 ring-amber-300/25",
+    failed: "bg-red-400/15 text-red-200 ring-1 ring-red-300/25",
   };
 
   const labels = {
@@ -77,7 +77,7 @@ export default function EntitiesPage() {
           <Button variant="outline" className="gap-2">
             <Download className="h-4 w-4" /> Export Group Data
           </Button>
-          <Button className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700">
+          <Button className="gap-2 bg-[#42688C] text-white hover:bg-[#52789B]">
             <Plus className="h-4 w-4" /> Add New Branch
           </Button>
         </>
@@ -91,14 +91,14 @@ export default function EntitiesPage() {
             { label: "Consolidated Revenue", value: formatCurrency(totalRevenue), helper: "+14.2% FY2026 run-rate", icon: TrendingUp },
             { label: "Base Currency", value: "KES", helper: "Used across all branches", icon: Globe },
           ].map(({ label, value, helper, icon: Icon }) => (
-            <div key={label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div key={label} className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-500">{label}</p>
-                  <p className="mt-2 text-2xl font-bold text-slate-900">{value}</p>
-                  <p className="mt-1 text-xs text-slate-500">{helper}</p>
+                  <p className="text-sm font-medium text-[#9CB4CA]">{label}</p>
+                  <p className="mt-2 text-2xl font-bold text-white">{value}</p>
+                  <p className="mt-1 text-xs text-[#9CB4CA]">{helper}</p>
                 </div>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#42688C]/20 text-[#E2F4DF]">
                   <Icon className="h-5 w-5" />
                 </span>
               </div>
@@ -106,7 +106,7 @@ export default function EntitiesPage() {
           ))}
         </section>
 
-        <section className="flex flex-col gap-3 border-b border-slate-200 pb-3 lg:flex-row lg:items-center lg:justify-between">
+        <section className="flex flex-col gap-3 border-b border-[#42688C]/30 pb-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             {[
               { id: "all", label: "All portfolios" },
@@ -119,29 +119,29 @@ export default function EntitiesPage() {
                 onClick={() => setFilterType(item.id)}
                 className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
                   filterType === item.id
-                    ? "bg-emerald-600 text-white"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    ? "bg-[#42688C] text-white"
+                    : "text-[#B8CBE0] hover:bg-[#1A2846] hover:text-white"
                 }`}
               >
                 {item.label}
               </button>
             ))}
           </div>
-          <span className="text-sm text-slate-500">Showing {filteredEntities.length} of {entities.length} records</span>
+          <span className="text-sm text-[#9CB4CA]">Showing {filteredEntities.length} of {entities.length} records</span>
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
           {filteredEntities.map((entity) => (
             <article
               key={entity.id}
-              className="flex min-w-0 flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md"
+              className="flex min-w-0 flex-col justify-between rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm transition hover:border-[#42688C]/50 hover:shadow-md"
             >
               <div>
                 <div className="mb-5 flex items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <h2 className="text-base font-semibold text-slate-900">{entity.name}</h2>
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">{entity.id}</span>
+                    <h2 className="text-base font-semibold text-white">{entity.name}</h2>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-[#9CB4CA]">
+                      <span className="rounded-full bg-[#1A2846] px-2.5 py-1 text-xs font-semibold text-[#B8CBE0] ring-1 ring-[#42688C]/30">{entity.id}</span>
                       <span>{entity.type}</span>
                       <span>{entity.country}</span>
                     </div>
@@ -149,27 +149,27 @@ export default function EntitiesPage() {
                   <StatusBadge status={entity.status} />
                 </div>
 
-                <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:grid-cols-3">
+                <div className="grid gap-3 rounded-lg border border-[#42688C]/30 bg-[#13203A] p-4 sm:grid-cols-3">
                   <div>
-                    <p className="text-sm font-medium text-slate-500">Reporting Currency</p>
-                    <p className="mt-1 font-bold text-slate-900">{entity.currency}</p>
+                    <p className="text-sm font-medium text-[#9CB4CA]">Reporting Currency</p>
+                    <p className="mt-1 font-bold text-white">{entity.currency}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-slate-500">Operations Staff</p>
-                    <p className="mt-1 font-bold text-slate-900">{entity.employees.toLocaleString()}</p>
+                    <p className="text-sm font-medium text-[#9CB4CA]">Operations Staff</p>
+                    <p className="mt-1 font-bold text-white">{entity.employees.toLocaleString()}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-slate-500">Annualized Revenue</p>
-                    <p className="mt-1 font-bold text-slate-900">{formatCurrency(entity.revenue)}</p>
+                    <p className="text-sm font-medium text-[#9CB4CA]">Annualized Revenue</p>
+                    <p className="mt-1 font-bold text-white">{formatCurrency(entity.revenue)}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-5 flex flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                <button className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition-colors hover:text-emerald-700">
+              <div className="mt-5 flex flex-col gap-2 border-t border-[#42688C]/20 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <button className="inline-flex items-center gap-2 text-sm font-semibold text-[#9CB4CA] transition-colors hover:text-[#E2F4DF]">
                   <Eye className="h-4 w-4" /> View Ledger Balance
                 </button>
-                <button className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition-colors hover:text-emerald-700">
+                <button className="inline-flex items-center gap-2 text-sm font-semibold text-[#9CB4CA] transition-colors hover:text-[#E2F4DF]">
                   <Edit3 className="h-4 w-4" /> Property Configurations
                 </button>
               </div>
@@ -177,10 +177,10 @@ export default function EntitiesPage() {
           ))}
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-slate-900">Annualized Branch Portfolio Contribution</h2>
-            <p className="text-sm text-slate-500">Revenue contribution shown in KES millions.</p>
+            <h2 className="text-lg font-semibold text-white">Annualized Branch Portfolio Contribution</h2>
+            <p className="text-sm text-[#9CB4CA]">Revenue contribution shown in KES millions.</p>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -191,19 +191,19 @@ export default function EntitiesPage() {
                 }))}
                 margin={{ left: -15, right: 5, bottom: 5 }}
               >
-                <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="shortName" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => `KES ${value}M`} />
+                <CartesianGrid stroke="#42688C" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="shortName" axisLine={false} tickLine={false} tick={{ fill: "#9CB4CA", fontSize: 11 }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: "#9CB4CA", fontSize: 11 }} tickFormatter={(value) => `KES ${value}M`} />
                 <Tooltip
-                  cursor={{ fill: "#f8fafc" }}
+                  cursor={{ fill: "#1A2846" }}
                   contentStyle={{
-                    background: "#ffffff",
+                    background: "#0C0F1D",
                     borderRadius: "8px",
-                    border: "1px solid #e2e8f0",
+                    border: "1px solid #42688C",
                     fontSize: "12px",
                   }}
                 />
-                <Bar dataKey="revenueKES" name="Revenue Base (KES)" fill="#059669" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="revenueKES" name="Revenue Base (KES)" fill="#42688C" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

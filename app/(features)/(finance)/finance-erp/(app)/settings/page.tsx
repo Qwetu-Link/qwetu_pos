@@ -58,23 +58,23 @@ export default function SettingsPage() {
           {sections.map((section) => {
             const SectionIcon = section.icon
             return (
-              <div key={section.title} className="rounded-xl border border-slate-200 bg-white p-6 hover:border-emerald-600 transition-colors">
+              <div key={section.title} className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-6 hover:border-[#42688C] transition-colors">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 rounded-lg bg-emerald-50">
-                        <SectionIcon className="h-5 w-5 text-emerald-600" />
+                      <div className="p-2 rounded-lg bg-[#42688C]/20">
+                        <SectionIcon className="h-5 w-5 text-[#E2F4DF]" />
                       </div>
-                      <h3 className="text-lg font-semibold text-slate-900">{section.title}</h3>
+                      <h3 className="text-lg font-semibold text-white">{section.title}</h3>
                     </div>
-                    <p className="text-sm text-slate-500">{section.description}</p>
+                    <p className="text-sm text-[#9CB4CA]">{section.description}</p>
                   </div>
                 </div>
 
                 <ul className="space-y-2 mb-4">
                   {section.items.map((item) => (
-                    <li key={item} className="text-sm text-slate-900 flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+                    <li key={item} className="text-sm text-white flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#42688C]" />
                       {item}
                     </li>
                   ))}
@@ -90,27 +90,27 @@ export default function SettingsPage() {
 
         {/* Additional Admin Actions */}
         <div className="mt-8 space-y-4">
-          <h3 className="text-lg font-semibold text-slate-900">System Actions</h3>
+          <h3 className="text-lg font-semibold text-white">System Actions</h3>
           <div className="grid gap-4 md:grid-cols-3">
             <Button variant="outline" className="justify-start gap-2 h-auto py-4">
               <Database className="h-5 w-5" />
               <div className="text-left">
                 <div className="font-semibold">Database</div>
-                <div className="text-xs text-slate-500">Backup & maintenance</div>
+                <div className="text-xs text-[#9CB4CA]">Backup & maintenance</div>
               </div>
             </Button>
             <Button variant="outline" className="justify-start gap-2 h-auto py-4">
               <Shield className="h-5 w-5" />
               <div className="text-left">
                 <div className="font-semibold">Audit Trail</div>
-                <div className="text-xs text-slate-500">View system logs</div>
+                <div className="text-xs text-[#9CB4CA]">View system logs</div>
               </div>
             </Button>
             <Button variant="outline" className="justify-start gap-2 h-auto py-4">
               <LogOut className="h-5 w-5" />
               <div className="text-left">
                 <div className="font-semibold">Sign Out</div>
-                <div className="text-xs text-slate-500">End session</div>
+                <div className="text-xs text-[#9CB4CA]">End session</div>
               </div>
             </Button>
           </div>

@@ -15,32 +15,32 @@ export function ProfitTrendsChart() {
   ]
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h3 className="mb-1 text-lg font-semibold text-slate-900">Sales and Costs</h3>
-      <p className="mb-4 text-sm text-slate-500">Simple view of money made and money spent.</p>
+    <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-6 shadow-sm">
+      <h3 className="mb-1 text-lg font-semibold text-white">Sales and Costs</h3>
+      <p className="mb-4 text-sm text-[#9CB4CA]">Simple view of money made and money spent.</p>
 
       <ResponsiveContainer width="100%" height={250}>
         <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-          <XAxis dataKey="month" stroke="#64748b" />
-          <YAxis stroke="#64748b" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#42688C" />
+          <XAxis dataKey="month" stroke="#9CB4CA" />
+          <YAxis stroke="#9CB4CA" />
           <Tooltip
             contentStyle={{
-              backgroundColor: '#ffffff',
-              border: '1px solid #e2e8f0',
+              backgroundColor: '#0C0F1D',
+              border: '1px solid #42688C',
               borderRadius: '6px',
             }}
-            labelStyle={{ color: '#0f172a' }}
+            labelStyle={{ color: '#ffffff' }}
           />
           <Legend />
-          <Bar dataKey="revenue" fill="var(--color-chart-1)" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="expenses" fill="var(--color-chart-4)" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="profit" fill="#059669" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="revenue" fill="#42688C" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="expenses" fill="#1A2846" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="profit" fill="#42688C" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
 
       <div className="mt-4 text-sm">
-        <p className="text-slate-500">Average Monthly Profit: <span className="font-semibold text-slate-900">KES 64K</span></p>
+        <p className="text-[#9CB4CA]">Average Monthly Profit: <span className="font-semibold text-white">KES 64K</span></p>
       </div>
     </div>
   )

@@ -40,9 +40,9 @@ const templateCards: FinanceReportTemplate[] = [
 
 function StatusBadge({ status }: { status: FinanceReportStatus }) {
   const styles = {
-    paid: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100",
-    scheduled: "bg-amber-50 text-amber-700 ring-1 ring-amber-100",
-    failed: "bg-red-50 text-red-700 ring-1 ring-red-100",
+    paid: "bg-[#42688C]/20 text-[#E2F4DF] ring-1 ring-[#42688C]/30",
+    scheduled: "bg-amber-400/15 text-amber-200 ring-1 ring-amber-300/25",
+    failed: "bg-red-400/15 text-red-200 ring-1 ring-red-300/25",
   };
 
   const labels = {
@@ -75,7 +75,7 @@ export default function ReportsPage() {
           <Button variant="outline" className="gap-2">
             <Calendar className="h-4 w-4" /> Schedule Automation
           </Button>
-          <Button className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700">
+          <Button className="gap-2 bg-[#42688C] text-white hover:bg-[#52789B]">
             <Plus className="h-4 w-4" /> Generate Report
           </Button>
         </>
@@ -89,31 +89,31 @@ export default function ReportsPage() {
             { label: "Last Ledger Close", value: "Jun 1", helper: "Q2 cycle, 2 days early" },
             { label: "Next Scheduled Run", value: "Jul 1", helper: "Consolidated financial package" },
           ].map((metric) => (
-            <div key={metric.label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-slate-500">{metric.label}</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900">{metric.value}</p>
-              <p className="mt-1 text-xs text-slate-500">{metric.helper}</p>
+            <div key={metric.label} className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+              <p className="text-sm font-medium text-[#9CB4CA]">{metric.label}</p>
+              <p className="mt-2 text-2xl font-bold text-white">{metric.value}</p>
+              <p className="mt-1 text-xs text-[#9CB4CA]">{metric.helper}</p>
             </div>
           ))}
         </section>
 
         <section>
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-slate-900">Available Core Templates</h2>
-            <p className="text-sm text-slate-500">Run common finance, tax, audit, and management reports.</p>
+            <h2 className="text-lg font-semibold text-white">Available Core Templates</h2>
+            <p className="text-sm text-[#9CB4CA]">Run common finance, tax, audit, and management reports.</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {templateCards.map(({ icon: Icon, ...template }) => (
               <article
                 key={template.title}
-                className="group flex min-h-44 flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md"
+                className="group flex min-h-44 flex-col justify-between rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm transition hover:border-[#42688C]/50 hover:shadow-md"
               >
                 <div>
-                  <Icon className="mb-3 h-5 w-5 text-slate-500 transition group-hover:text-emerald-600" />
-                  <h3 className="text-base font-semibold text-slate-900">{template.title}</h3>
-                  <p className="mt-2 text-sm leading-5 text-slate-500">{template.desc}</p>
+                  <Icon className="mb-3 h-5 w-5 text-[#9CB4CA] transition group-hover:text-[#E2F4DF]" />
+                  <h3 className="text-base font-semibold text-white">{template.title}</h3>
+                  <p className="mt-2 text-sm leading-5 text-[#9CB4CA]">{template.desc}</p>
                 </div>
-                <span className="mt-4 inline-flex w-fit rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
+                <span className="mt-4 inline-flex w-fit rounded-full bg-[#1A2846] px-2.5 py-1 text-xs font-semibold text-[#B8CBE0] ring-1 ring-[#42688C]/30">
                   {template.type}
                 </span>
               </article>
@@ -121,22 +121,22 @@ export default function ReportsPage() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+        <section className="overflow-hidden rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-[#42688C]/30 bg-[#13203A] px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">Report Library</h2>
-              <p className="text-sm text-slate-500">Generated reports, file sizes, and processing status.</p>
+              <h2 className="text-lg font-semibold text-white">Report Library</h2>
+              <p className="text-sm text-[#9CB4CA]">Generated reports, file sizes, and processing status.</p>
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
-              <Filter className="mr-1 h-4 w-4 text-slate-500" />
+              <Filter className="mr-1 h-4 w-4 text-[#9CB4CA]" />
               {["all", "financial", "management", "tax", "compliance"].map((type) => (
                 <button
                   key={type}
                   onClick={() => setSelectedTypeFilter(type)}
                   className={`rounded-lg border px-3 py-1.5 text-xs font-semibold capitalize transition-colors ${
                     selectedTypeFilter === type
-                      ? "border-emerald-600 bg-emerald-600 text-white"
-                      : "border-slate-200 bg-white text-slate-500 hover:text-slate-900"
+                      ? "border-[#42688C] bg-[#42688C] text-white"
+                      : "border-[#42688C]/30 bg-[#0C0F1D] text-[#9CB4CA] hover:text-white"
                   }`}
                 >
                   {type}
@@ -147,8 +147,8 @@ export default function ReportsPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[920px] text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50">
-                <tr className="text-xs uppercase tracking-wide text-slate-500">
+              <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
+                <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
                   <th className="px-5 py-3">Report ID</th>
                   <th className="px-5 py-3">Name</th>
                   <th className="px-5 py-3">Type</th>
@@ -160,22 +160,22 @@ export default function ReportsPage() {
               </thead>
               <tbody>
                 {filteredLibrary.map((report) => (
-                  <tr key={report.id} className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50">
-                    <td className="px-5 py-4 text-xs font-medium text-slate-500">{report.id}</td>
-                    <td className="px-5 py-4 font-semibold text-slate-900">{report.name}</td>
-                    <td className="px-5 py-4 text-slate-600">{report.type}</td>
-                    <td className="px-5 py-4 text-slate-500">{report.generated}</td>
-                    <td className="px-5 py-4 text-slate-500">{report.size}</td>
+                  <tr key={report.id} className="border-b border-[#42688C]/20 transition-colors last:border-0 hover:bg-[#13203A]">
+                    <td className="px-5 py-4 text-xs font-medium text-[#9CB4CA]">{report.id}</td>
+                    <td className="px-5 py-4 font-semibold text-white">{report.name}</td>
+                    <td className="px-5 py-4 text-[#B8CBE0]">{report.type}</td>
+                    <td className="px-5 py-4 text-[#9CB4CA]">{report.generated}</td>
+                    <td className="px-5 py-4 text-[#9CB4CA]">{report.size}</td>
                     <td className="px-5 py-4"><StatusBadge status={report.status} /></td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-center gap-3">
-                        <button title="View Preview" className="text-slate-500 transition-colors hover:text-emerald-600">
+                        <button title="View Preview" className="text-[#9CB4CA] transition-colors hover:text-[#E2F4DF]">
                           <Eye className="h-4 w-4" />
                         </button>
-                        <button title="Download Package" className="text-slate-500 transition-colors hover:text-emerald-600">
+                        <button title="Download Package" className="text-[#9CB4CA] transition-colors hover:text-[#E2F4DF]">
                           <Download className="h-4 w-4" />
                         </button>
-                        <button title="Print Physical Copy" className="text-slate-500 transition-colors hover:text-emerald-600">
+                        <button title="Print Physical Copy" className="text-[#9CB4CA] transition-colors hover:text-[#E2F4DF]">
                           <Printer className="h-4 w-4" />
                         </button>
                       </div>
@@ -184,7 +184,7 @@ export default function ReportsPage() {
                 ))}
                 {filteredLibrary.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-5 py-8 text-center text-sm text-slate-500">
+                    <td colSpan={7} className="px-5 py-8 text-center text-sm text-[#9CB4CA]">
                       No report logs found matching the selected type filter.
                     </td>
                   </tr>
@@ -193,7 +193,7 @@ export default function ReportsPage() {
             </table>
           </div>
 
-          <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/70 px-5 py-3 text-xs text-slate-500">
+          <div className="flex items-center justify-between border-t border-[#42688C]/30 bg-[#1A2846]/70 px-5 py-3 text-xs text-[#9CB4CA]">
             <span>Updated from Qwetu POS sales, expenses, payroll, and branch records</span>
             <span>Showing {filteredLibrary.length} of {reportList.length} total entries</span>
           </div>

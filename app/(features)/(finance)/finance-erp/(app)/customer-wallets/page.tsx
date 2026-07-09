@@ -29,9 +29,9 @@ function formatCurrency(value: number) {
 
 function StatusBadge({ status }: { status: CustomerWalletStatus }) {
   const styles: Record<CustomerWalletStatus, string> = {
-    Active: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100",
-    Watch: "bg-amber-50 text-amber-700 ring-1 ring-amber-100",
-    Dormant: "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
+    Active: "bg-[#42688C]/20 text-[#E2F4DF] ring-1 ring-[#42688C]/30",
+    Watch: "bg-amber-400/15 text-amber-200 ring-1 ring-amber-300/25",
+    Dormant: "bg-[#1A2846] text-[#D3E3F0] ring-1 ring-[#42688C]/30",
   };
 
   return (
@@ -58,7 +58,7 @@ export default function CustomerWalletsPage() {
       subtitle="Manage customer deposits, store credit, refund credit, and wallet liability controls"
       actions={
         <>
-          <Button className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700">
+          <Button className="gap-2 bg-[#42688C] text-white hover:bg-[#52789B]">
             <Plus className="h-4 w-4" /> New Deposit
           </Button>
           <Button variant="outline" className="gap-2">
@@ -75,14 +75,14 @@ export default function CustomerWalletsPage() {
             { label: "Store Credit", value: formatCurrency(totals.storeCredit), helper: "Issued by store teams", icon: ReceiptText },
             { label: "Refund Credits", value: formatCurrency(totals.refundCredit), helper: "Available refund value", icon: ShieldCheck },
           ].map(({ label, value, helper, icon: Icon }) => (
-            <div key={label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div key={label} className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-medium text-slate-500">{label}</p>
-                  <p className="mt-2 text-2xl font-bold text-slate-900">{value}</p>
-                  <p className="mt-1 text-xs text-slate-500">{helper}</p>
+                  <p className="text-sm font-medium text-[#9CB4CA]">{label}</p>
+                  <p className="mt-2 text-2xl font-bold text-white">{value}</p>
+                  <p className="mt-1 text-xs text-[#9CB4CA]">{helper}</p>
                 </div>
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#42688C]/20 text-[#E2F4DF]">
                   <Icon className="h-5 w-5" />
                 </span>
               </div>
@@ -91,15 +91,15 @@ export default function CustomerWalletsPage() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-100 px-5 py-4">
-              <h2 className="text-lg font-semibold text-slate-900">Wallet Balances</h2>
-              <p className="text-sm text-slate-500">Customer wallet split by deposit, store credit, and refund credit.</p>
+          <div className="overflow-hidden rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] shadow-sm">
+            <div className="border-b border-[#42688C]/20 px-5 py-4">
+              <h2 className="text-lg font-semibold text-white">Wallet Balances</h2>
+              <p className="text-sm text-[#9CB4CA]">Customer wallet split by deposit, store credit, and refund credit.</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[920px] text-left text-sm">
-                <thead className="border-b border-slate-200 bg-slate-50">
-                  <tr className="text-xs uppercase tracking-wide text-slate-500">
+                <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
+                  <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
                     <th className="px-5 py-3">Customer</th>
                     <th className="px-5 py-3 text-right">Savings</th>
                     <th className="px-5 py-3 text-right">Store Credit</th>
@@ -111,18 +111,18 @@ export default function CustomerWalletsPage() {
                 </thead>
                 <tbody>
                   {wallets.map((wallet) => (
-                    <tr key={wallet.id} className="border-b border-slate-100 transition last:border-0 hover:bg-slate-50">
+                    <tr key={wallet.id} className="border-b border-[#42688C]/20 transition last:border-0 hover:bg-[#13203A]">
                       <td className="px-5 py-4">
-                        <p className="font-semibold text-slate-900">{wallet.customer}</p>
-                        <p className="text-xs text-slate-500">{wallet.id} / Last activity {wallet.lastTransaction}</p>
+                        <p className="font-semibold text-white">{wallet.customer}</p>
+                        <p className="text-xs text-[#9CB4CA]">{wallet.id} / Last activity {wallet.lastTransaction}</p>
                       </td>
-                      <td className="px-5 py-4 text-right font-semibold text-slate-900">{formatCurrency(wallet.savings)}</td>
-                      <td className="px-5 py-4 text-right font-semibold text-emerald-700">{formatCurrency(wallet.storeCredit)}</td>
-                      <td className="px-5 py-4 text-right font-semibold text-amber-700">{formatCurrency(wallet.refundCredit)}</td>
-                      <td className="px-5 py-4 text-right font-bold text-slate-900">{formatCurrency(wallet.total)}</td>
+                      <td className="px-5 py-4 text-right font-semibold text-white">{formatCurrency(wallet.savings)}</td>
+                      <td className="px-5 py-4 text-right font-semibold text-[#E2F4DF]">{formatCurrency(wallet.storeCredit)}</td>
+                      <td className="px-5 py-4 text-right font-semibold text-amber-200">{formatCurrency(wallet.refundCredit)}</td>
+                      <td className="px-5 py-4 text-right font-bold text-white">{formatCurrency(wallet.total)}</td>
                       <td className="px-5 py-4"><StatusBadge status={wallet.status} /></td>
                       <td className="px-5 py-4">
-                        <button className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 transition hover:text-emerald-800">
+                        <button className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E2F4DF] transition hover:text-white">
                           <Eye className="h-4 w-4" /> View
                         </button>
                       </td>
@@ -134,17 +134,17 @@ export default function CustomerWalletsPage() {
           </div>
 
           <aside className="space-y-6">
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">Recent Wallet Activity</h2>
+            <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+              <h2 className="text-lg font-semibold text-white">Recent Wallet Activity</h2>
               <div className="mt-4 space-y-3">
                 {walletActivity.map((activity) => (
-                  <div key={activity.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <div key={activity.id} className="rounded-lg border border-[#42688C]/30 bg-[#13203A] p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-slate-900">{activity.customer}</p>
-                        <p className="text-xs text-slate-500">{activity.type} / {activity.date}</p>
+                        <p className="font-semibold text-white">{activity.customer}</p>
+                        <p className="text-xs text-[#9CB4CA]">{activity.type} / {activity.date}</p>
                       </div>
-                      <span className={`text-sm font-bold ${activity.amount >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+                      <span className={`text-sm font-bold ${activity.amount >= 0 ? "text-[#E2F4DF]" : "text-red-200"}`}>
                         {formatCurrency(activity.amount)}
                       </span>
                     </div>
@@ -153,20 +153,20 @@ export default function CustomerWalletsPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">Wallet Controls</h2>
-              <div className="mt-4 space-y-3 text-sm text-slate-600">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+              <h2 className="text-lg font-semibold text-white">Wallet Controls</h2>
+              <div className="mt-4 space-y-3 text-sm text-[#B8CBE0]">
+                <div className="flex items-center justify-between border-b border-[#42688C]/20 pb-3">
                   <span>Wallet liability account</span>
-                  <span className="font-semibold text-slate-900">Balanced</span>
+                  <span className="font-semibold text-white">Balanced</span>
                 </div>
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center justify-between border-b border-[#42688C]/20 pb-3">
                   <span>Refund credit approvals</span>
-                  <span className="font-semibold text-amber-700">2 pending</span>
+                  <span className="font-semibold text-amber-200">2 pending</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Dormant wallets</span>
-                  <span className="font-semibold text-slate-900">1 customer</span>
+                  <span className="font-semibold text-white">1 customer</span>
                 </div>
               </div>
             </div>

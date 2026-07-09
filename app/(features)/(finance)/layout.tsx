@@ -8,7 +8,7 @@ export default function FinDashboardLayout({ children }: { children: React.React
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-50 text-slate-900">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#13203A] text-white">
 
       <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
       <div
@@ -18,7 +18,7 @@ export default function FinDashboardLayout({ children }: { children: React.React
       >
         <TopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto bg-[#13203A] p-4 sm:p-6 lg:p-8">
           <div className="mx-auto w-full max-w-7xl">
             {children}
           </div>

@@ -11,42 +11,42 @@ export function KPICards() {
       value: 'KES 457,230',
       change: '+12.5%',
       icon: TrendingUp,
-      iconBg: 'bg-emerald-50 text-emerald-700',
+      iconBg: 'bg-[#42688C]/20 text-[#E2F4DF]',
     },
     {
       label: 'M-Pesa Collections',
       value: 'KES 214,800',
       change: '+8.2%',
       icon: CreditCard,
-      iconBg: 'bg-blue-50 text-blue-700',
+      iconBg: 'bg-[#42688C]/20 text-[#E2F4DF]',
     },
     {
       label: 'Cash Drawer Total',
       value: 'KES 138,450',
       change: '+2.8%',
       icon: Banknote,
-      iconBg: 'bg-amber-50 text-amber-700',
+      iconBg: 'bg-amber-400/15 text-amber-200',
     },
     {
       label: 'Profit After Costs',
       value: '38.4%',
       change: '+5.1%',
       icon: ReceiptText,
-      iconBg: 'bg-violet-50 text-violet-700',
+      iconBg: 'bg-[#42688C]/15 text-[#E2F4DF]',
     },
     {
       label: 'Customer Wallets',
       value: 'KES 92,600',
       change: '+4.6%',
       icon: Wallet,
-      iconBg: 'bg-emerald-50 text-emerald-700',
+      iconBg: 'bg-[#42688C]/20 text-[#E2F4DF]',
     },
     {
       label: 'Checked Today',
       value: '96.8%',
       change: '+1.7%',
       icon: ShieldCheck,
-      iconBg: 'bg-slate-100 text-slate-700',
+      iconBg: 'bg-[#1A2846] text-[#D3E3F0]',
     },
   ]
 
@@ -59,23 +59,23 @@ export function KPICards() {
         return (
           <div
             key={idx}
-            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md"
+            className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm transition hover:border-[#42688C]/50 hover:shadow-md"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-slate-500">
+                <p className="text-sm font-medium text-[#9CB4CA]">
                   {kpi.label}
                 </p>
 
                 <div className="mt-3 flex flex-wrap items-baseline gap-2">
-                  <h3 className="text-2xl font-bold tracking-tight text-slate-900">
+                  <h3 className="text-2xl font-bold tracking-tight text-white">
                     {kpi.value}
                   </h3>
 
                   <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                     isPositive
-                      ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100'
-                      : 'bg-red-50 text-red-700 ring-1 ring-red-100'
+                      ? 'bg-[#42688C]/20 text-[#E2F4DF] ring-1 ring-[#42688C]/30'
+                      : 'bg-red-400/15 text-red-200 ring-1 ring-red-300/25'
                   }`}>
                     {kpi.change}
                   </span>

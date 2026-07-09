@@ -38,9 +38,9 @@ function formatCurrency(value: number) {
 
 function StatusBadge({ status }: { status: SalesStatus }) {
   const styles: Record<SalesStatus, string> = {
-    Paid: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100",
-    Pending: "bg-amber-50 text-amber-700 ring-1 ring-amber-100",
-    Overdue: "bg-red-50 text-red-700 ring-1 ring-red-100",
+    Paid: "bg-[#42688C]/20 text-[#E2F4DF] ring-1 ring-[#42688C]/30",
+    Pending: "bg-amber-400/15 text-amber-200 ring-1 ring-amber-300/25",
+    Overdue: "bg-red-400/15 text-red-200 ring-1 ring-red-300/25",
   };
 
   return (
@@ -66,7 +66,7 @@ export default function SalesPage() {
       subtitle="Track sales invoices, payment methods, collections, and overdue revenue"
       actions={
         <>
-          <Button className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700">
+          <Button className="gap-2 bg-[#42688C] text-white hover:bg-[#52789B]">
             <Plus className="h-4 w-4" /> New Sale
           </Button>
           <Button variant="outline" className="gap-2">
@@ -86,41 +86,41 @@ export default function SalesPage() {
             { label: "Average Sale", value: formatCurrency(Math.round(averageOrder)), helper: "Across current sales" },
             { label: "Invoice Count", value: String(sales.length), helper: `${overdueInvoices.length} overdue` },
           ].map((metric) => (
-            <div key={metric.label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-slate-500">{metric.label}</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900">{metric.value}</p>
-              <p className="mt-1 text-xs text-slate-500">{metric.helper}</p>
+            <div key={metric.label} className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+              <p className="text-sm font-medium text-[#9CB4CA]">{metric.label}</p>
+              <p className="mt-2 text-2xl font-bold text-white">{metric.value}</p>
+              <p className="mt-1 text-xs text-[#9CB4CA]">{metric.helper}</p>
             </div>
           ))}
         </section>
 
         <section className="grid gap-4 lg:grid-cols-4">
           {methodSummary.map(({ label, value, count, icon: Icon }) => (
-            <div key={label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div key={label} className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">{label}</p>
-                  <p className="mt-1 text-xs text-slate-500">{count} invoice{count === 1 ? "" : "s"}</p>
+                  <p className="text-sm font-semibold text-white">{label}</p>
+                  <p className="mt-1 text-xs text-[#9CB4CA]">{count} invoice{count === 1 ? "" : "s"}</p>
                 </div>
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#42688C]/20 text-[#E2F4DF]">
                   <Icon className="h-5 w-5" />
                 </span>
               </div>
-              <p className="mt-4 text-xl font-bold text-slate-900">{formatCurrency(value)}</p>
+              <p className="mt-4 text-xl font-bold text-white">{formatCurrency(value)}</p>
             </div>
           ))}
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-100 px-5 py-4">
-              <h2 className="text-lg font-semibold text-slate-900">Revenue Ledger</h2>
-              <p className="text-sm text-slate-500">Sales invoices by customer, method, amount, and collection status.</p>
+          <div className="overflow-hidden rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] shadow-sm">
+            <div className="border-b border-[#42688C]/20 px-5 py-4">
+              <h2 className="text-lg font-semibold text-white">Revenue Ledger</h2>
+              <p className="text-sm text-[#9CB4CA]">Sales invoices by customer, method, amount, and collection status.</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[920px] text-left text-sm">
-                <thead className="border-b border-slate-200 bg-slate-50">
-                  <tr className="text-xs uppercase tracking-wide text-slate-500">
+                <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
+                  <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
                     <th className="px-5 py-3">Invoice</th>
                     <th className="px-5 py-3">Customer</th>
                     <th className="px-5 py-3">Products</th>
@@ -132,17 +132,17 @@ export default function SalesPage() {
                 </thead>
                 <tbody>
                   {sales.map((sale) => (
-                    <tr key={sale.invoice} className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50">
-                      <td className="px-5 py-4 font-semibold text-slate-900">{sale.invoice}</td>
-                      <td className="px-5 py-4 font-medium text-slate-900">{sale.customer}</td>
-                      <td className="px-5 py-4 text-slate-600">{sale.products}</td>
+                    <tr key={sale.invoice} className="border-b border-[#42688C]/20 transition-colors last:border-0 hover:bg-[#13203A]">
+                      <td className="px-5 py-4 font-semibold text-white">{sale.invoice}</td>
+                      <td className="px-5 py-4 font-medium text-white">{sale.customer}</td>
+                      <td className="px-5 py-4 text-[#B8CBE0]">{sale.products}</td>
                       <td className="px-5 py-4">
-                        <p className="font-medium text-slate-900">{sale.method}</p>
-                        <p className="text-xs text-slate-500">{sale.channel}</p>
+                        <p className="font-medium text-white">{sale.method}</p>
+                        <p className="text-xs text-[#9CB4CA]">{sale.channel}</p>
                       </td>
-                      <td className="px-5 py-4 text-right font-semibold text-slate-900">{formatCurrency(sale.amount)}</td>
+                      <td className="px-5 py-4 text-right font-semibold text-white">{formatCurrency(sale.amount)}</td>
                       <td className="px-5 py-4"><StatusBadge status={sale.status} /></td>
-                      <td className="px-5 py-4 text-slate-500">{sale.date}</td>
+                      <td className="px-5 py-4 text-[#9CB4CA]">{sale.date}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -151,21 +151,21 @@ export default function SalesPage() {
           </div>
 
           <aside className="space-y-6">
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">Collection Review</h2>
-              <p className="mt-1 text-sm text-slate-500">Invoices requiring follow-up from finance.</p>
+            <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+              <h2 className="text-lg font-semibold text-white">Collection Review</h2>
+              <p className="mt-1 text-sm text-[#9CB4CA]">Invoices requiring follow-up from finance.</p>
               <div className="mt-4 space-y-3">
                 {sales.filter((sale) => sale.status !== "Paid").map((sale) => (
-                  <div key={sale.invoice} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <div key={sale.invoice} className="rounded-lg border border-[#42688C]/30 bg-[#13203A] p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-slate-900">{sale.customer}</p>
-                        <p className="text-xs text-slate-500">{sale.invoice} / {sale.method}</p>
+                        <p className="font-semibold text-white">{sale.customer}</p>
+                        <p className="text-xs text-[#9CB4CA]">{sale.invoice} / {sale.method}</p>
                       </div>
                       <StatusBadge status={sale.status} />
                     </div>
-                    <p className="mt-3 text-xl font-bold text-slate-900">{formatCurrency(sale.amount)}</p>
-                    <Button size="sm" className="mt-4 w-full bg-emerald-600 text-white hover:bg-emerald-700">
+                    <p className="mt-3 text-xl font-bold text-white">{formatCurrency(sale.amount)}</p>
+                    <Button size="sm" className="mt-4 w-full bg-[#42688C] text-white hover:bg-[#52789B]">
                       Follow Up
                     </Button>
                   </div>
@@ -173,13 +173,13 @@ export default function SalesPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+            <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+              <div className="flex items-center gap-2 text-sm font-semibold text-[#E2F4DF]">
                 <TrendingUp className="h-4 w-4" />
                 Revenue Signal
               </div>
-              <p className="mt-2 text-2xl font-bold text-slate-900">+12.4%</p>
-              <p className="mt-1 text-sm text-slate-500">Collected revenue is above the previous period run-rate.</p>
+              <p className="mt-2 text-2xl font-bold text-white">+12.4%</p>
+              <p className="mt-1 text-sm text-[#9CB4CA]">Collected revenue is above the previous period run-rate.</p>
             </div>
           </aside>
         </section>

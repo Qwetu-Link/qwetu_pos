@@ -6,12 +6,12 @@ export function PageLayout({ title, subtitle, icon: Icon, actions, children }: F
     <div className="space-y-6">
       <div className="flex min-w-0 flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="min-w-0">
-          <h1 className="flex min-w-0 items-center gap-3 text-2xl font-extrabold text-black sm:text-3xl">
-            {Icon && <Icon className="h-7 w-7 flex-shrink-0 text-emerald-600 sm:h-8 sm:w-8" />}
+          <h1 className="flex min-w-0 items-center gap-3 text-2xl font-extrabold text-white sm:text-3xl">
+            {Icon && <Icon className="h-7 w-7 flex-shrink-0 text-[#E2F4DF] sm:h-8 sm:w-8" />}
             {title}
           </h1>
           {subtitle && (
-            <p className="mt-1 text-sm font-medium text-slate-500 sm:text-base">
+            <p className="mt-1 text-sm font-medium text-[#9CB4CA] sm:text-base">
               {subtitle}
             </p>
           )}

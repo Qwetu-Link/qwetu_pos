@@ -64,16 +64,16 @@ function CustomChartTip({ active, payload, label }: FinanceChartTooltipProps) {
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3 text-xs shadow-md">
-      <p className="mb-2 font-semibold text-slate-900">{label}</p>
+    <div className="rounded-lg border border-[#42688C]/30 bg-[#0C0F1D] p-3 text-xs shadow-md">
+      <p className="mb-2 font-semibold text-white">{label}</p>
       <div className="space-y-1.5">
         {payload.map((item) => (
           <div key={item.name} className="flex items-center justify-between gap-5">
-            <span className="flex items-center gap-2 text-slate-500">
+            <span className="flex items-center gap-2 text-[#9CB4CA]">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.stroke || item.fill }} />
               {item.name}
             </span>
-            <span className="font-semibold text-slate-900">{formatCurrency(item.value)}</span>
+            <span className="font-semibold text-white">{formatCurrency(item.value)}</span>
           </div>
         ))}
       </div>
@@ -107,7 +107,7 @@ export default function BudgetingPage() {
           </Button>
           <Link
             href="/finance-erp/budgeting/add"
-            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-2.5 text-sm font-medium text-white transition hover:bg-emerald-700"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-lg bg-[#42688C] px-2.5 text-sm font-medium text-white transition hover:bg-[#52789B]"
           >
             <Plus className="h-4 w-4" /> Add Budget Line
           </Link>
@@ -122,17 +122,17 @@ export default function BudgetingPage() {
             { label: "Operating Expenses", value: formatCurrency(totals.expenses), helper: "Non-payroll spend plan" },
             { label: "Forecast Variance", value: formatCurrency(2100000), helper: "Above approved baseline" },
           ].map((metric) => (
-            <div key={metric.label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-slate-500">{metric.label}</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900">{metric.value}</p>
-              <p className="mt-1 text-xs text-slate-500">{metric.helper}</p>
+            <div key={metric.label} className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+              <p className="text-sm font-medium text-[#9CB4CA]">{metric.label}</p>
+              <p className="mt-2 text-2xl font-bold text-white">{metric.value}</p>
+              <p className="mt-1 text-xs text-[#9CB4CA]">{metric.helper}</p>
             </div>
           ))}
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Budget Utilization by Unit</p>
+          <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#9CB4CA]">Budget Utilization by Unit</p>
             <div className="mt-5 space-y-5">
               {allocations.map((allocation) => {
                 const planned = allocation.payrollBudget + allocation.expenseBudget;
@@ -143,15 +143,15 @@ export default function BudgetingPage() {
                   <div key={allocation.id}>
                     <div className="mb-2 flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">{allocation.name}</p>
-                        <p className="text-xs text-slate-500">{allocation.scope} / {allocation.owner}</p>
+                        <p className="text-sm font-semibold text-white">{allocation.name}</p>
+                        <p className="text-xs text-[#9CB4CA]">{allocation.scope} / {allocation.owner}</p>
                       </div>
-                      <div className="text-sm font-semibold text-slate-900">{formatCurrency(planned)}</div>
+                      <div className="text-sm font-semibold text-white">{formatCurrency(planned)}</div>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                      <div className="h-full rounded-full bg-emerald-600" style={{ width: `${Math.min(pctSpent, 100)}%` }} />
+                    <div className="h-2 overflow-hidden rounded-full bg-[#1A2846]">
+                      <div className="h-full rounded-full bg-[#42688C]" style={{ width: `${Math.min(pctSpent, 100)}%` }} />
                     </div>
-                    <div className="mt-1 flex justify-between text-xs text-slate-500">
+                    <div className="mt-1 flex justify-between text-xs text-[#9CB4CA]">
                       <span>{pctSpent}% consumed</span>
                       <span>Payroll {formatCurrency(allocation.payrollBudget)} / Expenses {formatCurrency(allocation.expenseBudget)}</span>
                     </div>
@@ -162,32 +162,32 @@ export default function BudgetingPage() {
           </div>
 
           <aside className="space-y-6">
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">Allocation Mix</h2>
+            <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+              <h2 className="text-lg font-semibold text-white">Allocation Mix</h2>
               <div className="mt-4 space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <span className="text-sm text-slate-600">Payroll share</span>
-                  <span className="font-semibold text-slate-900">{totals.budget ? Math.round((totals.payroll / totals.budget) * 100) : 0}%</span>
+                <div className="flex items-center justify-between border-b border-[#42688C]/20 pb-3">
+                  <span className="text-sm text-[#B8CBE0]">Payroll share</span>
+                  <span className="font-semibold text-white">{totals.budget ? Math.round((totals.payroll / totals.budget) * 100) : 0}%</span>
                 </div>
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <span className="text-sm text-slate-600">Expense share</span>
-                  <span className="font-semibold text-slate-900">{totals.budget ? Math.round((totals.expenses / totals.budget) * 100) : 0}%</span>
+                <div className="flex items-center justify-between border-b border-[#42688C]/20 pb-3">
+                  <span className="text-sm text-[#B8CBE0]">Expense share</span>
+                  <span className="font-semibold text-white">{totals.budget ? Math.round((totals.expenses / totals.budget) * 100) : 0}%</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Highest allocation</span>
-                  <span className="font-semibold text-slate-900">
+                  <span className="text-sm text-[#B8CBE0]">Highest allocation</span>
+                  <span className="font-semibold text-white">
                     {allocations.reduce((top, item) => (item.payrollBudget + item.expenseBudget > top.payrollBudget + top.expenseBudget ? item : top), allocations[0])?.name}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-amber-100 bg-amber-50 p-5 shadow-sm">
+            <div className="rounded-xl border border-amber-300/25 bg-amber-400/15 p-5 shadow-sm">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-200" />
                 <div>
-                  <h2 className="font-semibold text-slate-900">Review Thresholds</h2>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <h2 className="font-semibold text-white">Review Thresholds</h2>
+                  <p className="mt-1 text-sm text-[#B8CBE0]">
                     Any branch or department above KES 4M should be reviewed by finance before approval.
                   </p>
                 </div>
@@ -197,27 +197,27 @@ export default function BudgetingPage() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-2">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Monthly Burn vs Budget</p>
+          <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#9CB4CA]">Monthly Burn vs Budget</p>
             <div className="mt-4 h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={monthlyBudgetData} margin={{ left: -20, right: 10, top: 5 }}>
-                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => formatCompact(Number(value))} />
+                  <CartesianGrid stroke="#42688C" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#9CB4CA", fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#9CB4CA", fontSize: 11 }} tickFormatter={(value) => formatCompact(Number(value))} />
                   <Tooltip content={<CustomChartTip />} />
-                  <Line type="monotone" dataKey="expenses" name="Operating Expenses" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} />
-                  <Line type="monotone" dataKey="payroll" name="Salary Payroll" stroke="#0f766e" strokeWidth={2} dot={{ r: 3 }} />
-                  <Line type="monotone" dataKey="budget" name="Approved Budget" stroke="#94a3b8" strokeWidth={1.5} strokeDasharray="5 5" dot={false} />
+                  <Line type="monotone" dataKey="expenses" name="Operating Expenses" stroke="#E2F4DF" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="payroll" name="Salary Payroll" stroke="#42688C" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="budget" name="Approved Budget" stroke="#9CB4CA" strokeWidth={1.5} strokeDasharray="5 5" dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">12-Month Forecast</p>
-              <div className="flex items-center gap-1.5 text-sm font-semibold text-emerald-700">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#9CB4CA]">12-Month Forecast</p>
+              <div className="flex items-center gap-1.5 text-sm font-semibold text-[#E2F4DF]">
                 <TrendingUp className="h-4 w-4" />
                 Predictive trend
               </div>
@@ -227,15 +227,15 @@ export default function BudgetingPage() {
                 <AreaChart data={forecastData} margin={{ left: -20, right: 10, top: 5 }}>
                   <defs>
                     <linearGradient id="budgetForecastFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#059669" stopOpacity={0.18} />
-                      <stop offset="95%" stopColor="#059669" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#E2F4DF" stopOpacity={0.18} />
+                      <stop offset="95%" stopColor="#E2F4DF" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => formatCompact(Number(value))} />
+                  <CartesianGrid stroke="#42688C" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#9CB4CA", fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#9CB4CA", fontSize: 11 }} tickFormatter={(value) => formatCompact(Number(value))} />
                   <Tooltip content={<CustomChartTip />} />
-                  <Area type="monotone" dataKey="revenue" name="Revenue Forecast" stroke="#059669" strokeWidth={2} fill="url(#budgetForecastFill)" />
+                  <Area type="monotone" dataKey="revenue" name="Revenue Forecast" stroke="#E2F4DF" strokeWidth={2} fill="url(#budgetForecastFill)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -243,29 +243,29 @@ export default function BudgetingPage() {
         </section>
 
         <section className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-2 text-sm font-semibold text-red-600">
+          <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+            <div className="flex items-center gap-2 text-sm font-semibold text-red-200">
               <ArrowUpRight className="h-4 w-4" />
               Expense growth
             </div>
-            <p className="mt-2 text-2xl font-bold text-slate-900">+8.2%</p>
-            <p className="mt-1 text-xs text-slate-500">Against previous fiscal cycle</p>
+            <p className="mt-2 text-2xl font-bold text-white">+8.2%</p>
+            <p className="mt-1 text-xs text-[#9CB4CA]">Against previous fiscal cycle</p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+          <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+            <div className="flex items-center gap-2 text-sm font-semibold text-[#E2F4DF]">
               <ArrowDownRight className="h-4 w-4" />
               Reserve use
             </div>
-            <p className="mt-2 text-2xl font-bold text-slate-900">-14.8%</p>
-            <p className="mt-1 text-xs text-slate-500">Projected improvement after allocation controls</p>
+            <p className="mt-2 text-2xl font-bold text-white">-14.8%</p>
+            <p className="mt-1 text-xs text-[#9CB4CA]">Projected improvement after allocation controls</p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-2 text-sm font-semibold text-amber-700">
+          <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+            <div className="flex items-center gap-2 text-sm font-semibold text-amber-200">
               <AlertTriangle className="h-4 w-4" />
               Approval status
             </div>
-            <p className="mt-2 text-2xl font-bold text-slate-900">Draft</p>
-            <p className="mt-1 text-xs text-slate-500">Ready for finance manager review</p>
+            <p className="mt-2 text-2xl font-bold text-white">Draft</p>
+            <p className="mt-1 text-xs text-[#9CB4CA]">Ready for finance manager review</p>
           </div>
         </section>
       </div>
