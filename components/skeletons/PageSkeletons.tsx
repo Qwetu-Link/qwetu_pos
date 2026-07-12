@@ -196,24 +196,3 @@ export function DetailPageSkeleton() {
     </main>
   );
 }
-
-export function AuthPageSkeleton() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="mb-8 flex flex-col items-center gap-3">
-          <SkeletonIcon className="h-14 w-14" />
-          <SkeletonBlock className="h-7 w-44" />
-          <SkeletonBlock className="h-4 w-60" />
-        </div>
-        <div className="space-y-4">
-          <SkeletonBlock className="h-11 w-full rounded-xl" />
-          <SkeletonBlock className="h-11 w-full rounded-xl" />
-          <SkeletonBlock className="h-5 w-36" />
-          <SkeletonBlock className="h-11 w-full rounded-xl" />
-        </div>
-      </div>
-    </main>
-  );
-}
-
