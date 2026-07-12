@@ -8,15 +8,15 @@ export default function AuthHeader({
   subtitle: string;
 }) {
   return (
-    <div className="mb-5 text-center">
-      <div className="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-xl font-black text-slate-950 lg:hidden">
+    <div className="mb-6 text-center">
+      <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-950 text-xl font-black text-white shadow-lg shadow-slate-200 lg:hidden">
         Q<span className="text-emerald-600">L</span>
       </div>
-      <h1 className="flex items-center justify-center gap-2 text-2xl font-extrabold text-black">
-        <Store className="h-5 w-5 text-emerald-600" />
+      <h1 className="flex items-center justify-center gap-2 text-3xl font-black tracking-tight text-slate-950">
+        <Store className="h-6 w-6 text-emerald-600" />
         {title}
       </h1>
-      <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-500">{subtitle}</p>
     </div>
   );
 }

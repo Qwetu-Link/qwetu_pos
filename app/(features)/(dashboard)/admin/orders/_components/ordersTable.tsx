@@ -13,8 +13,6 @@ import StatusBadge from "./statusBadge";
 import { Order } from "@/types/orderTypes";
 import { formatCurrency, formatDate } from "@/utils/orderUtils";
 
-export type OrderViewMode = "table" | "card" | "list";
-
 const columns: ColumnDef<Order>[] = [
   {
     accessorKey: "id",
@@ -82,11 +80,11 @@ const columns: ColumnDef<Order>[] = [
 
 export default function OrdersTable({
   orders,
-  viewMode,
 }: {
   orders: Order[];
-  viewMode: OrderViewMode;
 }) {
+  // TanStack Table intentionally returns function-heavy instances that React Compiler cannot memoize safely.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: orders,
     columns,
@@ -101,26 +99,6 @@ export default function OrdersTable({
         title="No orders to show"
         description="There are no orders in this view. Try clearing filters, changing the search, or creating a new order."
       />
-    );
-  }
-
-  if (viewMode === "card") {
-    return (
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {table.getRowModel().rows.map((row) => (
-          <OrderCard key={row.id} order={row.original} />
-        ))}
-      </div>
-    );
-  }
-
-  if (viewMode === "list") {
-    return (
-      <div className="space-y-3">
-        {table.getRowModel().rows.map((row) => (
-          <OrderListItem key={row.id} order={row.original} />
-        ))}
-      </div>
     );
   }
 
@@ -188,88 +166,5 @@ function ViewLink({ orderId }: { orderId: string }) {
       <Eye className="h-4 w-4" />
       View
     </Link>
-  );
-}
-
-function OrderCard({ order }: { order: Order }) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <Link
-            href={`/admin/orders/${order.id}`}
-            className="text-lg font-bold text-slate-800 hover:text-emerald-700"
-          >
-            {order.id}
-          </Link>
-          <p className="mt-1 font-medium text-slate-700">{order.customer}</p>
-          <p className="text-sm text-slate-400">{order.email}</p>
-        </div>
-        <StatusBadge status={order.status} />
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-        <Summary label="Items" value={String(order.items)} />
-        <Summary label="Date" value={formatDate(order.createdAt)} />
-        <Summary label="Total" value={formatCurrency(order.total)} highlight />
-        <div>
-          <p className="text-xs text-slate-400">Payment</p>
-          <PaymentCell order={order} />
-        </div>
-      </div>
-
-      <div className="mt-4 flex justify-end ">
-        <ViewLink orderId={order.id} />
-      </div>
-    </div>
-  );
-}
-
-function OrderListItem({ order }: { order: Order }) {
-  return (
-    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
-      <div className="min-w-0">
-        <Link
-          href={`/admin/orders/${order.id}`}
-          className="font-bold text-slate-800 hover:text-emerald-700"
-        >
-          {order.id}
-        </Link>
-        <p className="truncate text-sm font-medium text-slate-700">
-          {order.customer}
-        </p>
-        <p className="truncate text-xs text-slate-400">{order.email}</p>
-      </div>
-      <div className="flex flex-wrap items-center gap-4 text-sm">
-        <span className="text-slate-500">{order.items} items</span>
-        <span className="font-semibold text-emerald-700">
-          {formatCurrency(order.total)}
-        </span>
-        <StatusBadge status={order.status} />
-        <span className="text-black">{formatDate(order.createdAt)}</span>
-        <ViewLink orderId={order.id} />
-      </div>
-    </div>
-  );
-}
-
-function Summary({
-  label,
-  value,
-  highlight = false,
-}: {
-  label: string;
-  value: string;
-  highlight?: boolean;
-}) {
-  return (
-    <div>
-      <p className="text-xs text-slate-400">{label}</p>
-      <p
-        className={`font-semibold ${highlight ? "text-emerald-700" : "text-slate-700"}`}
-      >
-        {value}
-      </p>
-    </div>
   );
 }

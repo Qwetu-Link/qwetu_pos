@@ -3,12 +3,9 @@
 import { useMemo, useState } from "react";
 import {
   Download,
-  Grid2X2,
-  List,
   Plus,
   ReceiptText,
   RefreshCw,
-  Table2,
 } from "lucide-react";
 import AddOrderModal from "./addOrderModal";
 import { initialOrders } from "../../../../../../data/orderData";
@@ -16,7 +13,7 @@ import OrderFilters from "./orderFilters";
 import Pagination from "@/components/common/Pagination";
 import OrderStatsCards from "./orderStatsCards";
 import { OrderStatus } from "@/data/order-options";
-import OrdersTable, { OrderViewMode } from "./ordersTable";
+import OrdersTable from "./ordersTable";
 import { DEMO_CUSTOMERS } from "@/data/customers";
 
 export default function OrdersPage() {
@@ -27,7 +24,6 @@ export default function OrdersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
-  const [viewMode, setViewMode] = useState<OrderViewMode>("table");
 
   const stats = useMemo(() => {
     const count = (status: OrderStatus) =>
@@ -139,36 +135,7 @@ export default function OrdersPage() {
           onSearchChange={handleSearchChange}
           onStatusChange={handleStatusChange}
         />
-        <div className="flex justify-end">
-          <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
-            {[
-              { value: "table", label: "Table", icon: Table2 },
-              { value: "card", label: "Cards", icon: Grid2X2 },
-              { value: "list", label: "List", icon: List },
-            ].map((option) => {
-              const Icon = option.icon;
-              const isActive = viewMode === option.value;
-
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setViewMode(option.value as OrderViewMode)}
-                  className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                    isActive
-                      ? "bg-emerald-600 text-white"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                  }`}
-                  aria-pressed={isActive}
-                >
-                  <Icon className="h-4 w-4" />
-                  {option.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        <OrdersTable orders={paginatedOrders} viewMode={viewMode} />
+        <OrdersTable orders={paginatedOrders} />
         {filteredOrders.length > 0 && (
           <Pagination
             currentPage={safeCurrentPage}

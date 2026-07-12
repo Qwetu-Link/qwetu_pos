@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { signIn } from "next-auth/react"; // Import Auth.js Client Connector
+import { signIn } from "next-auth/react";
 import {
   AlertTriangle,
   ArrowRightToLine,
@@ -34,7 +33,7 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const {
     formState: { errors },
     handleSubmit,
@@ -52,11 +51,10 @@ export default function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      // Execute Auth.js Client Credentials Authentication Provider
       const result = await signIn("credentials", {
         email: values.email,
         password: values.password,
-        redirect: false, // Prevents full-page hard refreshes
+        redirect: false,
       });
 
       if (result?.error) {
@@ -83,11 +81,9 @@ export default function LoginForm() {
   return (
     <AuthLayout>
       <AuthHeader
-        title="Welcome Back"
-        subtitle="Sign in to access your dashboard"
-      />
-
-      <form
+        title="Welcome back"
+        subtitle="Use your workspace credentials to access POS, finance, inventory, and customer tools."
+      />      <form
         onSubmit={handleSubmit(submitLogin)}
         className={`space-y-4 ${error ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
       >
@@ -97,10 +93,10 @@ export default function LoginForm() {
           type="email"
           {...register("email", { onChange: () => setError("") })}
           onFocus={() => setError("")}
-          placeholder="yourname@business.com"
+          placeholder="admin@qwetulinks.co.ke"
         />
         {errors.email ? (
-          <p className="-mt-2 text-xs text-red-600">{errors.email.message}</p>
+          <p className="-mt-2 text-xs font-medium text-red-600">{errors.email.message}</p>
         ) : null}
 
         <AuthField
@@ -109,7 +105,7 @@ export default function LoginForm() {
           type={showPassword ? "text" : "password"}
           {...register("password", { onChange: () => setError("") })}
           onFocus={() => setError("")}
-          placeholder="••••••••"
+          placeholder="Enter your password"
           rightElement={
             <button
               type="button"
@@ -126,7 +122,16 @@ export default function LoginForm() {
           }
         />
         {errors.password ? (
-          <p className="-mt-2 text-xs text-red-600">{errors.password.message}</p>
+          <p className="-mt-2 text-xs font-medium text-red-600">{errors.password.message}</p>
+        ) : null}
+
+        {error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-3">
+            <p className="flex items-start justify-center gap-2 text-sm font-medium text-red-700">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              {error}
+            </p>
+          </div>
         ) : null}
 
         <AuthSubmitButton disabled={isSubmitting}>
@@ -138,27 +143,11 @@ export default function LoginForm() {
           ) : (
             <>
               <ArrowRightToLine className="h-4 w-4" />
-              Sign In
+              Sign in
             </>
           )}
         </AuthSubmitButton>
       </form>
-
-      {error ? (
-        <div className="mt-3 animate-[shake_0.4s_ease-in-out] rounded-lg border border-red-200 bg-red-50 p-2.5 text-center">
-          <p className="flex items-center justify-center gap-2 text-sm text-red-600">
-            <AlertTriangle className="h-4 w-4" />
-            {error}
-          </p>
-        </div>
-      ) : null}
-
-      <p className="mt-5 text-center text-sm text-slate-600">
-        New to QwetuLinks?{" "}
-        <Link href="/register" className="font-semibold text-emerald-700">
-          Create an account
-        </Link>
-      </p>
     </AuthLayout>
   );
 }

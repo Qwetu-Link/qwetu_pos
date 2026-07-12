@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck } from "lucide-react";
 
 export default function FinOnboardingPage() {
   const router = useRouter();
