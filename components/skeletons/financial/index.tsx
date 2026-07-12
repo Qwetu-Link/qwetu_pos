@@ -12,14 +12,14 @@ import {
 
 function SideListSkeleton({ rows = 4 }: { rows?: number }) {
   return (
-    <aside className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+    <aside className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-4 space-y-2">
         <SkeletonBlock className="h-5 w-36" />
         <SkeletonBlock className="h-3 w-48" />
       </div>
       <div className="space-y-3">
         {Array.from({ length: rows }).map((_, index) => (
-          <div key={index} className="flex items-center gap-3 rounded-xl border border-[#42688C]/30 p-4">
+          <div key={index} className="flex items-center gap-3 rounded-xl border border-slate-100 p-4">
             <SkeletonIcon className="h-10 w-10 rounded-lg" />
             <div className="min-w-0 flex-1 space-y-2">
               <SkeletonBlock className="h-4 w-32" />
@@ -35,7 +35,7 @@ function SideListSkeleton({ rows = 4 }: { rows?: number }) {
 
 function ProgressListSkeleton({ rows = 4 }: { rows?: number }) {
   return (
-    <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <SkeletonBlock className="mb-5 h-4 w-44" />
       <div className="space-y-5">
         {Array.from({ length: rows }).map((_, index) => (
@@ -57,7 +57,7 @@ function ProgressListSkeleton({ rows = 4 }: { rows?: number }) {
 
 function FinanceShellSkeleton({ children }: { children: React.ReactNode }) {
   return (
-    <div className="space-y-6 [&_.bg-slate-50]:bg-[#13203A] [&_.bg-white]:bg-[#0C0F1D] [&_.border-slate-100]:border-[#42688C]/20 [&_.border-slate-200]:border-[#42688C]/30 [&_.text-slate-500]:text-[#9CB4CA] [&_.text-slate-900]:text-white">
+    <div className="space-y-6 text-slate-900">
       {children}
     </div>
   );
@@ -70,7 +70,7 @@ export function FinancialOverviewSkeleton() {
       <StatCardsSkeleton count={6} />
       <div className="grid gap-4 lg:grid-cols-3">
         <DetailPanelSkeleton />
-        <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, index) => (
               <div key={index} className="flex items-center justify-between gap-4">
@@ -200,7 +200,7 @@ export function FinancialAddBudgetSkeleton() {
     <FinanceShellSkeleton>
       <PageHeaderSkeleton actions={2} />
       <StatCardsSkeleton />
-      <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="grid gap-4 md:grid-cols-2">
           <SkeletonBlock className="h-10 rounded-lg" />
           <SkeletonBlock className="h-10 rounded-lg" />

@@ -143,3 +143,115 @@
     @apply font-sans;
   }
 }
+
+html.light .finance-theme,
+html[data-theme="light"] .finance-theme {
+  color-scheme: light;
+  --finance-page: #f4f8fb;
+  --finance-panel: #ffffff;
+  --finance-panel-muted: #eaf2f8;
+  --finance-border: #c9d9e6;
+  --finance-text: #0c1728;
+  --finance-muted: #4c647c;
+  --finance-accent: #42688c;
+  --finance-accent-soft: #e5eef6;
+  --finance-highlight: #28496a;
+}
+
+html.light .finance-theme [class~="bg-[#13203A]"],
+html[data-theme="light"] .finance-theme [class~="bg-[#13203A]"] {
+  background-color: var(--finance-page) !important;
+}
+
+html.light .finance-theme [class~="bg-[#0C0F1D]"],
+html[data-theme="light"] .finance-theme [class~="bg-[#0C0F1D]"] {
+  background-color: var(--finance-panel) !important;
+}
+
+html.light .finance-theme [class~="bg-[#1A2846]"],
+html.light .finance-theme [class~="bg-[#1A2846]/50"],
+html.light .finance-theme [class~="bg-[#1A2846]/70"],
+html[data-theme="light"] .finance-theme [class~="bg-[#1A2846]"],
+html[data-theme="light"] .finance-theme [class~="bg-[#1A2846]/50"],
+html[data-theme="light"] .finance-theme [class~="bg-[#1A2846]/70"] {
+  background-color: var(--finance-panel-muted) !important;
+}
+
+html.light .finance-theme [class~="bg-[#42688C]/15"],
+html.light .finance-theme [class~="bg-[#42688C]/20"],
+html.light .finance-theme [class~="bg-[#42688C]/30"],
+html[data-theme="light"] .finance-theme [class~="bg-[#42688C]/15"],
+html[data-theme="light"] .finance-theme [class~="bg-[#42688C]/20"],
+html[data-theme="light"] .finance-theme [class~="bg-[#42688C]/30"] {
+  background-color: var(--finance-accent-soft) !important;
+}
+
+html.light .finance-theme [class~="bg-[#42688C]"],
+html[data-theme="light"] .finance-theme [class~="bg-[#42688C]"] {
+  background-color: var(--finance-accent) !important;
+}
+
+html.light .finance-theme [class~="border-[#42688C]/20"],
+html.light .finance-theme [class~="border-[#42688C]/30"],
+html.light .finance-theme [class~="border-[#42688C]/40"],
+html.light .finance-theme [class~="border-[#42688C]/50"],
+html.light .finance-theme [class~="border-[#42688C]"],
+html[data-theme="light"] .finance-theme [class~="border-[#42688C]/20"],
+html[data-theme="light"] .finance-theme [class~="border-[#42688C]/30"],
+html[data-theme="light"] .finance-theme [class~="border-[#42688C]/40"],
+html[data-theme="light"] .finance-theme [class~="border-[#42688C]/50"],
+html[data-theme="light"] .finance-theme [class~="border-[#42688C]"] {
+  border-color: var(--finance-border) !important;
+}
+
+html.light .finance-theme [class~="ring-[#42688C]/30"],
+html[data-theme="light"] .finance-theme [class~="ring-[#42688C]/30"] {
+  --tw-ring-color: color-mix(in srgb, var(--finance-accent) 28%, transparent) !important;
+}
+
+html.light .finance-theme [class~="text-white"],
+html[data-theme="light"] .finance-theme [class~="text-white"] {
+  color: var(--finance-text) !important;
+}
+
+html.light .finance-theme [class~="text-[#E2F4DF]"],
+html[data-theme="light"] .finance-theme [class~="text-[#E2F4DF]"] {
+  color: var(--finance-highlight) !important;
+}
+
+html.light .finance-theme [class~="text-[#D3E3F0]"],
+html.light .finance-theme [class~="text-[#B8CBE0]"],
+html.light .finance-theme [class~="text-[#9CB4CA]"],
+html.light .finance-theme [class~="text-[#7F9AB5]"],
+html[data-theme="light"] .finance-theme [class~="text-[#D3E3F0]"],
+html[data-theme="light"] .finance-theme [class~="text-[#B8CBE0]"],
+html[data-theme="light"] .finance-theme [class~="text-[#9CB4CA]"],
+html[data-theme="light"] .finance-theme [class~="text-[#7F9AB5]"] {
+  color: var(--finance-muted) !important;
+}
+
+html.light .finance-theme [class~="bg-[#42688C]"][class~="text-white"],
+html.light .finance-theme button[class~="bg-[#42688C]"],
+html.light .finance-theme button[class~="bg-[#42688C]"] [class~="text-white"],
+html[data-theme="light"] .finance-theme [class~="bg-[#42688C]"][class~="text-white"],
+html[data-theme="light"] .finance-theme button[class~="bg-[#42688C]"],
+html[data-theme="light"] .finance-theme button[class~="bg-[#42688C]"] [class~="text-white"] {
+  color: #ffffff !important;
+}
+
+html.light .finance-theme [class~="placeholder:text-[#7F9AB5]"]::placeholder,
+html[data-theme="light"] .finance-theme [class~="placeholder:text-[#7F9AB5]"]::placeholder {
+  color: #6b8299 !important;
+}
+
+html.light .finance-theme [class~="hover:bg-[#13203A]"]:hover,
+html.light .finance-theme [class~="hover:bg-[#1A2846]"]:hover,
+html[data-theme="light"] .finance-theme [class~="hover:bg-[#13203A]"]:hover,
+html[data-theme="light"] .finance-theme [class~="hover:bg-[#1A2846]"]:hover {
+  background-color: #dce9f3 !important;
+}
+
+html.light .finance-theme [class~="hover:text-white"]:hover,
+html[data-theme="light"] .finance-theme [class~="hover:text-white"]:hover {
+  color: var(--finance-text) !important;
+}

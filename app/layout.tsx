@@ -5,6 +5,7 @@ import "@/styles/globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/utils/utils";
 import { TRPCReactProvider } from '@/trpc/client';
+import { ThemeProvider } from "@/components/theme/theme-provider";
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -20,10 +21,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full antialiased", "font-sans", geist.variable)}>
+    <html lang="en" className={cn("dark h-full antialiased", "font-sans", geist.variable)} suppressHydrationWarning>
       <body className="min-h-full flex flex-col">
         <TRPCReactProvider>
-        <SessionProvider>{children}</SessionProvider>
+          <ThemeProvider>
+            <SessionProvider>{children}</SessionProvider>
+          </ThemeProvider>
         </TRPCReactProvider>
         <Analytics />
       </body>

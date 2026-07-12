@@ -1,4 +1,11 @@
-import { Building2, Mail, Phone, ShieldCheck, UserCircle2 } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Building2, CalendarClock, Globe2, Mail, MapPin, Phone, ReceiptText, ShieldCheck, UserCircle2 } from "lucide-react";
+import {
+  SuperAdminHeader,
+  SuperAdminPageShell,
+  SuperAdminPanel,
+  SuperAdminStatusPill,
+} from "../../_components/SuperAdminUI";
 
 interface BusinessRecord {
   id: string;
@@ -39,101 +46,171 @@ function formatDate(value?: Date | null) {
   }).format(value);
 }
 
+function ownerName(owner: OwnerRecord) {
+  return owner.name || `${owner.firstName ?? ""} ${owner.lastName ?? ""}`.trim() || "Owner";
+}
+
 export default function SubscriptionDetail({ business, owners }: { business: BusinessRecord; owners: OwnerRecord[] }) {
+  const registrationRows = [
+    ["Business name", business.businessName],
+    ["Legal name", business.legalName || "Not set"],
+    ["Registration number", business.registrationNumber],
+    ["Tax PIN", business.taxPin],
+  ];
+  const contactRows = [
+    ["Email", business.email],
+    ["Phone", business.phone],
+    ["Alternate phone", business.alternativePhone || "Not set"],
+    ["Address", business.address || "Not set"],
+    ["City", business.city || "Not set"],
+    ["County", business.county || "Not set"],
+  ];
+  const localeRows = [
+    ["Country", business.country || "Not set"],
+    ["Currency", business.currency || "Not set"],
+    ["Timezone", business.timezone || "Not set"],
+  ];
+  const lifecycleRows = [
+    ["Created", formatDate(business.createdAt)],
+    ["Updated", formatDate(business.updatedAt)],
+  ];
+
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6">
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Subscription details</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">{business.businessName}</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              Full information loaded from the database for this business and its linked user records.
-            </p>
-          </div>
-          <div className={`rounded-2xl px-4 py-3 text-sm font-semibold ${business.isActive ? "border border-emerald-200 bg-emerald-50 text-emerald-700" : "border border-amber-200 bg-amber-50 text-amber-700"}`}>
-            {business.isActive ? "Active tenant" : "Inactive tenant"}
-          </div>
-        </div>
-      </div>
+    <SuperAdminPageShell>
+      <Link
+        href="/superadmin/subscriptions"
+        className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-950"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to subscriptions
+      </Link>
+
+      <SuperAdminHeader
+        eyebrow="Subscription details"
+        icon={Building2}
+        title={business.businessName}
+        description="Full information loaded from the database for this business and its linked user records."
+        actions={[
+          { label: "Tenant status", value: business.isActive ? "Active" : "Inactive" },
+          { label: "Owners", value: String(owners.length) },
+        ]}
+      />
+
+      <section className="grid gap-3 md:grid-cols-4">
+        <DetailSummary label="Status" value={business.isActive ? "Active" : "Inactive"} tone={business.isActive ? "emerald" : "amber"} />
+        <DetailSummary label="Owners" value={String(owners.length)} tone="slate" />
+        <DetailSummary label="Currency" value={business.currency || "Not set"} tone="slate" />
+        <DetailSummary label="Created" value={formatDate(business.createdAt)} tone="slate" />
+      </section>
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">Business profile</p>
-              <p className="text-sm text-slate-500">Core tenant information</p>
-            </div>
+        <SuperAdminPanel
+          title="Business profile"
+          description="Core tenant information and registration details."
+          icon={Building2}
+          action={
+            <SuperAdminStatusPill tone={business.isActive ? "emerald" : "amber"}>
+              {business.isActive ? "Active tenant" : "Inactive tenant"}
+            </SuperAdminStatusPill>
+          }
+        >
+          <div className="space-y-5">
+            <InfoGroup title="Registration" icon={ReceiptText} rows={registrationRows} />
+            <InfoGroup title="Contact and location" icon={MapPin} rows={contactRows} />
+            <InfoGroup title="Locale" icon={Globe2} rows={localeRows} />
+            <InfoGroup title="Lifecycle" icon={CalendarClock} rows={lifecycleRows} />
           </div>
+        </SuperAdminPanel>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {[
-              ["Business name", business.businessName],
-              ["Legal name", business.legalName || "Not set"],
-              ["Registration number", business.registrationNumber],
-              ["Tax PIN", business.taxPin],
-              ["Email", business.email],
-              ["Phone", business.phone],
-              ["Alternate phone", business.alternativePhone || "Not set"],
-              ["Address", business.address || "Not set"],
-              ["City", business.city || "Not set"],
-              ["County", business.county || "Not set"],
-              ["Country", business.country || "Not set"],
-              ["Currency", business.currency || "Not set"],
-              ["Timezone", business.timezone || "Not set"],
-              ["Created", formatDate(business.createdAt)],
-              ["Updated", formatDate(business.updatedAt)],
-            ].map(([label, value]) => (
-              <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{label}</p>
-                <p className="mt-2 text-sm font-semibold text-slate-800">{value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-              <UserCircle2 className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">Owner records</p>
-              <p className="text-sm text-slate-500">Users linked to this business</p>
-            </div>
-          </div>
-
-          <div className="mt-6 space-y-4">
+        <SuperAdminPanel
+          title="Owner records"
+          description="Users linked to this business."
+          icon={UserCircle2}
+        >
+          <div className="space-y-4">
             {owners.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-500">
+              <div className="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-500">
                 No users are linked to this business yet.
               </div>
-            ) : owners.map((owner) => (
-              <div key={owner.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                  <p className="text-sm font-semibold text-slate-900">{owner.name || `${owner.firstName ?? ""} ${owner.lastName ?? ""}`.trim() || "Owner"}</p>
-                </div>
-                <div className="mt-3 space-y-2 text-sm text-slate-600">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-slate-400" />
-                    <span>{owner.email}</span>
+            ) : (
+              owners.map((owner) => (
+                <div key={owner.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                      <p className="text-sm font-bold text-slate-950">{ownerName(owner)}</p>
+                    </div>
+                    <SuperAdminStatusPill tone={owner.isActive ? "emerald" : "amber"}>
+                      {owner.isActive ? "Active" : "Inactive"}
+                    </SuperAdminStatusPill>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-slate-400" />
-                    <span>{owner.phone || "No phone on file"}</span>
+                  <div className="mt-3 space-y-2 text-sm text-slate-600">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-slate-400" />
+                      <span className="break-all">{owner.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-slate-400" />
+                      <span>{owner.phone || "No phone on file"}</span>
+                    </div>
+                    <p className="text-xs text-slate-400">Created: {formatDate(owner.createdAt)}</p>
                   </div>
-                  <div className="text-xs text-slate-400">Status: {owner.isActive ? "Active" : "Inactive"}</div>
-                  <div className="text-xs text-slate-400">Created: {formatDate(owner.createdAt)}</div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
-        </div>
+        </SuperAdminPanel>
       </div>
+    </SuperAdminPageShell>
+  );
+}
+
+function DetailSummary({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: "slate" | "emerald" | "amber";
+}) {
+  const styles = {
+    slate: "border-slate-200 bg-white text-slate-950",
+    emerald: "border-emerald-200 bg-emerald-50 text-emerald-950",
+    amber: "border-amber-200 bg-amber-50 text-amber-950",
+  };
+
+  return (
+    <div className={`min-w-0 rounded-xl border px-4 py-3 shadow-sm ${styles[tone]}`}>
+      <p className="text-xs font-bold uppercase tracking-wide opacity-60">{label}</p>
+      <p className="mt-1 truncate text-sm font-black">{value}</p>
     </div>
+  );
+}
+
+function InfoGroup({
+  title,
+  icon: Icon,
+  rows,
+}: {
+  title: string;
+  icon: typeof ReceiptText;
+  rows: string[][];
+}) {
+  return (
+    <section>
+      <div className="mb-3 flex items-center gap-2 text-sm font-black text-slate-950">
+        <Icon className="h-4 w-4 text-emerald-700" />
+        {title}
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        {rows.map(([label, value]) => (
+          <div key={label} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">{label}</p>
+            <p className="mt-2 break-words text-sm font-semibold text-slate-800">{value}</p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

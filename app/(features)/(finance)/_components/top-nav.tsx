@@ -3,6 +3,7 @@
 import React from "react";
 import { Menu, Search, Bell, Settings } from "lucide-react";
 import type { FinanceTopNavProps } from "@/types/finance";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 export function TopNav({ onMenuClick }: FinanceTopNavProps) {
   return (
@@ -28,6 +29,8 @@ export function TopNav({ onMenuClick }: FinanceTopNavProps) {
         </div>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
+
           <button className="relative rounded-lg p-2 text-[#B8CBE0] transition-colors hover:bg-[#1A2846] hover:text-white" aria-label="Notifications">
             <Bell className="h-5 w-5" />
             <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#E2F4DF] ring-2 ring-white"></span>

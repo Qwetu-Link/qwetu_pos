@@ -1,4 +1,4 @@
-import { FinancialSettingsSkeleton } from "@/components/skeleton/financial";
+import { FinancialSettingsSkeleton } from "@/components/skeletons/financial";
 
 export default function Loading() {
   return <FinancialSettingsSkeleton />;

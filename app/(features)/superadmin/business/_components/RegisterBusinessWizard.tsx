@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { ChevronRight, Building2, UserCircle2, ShieldCheck } from "lucide-react";
 import { superAdminCreateBusiness } from "@/server/register-business";
+import { SuperAdminHeader, SuperAdminPageShell, SuperAdminPanel } from "../../_components/SuperAdminUI";
 
 interface FormState {
   businessName: string;
@@ -93,33 +94,20 @@ export default function RegisterBusinessWizard() {
   };
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6">
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Super Admin</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">Register a new business</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              Create a tenant workspace and its owner account in a guided flow.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
-            Step {step} of 2
-          </div>
-        </div>
-      </div>
+    <SuperAdminPageShell>
+      <SuperAdminHeader
+        icon={Building2}
+        title="Register a new business"
+        description="Create a tenant workspace and its owner account in a guided flow."
+        actions={[{ label: "Progress", value: `Step ${step} of 2` }]}
+      />
 
       <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">Registration checklist</p>
-              <p className="text-sm text-slate-500">Complete the required details below</p>
-            </div>
-          </div>
+        <SuperAdminPanel
+          title="Registration checklist"
+          description="Complete the required details below."
+          icon={Building2}
+        >
 
           <div className="mt-6 space-y-3">
             {[
@@ -149,9 +137,9 @@ export default function RegisterBusinessWizard() {
               </div>
             ))}
           </div>
-        </div>
+        </SuperAdminPanel>
 
-        <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           {message ? (
             <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
               {message}
@@ -313,6 +301,6 @@ export default function RegisterBusinessWizard() {
           </div>
         </form>
       </div>
-    </div>
+    </SuperAdminPageShell>
   );
 }

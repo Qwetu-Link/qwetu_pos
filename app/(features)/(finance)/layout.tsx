@@ -8,7 +8,7 @@ export default function FinDashboardLayout({ children }: { children: React.React
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#13203A] text-white">
+    <div className="finance-theme flex h-screen w-screen overflow-hidden bg-[#13203A] text-white">
 
       <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
       <div
