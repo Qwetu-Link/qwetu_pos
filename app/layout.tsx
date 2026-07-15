@@ -6,6 +6,7 @@ import { Geist } from "next/font/google";
 import { cn } from "@/utils/utils";
 import { TRPCReactProvider } from '@/trpc/client';
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { Toaster } from "sonner";
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -26,6 +27,7 @@ export default function RootLayout({
         <TRPCReactProvider>
           <ThemeProvider>
             <SessionProvider>{children}</SessionProvider>
+            <Toaster position="top-right" richColors closeButton />
           </ThemeProvider>
         </TRPCReactProvider>
         <Analytics />

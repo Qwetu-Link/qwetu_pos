@@ -20,10 +20,10 @@ export const paymentMethodEnum = pgEnum("payment_method", [
 export const paymentTable = pgTable("payments", {
     id: uuid("id").defaultRandom().primaryKey(),
     businessId: uuid("business_id")
-    .notNull()
-    .references(() => businessTable.id, {
-        onDelete: "cascade",
-    }),
+        .notNull()
+        .references(() => businessTable.id, {
+            onDelete: "cascade",
+        }),
     invoiceId: uuid("invoice_id")
         .notNull()
         .references(() => invoiceTable.id, {
@@ -42,4 +42,9 @@ export const paymentTable = pgTable("payments", {
     notes: varchar("notes", {
         length: 500,
     }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
 });

@@ -15,13 +15,16 @@ export const roleTable = pgTable("roles", {
             onDelete: "cascade",
         }),
     name: varchar("name", { length: 50 })
-        .notNull()
-        .unique(),
+        .notNull(),
     description: varchar("description", { length: 255 }),
     salary: integer("salary").default(0),
     createdAt: timestamp("created_at")
         .defaultNow()
         .notNull(),
+    updatedAt: timestamp("updated_at")
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
 }, (table) => ({
-    uniqueBusinessRole: uniqueIndex("unique_name").on(table.businessId, table.name),
+    uniqueBusinessRole: uniqueIndex("unique_name_idx").on(table.businessId, table.name),
 }));

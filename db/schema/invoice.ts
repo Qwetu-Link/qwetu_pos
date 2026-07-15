@@ -52,7 +52,11 @@ export const invoiceTable = pgTable("invoices", {
     createdAt: timestamp("created_at")
         .defaultNow()
         .notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 }, (table) => ({
-    uniqueInvoice: uniqueIndex("business_invoice")
+    uniqueInvoice: uniqueIndex("business_invoice_idx")
         .on(table.businessId, table.invoiceNumber)
 }));

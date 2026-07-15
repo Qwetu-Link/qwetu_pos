@@ -7,10 +7,10 @@ import { businessTable } from "./business";
 export const productImages = pgTable("product_images", {
     id: uuid("id").defaultRandom().primaryKey(),
     businessId: uuid("business_id")
-    .notNull()
-    .references(() => businessTable.id, {
-        onDelete: "cascade",
-    }),
+        .notNull()
+        .references(() => businessTable.id, {
+            onDelete: "cascade",
+        }),
     productId: uuid("product_id")
         .notNull()
         .references(() => productsTable.id, {
@@ -52,6 +52,10 @@ export const productImages = pgTable("product_images", {
     createdAt: timestamp("created_at")
         .defaultNow()
         .notNull(),
+    updatedAt: timestamp("updated_at")
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
 });
 
 export const productImageRelations = relations(
@@ -68,10 +72,10 @@ export const productImageRelations = relations(
 export const productsTable = pgTable("products", {
     id: uuid("id").defaultRandom().primaryKey(),
     businessId: uuid("business_id")
-    .notNull()
-    .references(() => businessTable.id, {
-        onDelete: "cascade",
-    }),
+        .notNull()
+        .references(() => businessTable.id, {
+            onDelete: "cascade",
+        }),
     name: varchar("name", {
         length: 255,
     }).notNull(),
@@ -85,6 +89,10 @@ export const productsTable = pgTable("products", {
     createdAt: timestamp("created_at")
         .defaultNow()
         .notNull(),
+    updatedAt: timestamp("updated_at")
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
 });
 
 export const productRelations = relations(productsTable, ({ one, many }) => ({
@@ -93,4 +101,5 @@ export const productRelations = relations(productsTable, ({ one, many }) => ({
         references: [categoryTable.id],
     }),
     images: many(productImages),
+
 }));

@@ -37,7 +37,13 @@ export const permissionTable = pgTable("permission", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: varchar("name", { length: 100 }).notNull().unique(), // e.g., "invoice:create", "business:settings"
   description: varchar("description", { length: 255 }),      // Friendly text for your checkbox label
-  group: varchar("group", { length: 50 }).notNull(),          // e.g., "Invoices", "Reports" (Great for grouping your UI checkboxes)
+  group: varchar("group", { length: 50 }).notNull(),
+  // e.g., "Invoices", "Reports" (Great for grouping your UI checkboxes)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 })
 
 // 2. The Junction table tracking which Role holds which Permission
@@ -51,6 +57,10 @@ export const rolePermissionTable = pgTable(
       .notNull()
       .references(() => permissionTable.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
   (table) => ({
     pk: primaryKey({

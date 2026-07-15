@@ -10,10 +10,10 @@ export const orderStatusEnum = pgEnum("order_status", ["pending", "processing", 
 export const orderItemTable = pgTable("order_items", {
     id: uuid("id").defaultRandom().primaryKey(),
     businessId: uuid("business_id")
-    .notNull()
-    .references(() => businessTable.id, {
-        onDelete: "cascade",
-    }),
+        .notNull()
+        .references(() => businessTable.id, {
+            onDelete: "cascade",
+        }),
     variantId: uuid("variant_id").notNull().references(() => variantsTable.id, {
         onDelete: "restrict", // Prevent deleting products with existing order items
     }),
@@ -31,9 +31,14 @@ export const orderItemTable = pgTable("order_items", {
         }),
     quantity: integer("quantity").notNull(),
     price: integer("price").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
 }, (table) => ({
     uniqueOrderItem: uniqueIndex
-        ("unique_order_item").on(table.orderId, table.variantId)
+        ("unique_order_item_idx").on(table.orderId, table.variantId)
 }));
 
 
@@ -41,10 +46,10 @@ export const orderItemTable = pgTable("order_items", {
 export const orderTable = pgTable("orders", {
     id: uuid("id").defaultRandom().primaryKey(),
     businessId: uuid("business_id")
-    .notNull()
-    .references(() => businessTable.id, {
-        onDelete: "cascade",
-    }),
+        .notNull()
+        .references(() => businessTable.id, {
+            onDelete: "cascade",
+        }),
     customerId: uuid("customer_id")
         .notNull()
         .references(() => customerTable.id, {
@@ -58,8 +63,12 @@ export const orderTable = pgTable("orders", {
     installmentStartDate: timestamp("installment_start_date"),
     status: orderStatusEnum("status").default("pending").notNull(),
     startDate: timestamp("start_date"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
     shippingAddress: varchar("shipping_address", { length: 500 }).notNull(),
-},(table) => ({
-    uniqueOrder: uniqueIndex("unique_order").on(table.customerId, table.createdAt)
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
+}, (table) => ({
+    uniqueOrder: uniqueIndex("unique_order_customer_idx").on(table.customerId, table.id)
 }));

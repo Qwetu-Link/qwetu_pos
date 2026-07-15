@@ -1,4 +1,4 @@
-import { integer, pgTable, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import { pgTable, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { productsTable } from "./products";
 import { businessTable } from "./business";
@@ -14,9 +14,13 @@ export const categoryTable = pgTable("category", {
   name: varchar("name", { length: 255 }).notNull(),
   description: varchar("description"),
   icon: varchar("icon", { length: 255 }),
-  productCount: integer("product_count").default(0)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 }, (table) => ({
-  uniqueName: uniqueIndex("unique_name").on(table.businessId, table.name)
+  uniqueName: uniqueIndex("category_business_name_idx").on(table.businessId, table.name)
 }))
 
 export const categoryRelations = relations(categoryTable, ({ many }) => ({

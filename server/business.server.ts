@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createBusiness } from "@/services/business.services";
+import { createBusiness } from "@/db/queries/business";
 import { businessSchema } from "@/validators/business";
 
 

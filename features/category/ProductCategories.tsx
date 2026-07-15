@@ -1,22 +1,50 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Category } from "@/types/categories";
-import { dummyCategories } from "@/data/categories";
+import type { CategoryFormValues } from "@/validators/category";
+import { toast } from "sonner";
 import {
   computeCategoryStats,
   filterCategories,
 } from "@/utils/category-utils";
+import {
+  useCreateCategory,
+  useDeleteCategory,
+  useGetCategories,
+  useUpdateCategory,
+} from "@/hooks/useCategory";
 import CategoryStatsCards from "./CategoryStatsCards";
 import CategoryCard from "./CategoryCard";
 import CategoryModal from "../forms/CategoryModal";
 import EmptyState from "@/components/common/EmptyState";
 import Pagination from "@/components/common/Pagination";
-import { FolderOpen, Plus, Search } from "lucide-react";
+import { FolderOpen, Loader2, Plus, Search } from "lucide-react";
 import DeleteModal from "@/components/common/DeleteModal";
 
+const categoryToastStyles = {
+  created: {
+    background: "#dcfce7",
+    border: "1px solid #86efac",
+    color: "#166534",
+  },
+  updated: {
+    background: "#dbeafe",
+    border: "1px solid #93c5fd",
+    color: "#1e40af",
+  },
+  deleted: {
+    background: "#fef3c7",
+    border: "1px solid #fcd34d",
+    color: "#92400e",
+  },
+} as const;
+
 export default function ProductCategories() {
-  const categories = dummyCategories;
+  const { categories, isLoading, isError, error } = useGetCategories();
+  const createCategory = useCreateCategory();
+  const updateCategory = useUpdateCategory();
+  const deleteCategory = useDeleteCategory();
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -24,7 +52,7 @@ export default function ProductCategories() {
   // Modal state: null = closed, null-value = add mode, Category = edit mode
   const [editTarget, setEditTarget] = useState<Category | null | "new">(null);
   const [deleteTarget, setDeleteTarget] = useState<{
-    id: number;
+    id: string;
     name: string;
   } | null>(null);
 
@@ -47,13 +75,47 @@ export default function ProductCategories() {
 
   // ---- Handlers ----
 
-  function handleSave() {
-    setEditTarget(null);
+  const isSaving = createCategory.isPending || updateCategory.isPending;
+  const isDeleting = deleteCategory.isPending;
+
+  async function handleSave(values: CategoryFormValues, existingId?: string) {
+    try {
+      if (existingId) {
+        await updateCategory.mutateAsync({ id: existingId, ...values });
+        toast.success("Category updated successfully.", {
+          style: categoryToastStyles.updated,
+        });
+      } else {
+        await createCategory.mutateAsync(values);
+        toast.success("Category created successfully.", {
+          style: categoryToastStyles.created,
+        });
+      }
+
+      setEditTarget(null);
+    } catch {
+      // Mutation state exposes the error message in the alert above.
+    }
   }
 
-  function handleDeleteConfirm() {
-    setDeleteTarget(null);
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+
+    try {
+      await deleteCategory.mutateAsync({ id: deleteTarget.id });
+      toast.success("Category deleted successfully.", {
+        style: categoryToastStyles.deleted,
+      });
+      setDeleteTarget(null);
+    } catch {
+      // Mutation state exposes the error message in the alert above.
+    }
   }
+
+  const mutationError =
+    createCategory.error?.message ||
+    updateCategory.error?.message ||
+    deleteCategory.error?.message;
 
   return (
     <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
@@ -69,14 +131,21 @@ export default function ProductCategories() {
         </div>
         <button
           onClick={() => setEditTarget("new")}
+          disabled={isSaving}
           className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-5 py-2.5 rounded-xl hover:shadow-lg transition flex items-center gap-2 font-medium self-start sm:self-auto"
         >
-          <Plus/> Add Category
+          <Plus /> Add Category
         </button>
       </div>
 
       {/* ---- Stats ---- */}
       <CategoryStatsCards stats={stats} />
+
+      {(isError || mutationError) && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {mutationError || error?.message || "Could not load categories."}
+        </div>
+      )}
 
       {/* ---- Search ---- */}
       <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
@@ -98,7 +167,12 @@ export default function ProductCategories() {
       </div>
 
       {/* ---- Grid ---- */}
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="flex min-h-48 items-center justify-center rounded-xl border border-gray-100 bg-white text-gray-500 shadow-sm">
+          <Loader2 className="mr-2 animate-spin text-emerald-600" size={18} />
+          Loading categories...
+        </div>
+      ) : filtered.length === 0 ? (
         <EmptyState
           icon={FolderOpen}
           title={
@@ -116,6 +190,7 @@ export default function ProductCategories() {
               <button
                 type="button"
                 onClick={() => setEditTarget("new")}
+                disabled={isSaving}
                 className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
               >
                 <Plus size={16} /> Add Category
@@ -154,19 +229,30 @@ export default function ProductCategories() {
       {editTarget !== null && (
         <CategoryModal
           category={editTarget === "new" ? null : editTarget}
-          onSave={handleSave}
-          onClose={() => setEditTarget(null)}
+          isSaving={isSaving}
+          onSave={(values, existingId) => {
+            void handleSave(values, existingId);
+          }}
+          onClose={() => {
+            if (!isSaving) setEditTarget(null);
+          }}
         />
       )}
 
       {deleteTarget && (
         <DeleteModal
           name={deleteTarget.name}
-          title="Delete Category"
-          onConfirm={handleDeleteConfirm}
-          onCancel={() => setDeleteTarget(null)}
+          title={isDeleting ? "Deleting Category" : "Delete Category"}
+          isDeleting={isDeleting}
+          onConfirm={() => {
+            void handleDeleteConfirm();
+          }}
+          onCancel={() => {
+            if (!isDeleting) setDeleteTarget(null);
+          }}
         />
       )}
+
     </div>
   );
 }

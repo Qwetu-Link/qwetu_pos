@@ -1,11 +1,10 @@
 import { CategoryFormValues } from "@/validators/category";
-import type { Category,CategoryStats } from "@/types/categories";
+import type { Category, CategoryStats } from "@/types/categories";
 
 // ---- ID generation ----
 
-export function generateCategoryId(categories: Category[]): number {
-  if (categories.length === 0) return 1;
-  return Math.max(...categories.map((c) => c.id)) + 1;
+export function generateCategoryId(): string {
+  return globalThis.crypto?.randomUUID?.() ?? Date.now().toString();
 }
 
 // ---- Stats ----
@@ -28,7 +27,7 @@ export function addCategory(
   values: CategoryFormValues
 ): Category[] {
   const newCat: Category = {
-    id: generateCategoryId(categories),
+    id: generateCategoryId(),
     name: values.name.trim(),
     description: values.description.trim(),
     icon: values.icon.trim() || "fas fa-tag",
@@ -39,7 +38,7 @@ export function addCategory(
 
 export function updateCategory(
   categories: Category[],
-  id: number,
+  id: string,
   values: CategoryFormValues
 ): Category[] {
   return categories.map((c) =>
@@ -56,7 +55,7 @@ export function updateCategory(
 
 export function deleteCategory(
   categories: Category[],
-  id: number
+  id: string
 ): Category[] {
   return categories.filter((c) => c.id !== id);
 }
@@ -72,6 +71,6 @@ export function filterCategories(
   return categories.filter(
     (c) =>
       c.name.toLowerCase().includes(term) ||
-      c.description.toLowerCase().includes(term)
+      (c.description ?? "").toLowerCase().includes(term)
   );
 }

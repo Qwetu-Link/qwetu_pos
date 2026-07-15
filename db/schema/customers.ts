@@ -25,6 +25,10 @@ export const customerTable = pgTable("customers", {
     joinedDate: timestamp("joined_date").defaultNow().notNull(),
     lastPurchase: timestamp("last_purchase"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
 }, (table) => ({
-    uniqueEmail: uniqueIndex("business_customer_email").on(table.businessId, table.email)
+    uniqueEmail: uniqueIndex("business_customer_email_idx").on(table.businessId, table.email)
 }));

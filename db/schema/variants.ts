@@ -15,6 +15,11 @@ export const locationTable = pgTable("locations", {
     name: varchar("name", { length: 255 }).notNull().unique(),
     stock: integer("stock").default(0).notNull(),
     reorderPoint: integer("reorder_point").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
 });
 
 
@@ -36,6 +41,11 @@ export const variantInventoryTable = pgTable("variant_inventory", {
     reorderPoint: integer("reorder_point").default(0).notNull(),
     lastRestocked: timestamp("last_restocked"),
     status: inventoryStatusEnum("status").default("healthy").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
 },
     (table) => ({
         uniqueVariantLocation: uniqueIndex("variant_location_unique").on(
@@ -59,6 +69,10 @@ export const variantsTable = pgTable("variants", {
     sellPrice: integer("sell_price").default(0).notNull(),
     productId: uuid("product_id").notNull().references(() => productsTable.id, { onDelete: 'cascade' }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
 }, (table) => ({
     uniqueVariant: uniqueIndex("unique_variant").on(table.productId, table.color, table.size),
     uniqueSku: uniqueIndex("unique_sku").on(table.sku, table.businessId),

@@ -3,11 +3,11 @@
 // ============================================================
 
 export interface Category {
-  id: number;
+  id: string;
   name: string;
-  description: string;
-  icon: string;
-  productCount: number;
+  description: string | null;
+  icon: string | null;
+  productCount?: number;
 }
 
 // ---- Stats ----

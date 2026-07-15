@@ -1,95 +1,3 @@
-// import NextAuth from "next-auth"
-// import Google from "next-auth/providers/google"
-// import Credentials from "next-auth/providers/credentials"
-// import { DrizzleAdapter } from "@auth/drizzle-adapter"
-// import { z } from "zod"
-// import bcrypt from "bcryptjs"
-// import { eq } from "drizzle-orm"
-// import { usersTable } from "./db/schema/users"
-// import { accounts, sessions, verificationTokens } from "./db/schema/business"
-// import { db } from "./db"
-
-// // 1. Define your credential validation rules
-// const signInSchema = z.object({
-//   email: z.string().email(),
-//   password: z.string().min(6),
-// })
-
-// export const { handlers, signIn, signOut, auth } = NextAuth({
-//   adapter: DrizzleAdapter(db, {
-//     usersTable: usersTable,
-//     accountsTable: accounts,
-//     sessionsTable: sessions,
-//     verificationTokensTable: verificationTokens,
-//   }),
-//   // Required when using the Credentials Provider
-//   session: { strategy: "jwt" },
-//   providers: [
-//     Google,
-//     Credentials({
-//       credentials: {
-//         email: { label: "Email", type: "email" },
-//         password: { label: "Password", type: "password" },
-//       },
-//       authorize: async (credentials) => {
-//         try {
-//           const { email, password } = await signInSchema.parseAsync(credentials)
-
-//           // Find the user entry along with password checks
-//           const [foundUser] = await db
-//             .select()
-//             .from(usersTable)
-//             .where(eq(usersTable.email, email))
-//             .limit(1)
-
-//           // If you stored passwords directly in a "password" or "passwordHash" field inside user table
-//           // Make sure to add it to your drizzle schema if it is part of authentication.
-//           if (!foundUser || !(foundUser as any).passwordHash) {
-//             return null
-//           }
-
-//           const isValid = await bcrypt.compare(password, (foundUser as any).passwordHash)
-//           if (!isValid) return null
-
-//           if (!foundUser.isActive) {
-//             throw new Error("Account is deactivated.")
-//           }
-
-//           // Return user fields for JWT injection
-//           return {
-//             id: foundUser.id,
-//             name: foundUser.name,
-//             email: foundUser.email,
-//             image: foundUser.image,
-//             businessId: foundUser.businessId,
-//             roleId: foundUser.roleId,
-//           }
-//         } catch (error) {
-//           return null
-//         }
-//       },
-//     }),
-//   ],
-//   callbacks: {
-//     async jwt({ token, user }) {
-//       // Append multi-tenancy variables to the token during login
-//       if (user) {
-//         token.businessId = (user as any).businessId
-//         token.roleId = (user as any).roleId
-//       }
-//       return token
-//     },
-//     async session({ session, token }) {
-//       // Expose multi-tenancy fields cleanly into server/client session components
-//       if (session.user) {
-//         (session.user as any).businessId = token.businessId;
-//         (session.user as any).roleId = token.roleId;
-//       }
-//       return session
-//     },
-//   },
-// })
-
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import Credentials from "next-auth/providers/credentials"
@@ -183,8 +91,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
+                token.userId = user.id
                 token.businessId = user.businessId
                 token.roleId = user.roleId
+
 
                 // Fetch the friendly name of the role (e.g., "Super Admin") to make routing decisions easier
                 if (user.roleId) {
@@ -204,6 +114,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
         async session({ session, token }) {
             if (session.user) {
+                session.user.id = token.userId as string;
                 session.user.businessId = token.businessId as string | null | undefined
                 session.user.roleId = token.roleId as string | null | undefined
                 session.user.roleName = token.roleName as string | undefined /// Expose role string to client components

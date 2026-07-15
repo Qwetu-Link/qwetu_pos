@@ -5,11 +5,18 @@ import { Trash2 } from "lucide-react";
 interface Props {
   name: string;
   title?: string;
+  isDeleting?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-export default function DeleteModal({ name, title, onConfirm, onCancel }: Props) {
+export default function DeleteModal({
+  name,
+  title,
+  isDeleting = false,
+  onConfirm,
+  onCancel,
+}: Props) {
   return (
     <div
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -32,13 +39,15 @@ export default function DeleteModal({ name, title, onConfirm, onCancel }: Props)
         <div className="flex gap-3">
           <button
             onClick={onConfirm}
-            className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition"
+            disabled={isDeleting}
+            className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Delete
+            {isDeleting ? "Deleting..." : "Delete"}
           </button>
           <button
             onClick={onCancel}
-            className="flex-1 border border-gray-300 py-2.5 rounded-xl font-medium hover:bg-gray-50 transition text-black"
+            disabled={isDeleting}
+            className="flex-1 border border-gray-300 py-2.5 rounded-xl font-medium hover:bg-gray-50 transition text-black disabled:cursor-not-allowed disabled:opacity-60"
           >
             Cancel
           </button>

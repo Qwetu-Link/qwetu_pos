@@ -24,7 +24,8 @@ import { CategoryFormValues, categorySchema } from "@/validators/category";
 interface Props {
   /** null = add mode, Category = edit mode */
   category: Category | null;
-  onSave: (values: CategoryFormValues, existingId?: number) => void;
+  isSaving?: boolean;
+  onSave: (values: CategoryFormValues, existingId?: string) => void;
   onClose: () => void;
 }
 
@@ -58,7 +59,12 @@ const quickPickIcons = [
   { value: "fas fa-hat-cowboy", label: "Cowboy", Icon: Sparkles },
 ] as const;
 
-export default function CategoryModal({ category, onSave, onClose }: Props) {
+export default function CategoryModal({
+  category,
+  isSaving = false,
+  onSave,
+  onClose,
+}: Props) {
   const {
     control,
     formState: { errors },
@@ -106,6 +112,7 @@ export default function CategoryModal({ category, onSave, onClose }: Props) {
           </h3>
           <button
             onClick={onClose}
+            disabled={isSaving}
             className="text-gray-400 hover:text-gray-600 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition"
           >
             ✕
@@ -122,7 +129,6 @@ export default function CategoryModal({ category, onSave, onClose }: Props) {
             <input
               type="text"
               {...register("name")}
-              required
               placeholder="e.g. Men's Clothing"
               className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
             />
@@ -158,7 +164,6 @@ export default function CategoryModal({ category, onSave, onClose }: Props) {
                 type="text"
                 {...register("icon")}
                 placeholder="fas fa-tshirt"
-                disabled
                 className="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
               />
               {/* Live icon preview bubble */}
@@ -192,15 +197,17 @@ export default function CategoryModal({ category, onSave, onClose }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition font-medium"
+              disabled={isSaving}
+              className="px-6 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition font-medium disabled:cursor-not-allowed disabled:opacity-60"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:shadow-lg transition font-medium flex items-center justify-center gap-1"
+              disabled={isSaving}
+              className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:shadow-lg transition font-medium flex items-center justify-center gap-1 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <Save size={14} /> Save Category
+              <Save size={14} /> {isSaving ? "Saving..." : "Save Category"}
             </button>
           </div>
         </form>

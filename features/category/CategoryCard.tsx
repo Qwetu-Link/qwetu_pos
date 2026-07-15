@@ -4,7 +4,6 @@ import type { Category } from "@/types/categories";
 import {
   Baby,
   BedDouble,
-  Box,
   Gem,
   Pencil,
   Shirt,
@@ -20,7 +19,7 @@ import {
 interface Props {
   category: Category;
   onEdit: (category: Category) => void;
-  onDelete: (id: number, name: string) => void;
+  onDelete: (id: string, name: string) => void;
 }
 
 const categoryIconMap: Record<string, LucideIcon> = {
@@ -38,7 +37,7 @@ const categoryIconMap: Record<string, LucideIcon> = {
 };
 
 export default function CategoryCard({ category, onEdit, onDelete }: Props) {
-  const CategoryIcon = categoryIconMap[category.icon] ?? Tag;
+  const CategoryIcon = categoryIconMap[category.icon ?? "fas fa-tag"] ?? Tag;
 
   return (
     <div className="group bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5">
@@ -82,10 +81,6 @@ export default function CategoryCard({ category, onEdit, onDelete }: Props) {
 
       {/* Footer row */}
       <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <span className="text-xs bg-gray-100 px-2.5 py-1 rounded-full text-gray-600 flex items-center gap-1">
-          <Box size={12} />
-          {category.productCount ?? 0} products
-        </span>
         <span className="text-xs text-gray-400 flex items-center gap-1">
           <CategoryIcon size={12} />
           Category
