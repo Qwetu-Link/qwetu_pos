@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Boxes, PackageOpen } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Boxes, Loader2, PackageOpen } from "lucide-react";
 import EmptyState from "@/components/common/EmptyState";
 import { useInventory } from "@/hooks/useInventory";
+import { useGetProducts } from "@/hooks/useProduct";
 import type { InventoryItem } from "@/types/inventory";
 import { StatsRow } from "./StatsRow";
 import { FilterBar } from "./FilterBar";
@@ -11,9 +12,15 @@ import { InventoryCard } from "./InventoryCard";
 import { Pagination } from "@/components/common/Pagination";
 import { AdjustModal } from "./AdjustModal";
 import { TransferModal } from "./TransferModal";
-import { computeStats } from "@/utils/inventory-utils";
+import { computeStats, mapProductsToInventoryItems } from "@/utils/inventory-utils";
 
 export function InventoryIntelligence() {
+  const { products, isLoading, isError, error } = useGetProducts();
+  const inventoryItems = useMemo(
+    () => mapProductsToInventoryItems(products),
+    [products]
+  );
+
   const {
     items,
     filtered,
@@ -29,7 +36,9 @@ export function InventoryIntelligence() {
     totalPages,
     adjustStock,
     transferStock,
-  } = useInventory();
+    isAdjusting,
+    isTransferring,
+  } = useInventory(inventoryItems);
 
   const [adjustItem, setAdjustItem] = useState<InventoryItem | null>(null);
   const [transferItem, setTransferItem] = useState<InventoryItem | null>(null);
@@ -54,6 +63,12 @@ export function InventoryIntelligence() {
         {/* Stats */}
         <StatsRow stats={stats} />
 
+        {isError && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            {error?.message || "Could not load inventory from the database."}
+          </div>
+        )}
+
         {/* Filters */}
         <FilterBar
           search={search}
@@ -63,7 +78,12 @@ export function InventoryIntelligence() {
         />
 
         {/* Cards */}
-        {paginated.length === 0 ? (
+        {isLoading ? (
+          <div className="flex min-h-48 items-center justify-center rounded-xl border border-gray-100 bg-white text-gray-500 shadow-sm">
+            <Loader2 className="mr-2 animate-spin text-emerald-600" size={18} />
+            Loading inventory...
+          </div>
+        ) : paginated.length === 0 ? (
           <EmptyState
             icon={PackageOpen}
             title={
@@ -108,9 +128,10 @@ export function InventoryIntelligence() {
         <AdjustModal
           key={adjustItem.sku}
           item={adjustItem}
+          isApplying={isAdjusting}
           onClose={() => setAdjustItem(null)}
-          onConfirm={(sku, loc, qty) => {
-            adjustStock(sku, loc, qty);
+          onConfirm={async (variantId, loc, qty) => {
+            await adjustStock(variantId, loc, qty);
             setAdjustItem(null);
           }}
         />
@@ -119,8 +140,19 @@ export function InventoryIntelligence() {
         <TransferModal
           key={transferItem.sku}
           item={transferItem}
+          isTransferring={isTransferring}
           onClose={() => setTransferItem(null)}
-          onConfirm={(sku, from, to, qty) => transferStock(sku, from, to, qty)}
+          onConfirm={async (variantId, from, to, qty) => {
+            try {
+              const success = await transferStock(variantId, from, to, qty);
+              if (success) {
+                setTransferItem(null);
+              }
+              return success;
+            } catch {
+              return false;
+            }
+          }}
         />
       )}
     </div>

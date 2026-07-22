@@ -12,7 +12,7 @@ export const locationTable = pgTable("locations", {
         .references(() => businessTable.id, {
             onDelete: "cascade",
         }),
-    name: varchar("name", { length: 255 }).notNull().unique(),
+    name: varchar("name", { length: 255 }).notNull(),
     stock: integer("stock").default(0).notNull(),
     reorderPoint: integer("reorder_point").default(0).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -20,7 +20,12 @@ export const locationTable = pgTable("locations", {
         .defaultNow()
         .$onUpdate(() => new Date())
         .notNull(),
-});
+}, (table) => ({
+    uniqueBusinessLocation: uniqueIndex("business_location_unique").on(
+        table.businessId,
+        table.name,
+    ),
+}));
 
 
 // Variants  records

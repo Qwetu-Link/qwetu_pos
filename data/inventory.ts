@@ -2,6 +2,7 @@ import type { InventoryItem } from "@/types/inventory";
 
 export const DEMO_INVENTORY: InventoryItem[] = [
   {
+    variantId: "demo-snk-run-blk-42",
     sku: "SNK-RUN-BLK-42",
     productName: "Running Sneakers Pro",
     color: "Black/Neon",
@@ -19,6 +20,7 @@ export const DEMO_INVENTORY: InventoryItem[] = [
     },
   },
   {
+    variantId: "demo-jkt-dnm-blu-m",
     sku: "JKT-DNM-BLU-M",
     productName: "Premium Denim Jacket",
     color: "Blue",
@@ -36,6 +38,7 @@ export const DEMO_INVENTORY: InventoryItem[] = [
     },
   },
   {
+    variantId: "demo-drs-flr-red-s",
     sku: "DRS-FLR-RED-S",
     productName: "Floral Wrap Dress",
     color: "Red",
@@ -53,6 +56,7 @@ export const DEMO_INVENTORY: InventoryItem[] = [
     },
   },
   {
+    variantId: "demo-trn-cam-m",
     sku: "TRN-CAM-M",
     productName: "Wool Trench Coat",
     color: "Camel",
@@ -70,6 +74,7 @@ export const DEMO_INVENTORY: InventoryItem[] = [
     },
   },
   {
+    variantId: "demo-blz-wht-l",
     sku: "BLZ-WHT-L",
     productName: "Tailored Blazer",
     color: "White",
@@ -87,6 +92,7 @@ export const DEMO_INVENTORY: InventoryItem[] = [
     },
   },
   {
+    variantId: "demo-blt-lth-blk",
     sku: "BLT-LTH-BLK",
     productName: "Leather Belt",
     color: "Black",
@@ -104,4 +110,3 @@ export const DEMO_INVENTORY: InventoryItem[] = [
     },
   },
 ];
-

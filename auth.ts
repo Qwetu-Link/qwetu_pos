@@ -81,7 +81,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         businessId: targetUser.businessId,
                         roleId: targetUser.roleId,
                     }
-                } catch {
+                } catch(err) {
+                    console.error("AUTH ERROR:", err)
                     return null
                 }
             },

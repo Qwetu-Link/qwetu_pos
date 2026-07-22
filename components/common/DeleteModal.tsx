@@ -37,19 +37,20 @@ export default function DeleteModal({
           This action cannot be undone.
         </p>
         <div className="flex gap-3">
-          <button
-            onClick={onConfirm}
-            disabled={isDeleting}
-            className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isDeleting ? "Deleting..." : "Delete"}
-          </button>
+
           <button
             onClick={onCancel}
             disabled={isDeleting}
             className="flex-1 border border-gray-300 py-2.5 rounded-xl font-medium hover:bg-gray-50 transition text-black disabled:cursor-not-allowed disabled:opacity-60"
           >
             Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
           </button>
         </div>
       </div>

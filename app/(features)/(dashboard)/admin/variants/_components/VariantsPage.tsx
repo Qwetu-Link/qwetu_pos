@@ -9,10 +9,12 @@ import {
   Percent,
   Search,
   PackageOpen,
+  Loader2,
 } from "lucide-react";
-import { dummyProducts } from "@/data/products";
 import EmptyState from "@/components/common/EmptyState";
 import { computeStats, flattenVariants } from "@/utils/variant-utils";
+import { useGetProducts } from "@/hooks/useProduct";
+import { useDeleteVariant, useUpdateVariant } from "@/hooks/useVariant";
 import StatCard from "./StatCard";
 import VariantCard from "./VariantCard";
 import Pagination from "@/components/common/Pagination";
@@ -21,14 +23,19 @@ import DeleteModal from "./DeleteModal";
 
 
 export default function ProductVariantsPage() {
-  const products = dummyProducts;
+  const { products, isLoading, isError, error } = useGetProducts();
+  const updateVariant = useUpdateVariant();
+  const deleteVariant = useDeleteVariant();
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
-  const [editSku, setEditSku] = useState<string | null>(null);
+  const [editVariantId, setEditVariantId] = useState<string | null>(null);
   const [editProductId, setEditProductId] = useState<string | null>(null);
-  const [deleteSku, setDeleteSku] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    sku: string;
+  } | null>(null);
 
   const inventoryItems = useMemo(() => flattenVariants(products), [products]);
 
@@ -61,33 +68,49 @@ export default function ProductVariantsPage() {
   );
 
   const editVariant = useMemo(
-    () => editProduct?.variants.find((variant) => variant.sku === editSku) ?? null,
-    [editProduct, editSku]
+    () => editProduct?.variants.find((variant) => variant.id === editVariantId) ?? null,
+    [editProduct, editVariantId]
   );
 
-  const handleOpenEdit = useCallback((sku: string, productId: string) => {
-    setEditSku(sku);
+  const handleOpenEdit = useCallback((variantId: string, productId: string) => {
+    setEditVariantId(variantId);
     setEditProductId(productId);
   }, []);
 
   const handleSaveEdit = useCallback(
-    (data: {
+    async (data: {
       color: string;
       size: string;
       buyPrice: number;
       sellPrice: number;
       reorderPoint: number;
     }) => {
-      void data;
-      setEditSku(null);
+      if (!editVariant) return;
+
+      await updateVariant.mutateAsync({
+        id: editVariant.id,
+        sku: editVariant.sku,
+        color: data.color,
+        size: data.size,
+        buyPrice: data.buyPrice,
+        sellPrice: data.sellPrice,
+        reorderPoint: data.reorderPoint,
+      });
+
+      setEditVariantId(null);
       setEditProductId(null);
     },
-    []
+    [editVariant, updateVariant]
   );
 
-  const handleConfirmDelete = useCallback(() => {
-    setDeleteSku(null);
-  }, []);
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deleteTarget) return;
+
+    await deleteVariant.mutateAsync({
+      id: deleteTarget.id,
+    });
+    setDeleteTarget(null);
+  }, [deleteTarget, deleteVariant]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-4 md:p-6 antialiased">
@@ -130,6 +153,12 @@ export default function ProductVariantsPage() {
           />
         </div>
 
+        {isError && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            {error?.message || "Could not load product variants from the database."}
+          </div>
+        )}
+
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
           <div className="relative">
             <Search
@@ -150,7 +179,12 @@ export default function ProductVariantsPage() {
           </div>
         </div>
 
-        {paginated.length === 0 ? (
+        {isLoading ? (
+          <div className="flex min-h-48 items-center justify-center rounded-xl border border-gray-100 bg-white text-gray-500 shadow-sm">
+            <Loader2 className="mr-2 animate-spin text-emerald-600" size={18} />
+            Loading product variants...
+          </div>
+        ) : paginated.length === 0 ? (
           <EmptyState
             icon={PackageOpen}
             title={
@@ -171,7 +205,7 @@ export default function ProductVariantsPage() {
                 key={item.sku}
                 item={item}
                 onEdit={handleOpenEdit}
-                onDelete={setDeleteSku}
+                onDelete={(variantId, sku) => setDeleteTarget({ id: variantId, sku })}
               />
             ))}
           </div>
@@ -195,9 +229,10 @@ export default function ProductVariantsPage() {
       {editVariant && editProduct && (
         <EditModal
           key={editVariant.sku}
-          isOpen={!!editSku}
+          isOpen={!!editVariantId}
+          isSaving={updateVariant.isPending}
           onClose={() => {
-            setEditSku(null);
+            setEditVariantId(null);
             setEditProductId(null);
           }}
           variant={editVariant}
@@ -207,10 +242,11 @@ export default function ProductVariantsPage() {
       )}
 
       <DeleteModal
-        isOpen={!!deleteSku}
-        sku={deleteSku ?? undefined}
+        isOpen={!!deleteTarget}
+        sku={deleteTarget?.sku}
+        isDeleting={deleteVariant.isPending}
         onConfirm={handleConfirmDelete}
-        onCancel={() => setDeleteSku(null)}
+        onCancel={() => setDeleteTarget(null)}
       />
     </div>
   );

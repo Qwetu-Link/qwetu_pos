@@ -1,5 +1,3 @@
-import { ProductCategory } from "@/types/catalog";
-
 // Product
 export const CATEGORIES = [
   "Men's Clothing",
@@ -8,7 +6,7 @@ export const CATEGORIES = [
   "Footwear",
   "Kids Wear",
   "Outerwear",
-] as const satisfies readonly ProductCategory[];
+] as const;
 
 
 // Variants Select

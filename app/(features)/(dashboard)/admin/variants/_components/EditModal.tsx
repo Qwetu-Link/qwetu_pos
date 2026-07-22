@@ -1,4 +1,4 @@
-import { Pencil, X } from "lucide-react";
+import { Loader2, Pencil, X } from "lucide-react";
 import type { Product, ProductVariant } from "@/types/catalog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -24,7 +24,8 @@ interface Props {
   variant: ProductVariant;
   product: Product;
   isOpen: boolean;
-  onSave: (data: EditVariantValues) => void;
+  isSaving?: boolean;
+  onSave: (data: EditVariantValues) => void | Promise<void>;
   onClose: () => void;
 }
 
@@ -33,6 +34,7 @@ export default function EditModal({
   onClose,
   variant,
   product,
+  isSaving = false,
   onSave,
 }: Props) {
   const {
@@ -55,8 +57,8 @@ export default function EditModal({
       ? Array.from({ length: 41 }, (_, i) => String(i + 10))
       : ["XS", "S", "M", "L", "XL", "XXL"];
 
-  function handleSave(values: EditVariantValues) {
-    onSave(values);
+  async function handleSave(values: EditVariantValues) {
+    await onSave(values);
   }
 
   if (!isOpen) return null;
@@ -73,6 +75,7 @@ export default function EditModal({
 
             <button
               onClick={onClose}
+              disabled={isSaving}
               className="text-slate-400 hover:text-slate-600 transition-colors"
             >
               <X size={20} />
@@ -156,17 +159,26 @@ export default function EditModal({
 
         <div className="flex gap-3 mt-6">
           <button
-            type="submit"
-            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl font-medium transition-colors"
-          >
-            Save Changes
-          </button>
-          <button
             type="button"
             onClick={onClose}
-            className="flex-1 border border-slate-300 py-2.5 rounded-xl font-medium hover:bg-slate-50 transition-colors text-black"
+            disabled={isSaving}
+            className="flex-1 border border-slate-300 py-2.5 rounded-xl font-medium hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 transition-colors text-black"
           >
             Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isSaving}
+            className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400 text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            {isSaving ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
           </button>
         </div>
         </form>

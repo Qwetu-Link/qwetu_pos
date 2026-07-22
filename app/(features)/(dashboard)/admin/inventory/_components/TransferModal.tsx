@@ -3,14 +3,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
-import { ArrowLeftRight, X } from "lucide-react";
+import { ArrowLeftRight, Loader2, X } from "lucide-react";
 import { LOCATIONS } from "@/data/inventory-locations";
 import type { InventoryItem } from "@/types/inventory";
 
 interface TransferModalProps {
   item: InventoryItem;
+  isTransferring?: boolean;
   onClose: () => void;
-  onConfirm: (sku: string, from: string, to: string, qty: number) => boolean;
+  onConfirm: (variantId: string, from: string, to: string, qty: number) => Promise<boolean>;
 }
 
 const transferStockSchema = z.object({
@@ -26,6 +27,7 @@ type TransferStockFormValues = z.infer<typeof transferStockSchema>;
 
 export function TransferModal({
   item,
+  isTransferring = false,
   onClose,
   onConfirm,
 }: TransferModalProps) {
@@ -48,8 +50,8 @@ export function TransferModal({
   const fromLocationStock =
     item.inventory.locations.find((l) => l.name === from)?.stock ?? 0;
 
-  function handleConfirm(values: TransferStockFormValues) {
-    const success = onConfirm(item.sku, values.from, values.to, values.qty);
+  async function handleConfirm(values: TransferStockFormValues) {
+    const success = await onConfirm(item.variantId, values.from, values.to, values.qty);
     if (!success) {
       setError("qty", {
         message: `Insufficient stock at ${values.from}. Available: ${fromLocationStock}`,
@@ -70,6 +72,7 @@ export function TransferModal({
           </h3>
           <button
             onClick={onClose}
+            disabled={isTransferring}
             className="text-slate-400 hover:text-slate-600 transition-colors"
           >
             <X size={20} />
@@ -139,17 +142,28 @@ export function TransferModal({
 
           <div className="flex gap-3 pt-1">
             <button
-              type="submit"
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              <ArrowLeftRight size={15} /> Transfer
-            </button>
-            <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-slate-300 py-2.5 rounded-xl font-medium hover:bg-slate-50 transition-colors text-black"
+              disabled={isTransferring}
+              className="flex-1 border border-slate-300 py-2.5 rounded-xl font-medium hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 transition-colors text-black"
             >
               Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isTransferring}
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400 text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              {isTransferring ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Transferring...
+                </>
+              ) : (
+                <>
+                  <ArrowLeftRight size={15} /> Transfer
+                </>
+              )}
             </button>
           </div>
         </form>

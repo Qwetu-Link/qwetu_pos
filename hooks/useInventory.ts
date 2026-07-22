@@ -1,15 +1,21 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
 import type { InventoryItem } from "@/types/inventory";
 import { DEMO_INVENTORY, filterItems, recalcTotalStock } from "@/utils/inventory-utils";
 
-function getInitialItems(): InventoryItem[] {
-  return DEMO_INVENTORY.map((item) => recalcTotalStock(structuredClone(item)));
+function getInitialItems(sourceItems?: InventoryItem[]): InventoryItem[] {
+  const items = sourceItems ?? DEMO_INVENTORY;
+
+  return items.map((item) => recalcTotalStock(structuredClone(item)));
 }
 
-export function useInventory() {
-  const items = useMemo(() => getInitialItems(), []);
+export function useInventory(sourceItems?: InventoryItem[]) {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+  const items = useMemo(() => getInitialItems(sourceItems), [sourceItems]);
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,27 +44,45 @@ export function useInventory() {
     setCurrentPage(1);
   }, []);
 
-  // Adjust stock (absolute value for a location)
-  const adjustStock = useCallback(
-    (sku: string, locationName: string, newAbsoluteQty: number) => {
-      void sku;
-      void locationName;
-      void newAbsoluteQty;
-      // Laravel API will own stock adjustments.
-    },
-    []
+  const adjustStockMutation = useMutation(
+    trpc.inventory.adjustStock.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(trpc.products.pathFilter());
+      },
+    })
   );
 
-  // Transfer stock between locations
+  const transferStockMutation = useMutation(
+    trpc.inventory.transferStock.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(trpc.products.pathFilter());
+      },
+    })
+  );
+
+  const adjustStock = useCallback(
+    async (variantId: string, locationName: string, newAbsoluteQty: number) => {
+      await adjustStockMutation.mutateAsync({
+        variantId,
+        location: locationName as "Main Store" | "Warehouse A" | "Outlet",
+        quantity: newAbsoluteQty,
+      });
+    },
+    [adjustStockMutation]
+  );
+
   const transferStock = useCallback(
-    (sku: string, fromLoc: string, toLoc: string, qty: number): boolean => {
-      void sku;
-      void fromLoc;
-      void toLoc;
-      void qty;
+    async (variantId: string, fromLoc: string, toLoc: string, qty: number): Promise<boolean> => {
+      await transferStockMutation.mutateAsync({
+        variantId,
+        from: fromLoc as "Main Store" | "Warehouse A" | "Outlet",
+        to: toLoc as "Main Store" | "Warehouse A" | "Outlet",
+        quantity: qty,
+      });
+
       return true;
     },
-    []
+    [transferStockMutation]
   );
 
   return {
@@ -76,5 +100,7 @@ export function useInventory() {
     totalPages,
     adjustStock,
     transferStock,
+    isAdjusting: adjustStockMutation.isPending,
+    isTransferring: transferStockMutation.isPending,
   };
 }

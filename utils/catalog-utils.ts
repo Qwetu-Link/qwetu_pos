@@ -1,11 +1,28 @@
-import { VariantFormValues } from "@/validators/variant";
+import type { VariantCreateValues, VariantFormValues } from "@/validators/variant";
 import type {
   Product,
   ProductVariant,
   CatalogStats,
+  StockLocation,
   VariantInventory,
 } from "@/types/catalog";
 import { formatCurrency } from "@/utils/formatters";
+
+type VariantCreateInput = Omit<VariantCreateValues, "productId">;
+type VariantOptionInput = Pick<ProductVariant, "color" | "size">;
+type VariantPriceInput = Pick<ProductVariant, "color" | "size" | "buyPrice" | "sellPrice"> & {
+  sku?: string;
+  inventory?: VariantInventory;
+  mainStock?: number;
+};
+
+const DEFAULT_REORDER_POINT = 10;
+
+export const DEFAULT_STOCK_LOCATIONS: StockLocation[] = [
+  { name: "Main Store", stock: 0, reorderPoint: 5 },
+  { name: "Warehouse A", stock: 0, reorderPoint: 5 },
+  { name: "Outlet", stock: 0, reorderPoint: 5 },
+];
 
 // ---- SKU auto-generation ----
 
@@ -22,6 +39,43 @@ export function autoGenerateSku(
   const col = (color || "DEF").substring(0, 3).toUpperCase();
   const sz = String(size || "").toUpperCase().replace(/\s/g, "");
   return `${prefix}-${col}-${sz}`;
+}
+
+export function normalizeVariantOption(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+export function getVariantOptionKey(variant: VariantOptionInput): string {
+  return `${normalizeVariantOption(variant.color)}::${normalizeVariantOption(variant.size)}`;
+}
+
+export function hasVariantOption(
+  variants: VariantOptionInput[],
+  candidate: VariantOptionInput
+): boolean {
+  const candidateKey = getVariantOptionKey(candidate);
+  return variants.some((variant) => getVariantOptionKey(variant) === candidateKey);
+}
+
+export function ensureUniqueSku(sku: string, usedSkus: Iterable<string>): string {
+  const normalizedUsedSkus = new Set(
+    Array.from(usedSkus, (usedSku) => usedSku.trim().toUpperCase())
+  );
+  const baseSku = sku.trim().toUpperCase();
+
+  if (!normalizedUsedSkus.has(baseSku)) {
+    return baseSku;
+  }
+
+  let suffix = 2;
+  let nextSku = `${baseSku}-${suffix}`;
+
+  while (normalizedUsedSkus.has(nextSku)) {
+    suffix += 1;
+    nextSku = `${baseSku}-${suffix}`;
+  }
+
+  return nextSku;
 }
 
 // ---- Currency formatting ----
@@ -72,14 +126,35 @@ export function computeInventoryStatus(
   };
 }
 
+export function buildVariantInventory(
+  mainStock: number,
+  reorderPoint = DEFAULT_REORDER_POINT
+): VariantInventory {
+  return computeInventoryStatus({
+    totalStock: mainStock,
+    reorderPoint,
+    status: "healthy",
+    lastRestocked: new Date().toISOString().slice(0, 10),
+    locations: DEFAULT_STOCK_LOCATIONS.map((location) => ({
+      ...location,
+      stock: location.name === "Main Store" ? mainStock : 0,
+    })),
+  });
+}
+
 // ---- Build a new variant object from form values ----
 
 export function buildVariant(
   productName: string,
-  values: VariantFormValues
+  values: VariantFormValues,
+  existingVariants: Pick<ProductVariant, "sku">[] = []
 ): ProductVariant {
   const { color, size, buyPrice, sellPrice, mainStock } = values;
-  const sku = autoGenerateSku(productName, color, size);
+  const sku = ensureUniqueSku(
+    autoGenerateSku(productName, color, size),
+    existingVariants.map((variant) => variant.sku)
+  );
+
   return {
     id: `draft-${sku.toLowerCase()}`,
     sku,
@@ -87,18 +162,39 @@ export function buildVariant(
     size,
     buyPrice,
     sellPrice,
-    inventory: computeInventoryStatus({
-      totalStock: mainStock,
-      reorderPoint: 10,
-      status: "healthy",
-      lastRestocked: new Date().toISOString().slice(0, 10),
-      locations: [
-        { name: "Main Store", stock: mainStock, reorderPoint: 5 },
-        { name: "Warehouse A", stock: 0, reorderPoint: 5 },
-        { name: "Outlet", stock: 0, reorderPoint: 5 },
-      ],
-    }),
+    inventory: buildVariantInventory(mainStock),
   };
+}
+
+export function buildVariantCreateInput(
+  productName: string,
+  variant: VariantPriceInput,
+  existingSkus: Iterable<string> = []
+): VariantCreateInput {
+  return {
+    sku: ensureUniqueSku(
+      variant.sku || autoGenerateSku(productName, variant.color, variant.size),
+      existingSkus
+    ),
+    color: variant.color,
+    size: variant.size,
+    buyPrice: variant.buyPrice,
+    sellPrice: variant.sellPrice,
+    mainStock: variant.mainStock ?? variant.inventory?.totalStock ?? 0,
+  };
+}
+
+export function buildVariantCreateInputs(
+  productName: string,
+  variants: VariantPriceInput[]
+): VariantCreateInput[] {
+  const usedSkus = new Set<string>();
+
+  return variants.map((variant) => {
+    const input = buildVariantCreateInput(productName, variant, usedSkus);
+    usedSkus.add(input.sku);
+    return input;
+  });
 }
 
 // ---- Product total stock helper ----
@@ -117,7 +213,15 @@ export function getProductUniqueSizes(product: Product): string[] {
 
 export function getProductImageSrc(product: Product): string {
   if (product.imageData?.startsWith("data:image")) return product.imageData;
-  if (product.imageUrl?.trim()) return product.imageUrl;
+  const imageUrl = product.imageUrl?.trim();
+  if (
+    imageUrl &&
+    (imageUrl.startsWith("http") ||
+      imageUrl.startsWith("data:image") ||
+      imageUrl.startsWith("/"))
+  ) {
+    return imageUrl;
+  }
   return `https://via.placeholder.com/400x400?text=${encodeURIComponent(
     product.name.charAt(0)
   )}`;

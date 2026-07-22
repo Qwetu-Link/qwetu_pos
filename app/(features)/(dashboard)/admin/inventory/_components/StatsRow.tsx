@@ -7,44 +7,46 @@ export function StatsRow({ stats }: { stats: InventoryStats }) {
       label: "Healthy SKUs",
       value: stats.healthy,
       Icon: CheckCircle2,
-      cls: "text-emerald-600",
-      bg: "bg-emerald-50 border-emerald-100",
+      color: "text-emerald-600",
+      bg: "bg-emerald-50",
     },
     {
       label: "Low Stock",
       value: stats.low,
       Icon: TrendingUp,
-      cls: "text-amber-600",
-      bg: "bg-amber-50 border-amber-100",
+      color: "text-amber-600",
+      bg: "bg-amber-50",
     },
     {
       label: "Critical",
       value: stats.critical,
       Icon: TriangleAlert,
-      cls: "text-orange-600",
-      bg: "bg-orange-50 border-orange-100",
+      color: "text-orange-600",
+      bg: "bg-orange-50",
     },
     {
       label: "Reorder Now",
       value: stats.reorder,
       Icon: Truck,
-      cls: "text-red-600",
-      bg: "bg-red-50 border-red-100",
+      color: "text-red-600",
+      bg: "bg-red-50",
     },
   ];
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {cards.map(({ label, value, Icon, cls, bg }) => (
+      {cards.map(({ label, value, Icon, color, bg }) => (
         <div
           key={label}
-          className={`rounded-2xl border p-5 shadow-sm hover:shadow-md transition-shadow ${bg}`}
+          className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm"
         >
-          <div className={`flex items-center gap-2 mb-2 ${cls}`}>
-            <Icon size={16} />
-            <p className="text-sm font-semibold text-slate-700">{label}</p>
+          <div className="flex items-center gap-2 mb-2">
+            <div className={`${bg} w-10 h-10 rounded-lg flex items-center justify-center`}>
+              <Icon size={20} className={color} />
+            </div>
+            <p className={`text-sm font-bold ${color}`}>{label}</p>
           </div>
-          <p className="text-3xl font-extrabold text-slate-800">{value}</p>
+          <p className="text-2xl font-bold text-gray-800">{value}</p>
         </div>
       ))}
     </div>

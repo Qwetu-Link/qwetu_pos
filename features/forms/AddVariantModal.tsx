@@ -1,7 +1,6 @@
 "use client";
 
 import { VariantFormValues, variantSchema } from "@/validators/variant";
-import { ProductCategory } from "@/types/catalog";
 import { CLOTHING_SIZES, FOOTWEAR_SIZES } from "@/utils/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Puzzle } from "lucide-react";
@@ -9,7 +8,7 @@ import { useForm } from "react-hook-form";
 
 interface Props {
   productName: string;
-  category: ProductCategory;
+  category: string;
   onAdd: (values: VariantFormValues) => void;
   onClose: () => void;
 }

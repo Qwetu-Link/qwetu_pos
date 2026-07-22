@@ -24,7 +24,33 @@ function getDatabaseError(error: unknown): DatabaseError {
     return typeof error === "object" && error !== null ? error : {};
 }
 
+function ensureBusinessId(businessId: string | null) {
+    if (!businessId) {
+        throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "You must be signed in to manage categories.",
+        });
+    }
+
+    return businessId;
+}
+
+function ensureCategoryExists<T>(category: T | undefined) {
+    if (!category) {
+        throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Category not found for this business.",
+        });
+    }
+
+    return category;
+}
+
 function getFriendlyCategoryError(error: unknown, action: "create" | "update" | "delete"): never {
+    if (error instanceof TRPCError) {
+        throw error;
+    }
+
     const databaseError = getDatabaseError(error);
     const constraint = databaseError.constraint_name ?? databaseError.constraint;
 
@@ -56,30 +82,33 @@ function getFriendlyCategoryError(error: unknown, action: "create" | "update" | 
 }
 
 export const categoryRouter = createTRPCRouter({
-    getCategories: baseProcedure.query(async () => {
-        return getCategoriesQuery();
+    getCategories: baseProcedure.query(async ({ ctx }) => {
+        const businessId = ensureBusinessId(ctx.businessId);
+
+        return getCategoriesQuery(businessId);
     }),
 
     getCategoryById: baseProcedure
         .input(categoryIdSchema)
-        .query(async ({ input }) => {
-            return getCategoryByIdQuery(input.id);
+        .query(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+            const category = await getCategoryByIdQuery({
+                id: input.id,
+                businessId,
+            });
+
+            return ensureCategoryExists(category);
         }),
 
     addCategory: baseProcedure
         .input(categorySchema)
         .mutation(async ({ input, ctx }) => {
-            if (!ctx.businessId) {
-                throw new TRPCError({
-                    code: "UNAUTHORIZED",
-                    message: "You must be signed in to create a category.",
-                });
-            }
+            const businessId = ensureBusinessId(ctx.businessId);
 
             try {
                 return await createCategoryQuery({
                     ...input,
-                    businessId: ctx.businessId,
+                    businessId,
                 });
             } catch (error) {
                 getFriendlyCategoryError(error, "create");
@@ -88,9 +117,16 @@ export const categoryRouter = createTRPCRouter({
 
     editCategory: baseProcedure
         .input(editCategorySchema)
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+
             try {
-                return await updateCategoryQuery(input);
+                const category = await updateCategoryQuery({
+                    ...input,
+                    businessId,
+                });
+
+                return ensureCategoryExists(category);
             } catch (error) {
                 getFriendlyCategoryError(error, "update");
             }
@@ -98,9 +134,16 @@ export const categoryRouter = createTRPCRouter({
 
     removeCategory: baseProcedure
         .input(categoryIdSchema)
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+
             try {
-                return await deleteCategoryQuery(input.id);
+                const category = await deleteCategoryQuery({
+                    id: input.id,
+                    businessId,
+                });
+
+                return ensureCategoryExists(category);
             } catch (error) {
                 getFriendlyCategoryError(error, "delete");
             }

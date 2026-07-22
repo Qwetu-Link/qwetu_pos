@@ -4,6 +4,7 @@ import type {
   InventoryItem,
   VariantInventory,
 } from "@/types/catalog";
+import { computeInventoryStatus } from "@/utils/catalog-utils";
 
 export function getStatus(
   totalStock: number,
@@ -19,20 +20,7 @@ export function getStatus(
 export function computeVariantInventory(
   inv: VariantInventory
 ): VariantInventory {
-  const total = inv.locations.reduce((sum, loc) => sum + loc.stock, 0);
-
-  return {
-    ...inv,
-    totalStock: total,
-    status:
-      total === 0
-        ? "reorder"
-        : total <= 5
-        ? "critical"
-        : total <= inv.reorderPoint
-        ? "low"
-        : "healthy",
-  };
+  return computeInventoryStatus(inv);
 }
 
 export function computeStats(items: InventoryItem[]) {

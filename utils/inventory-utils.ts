@@ -1,6 +1,32 @@
 import type { InventoryItem, InventoryStats } from "@/types/inventory";
+import type { Product } from "@/types/catalog";
 
 export { DEMO_INVENTORY } from "@/data/inventory";
+
+export function mapProductsToInventoryItems(products: Product[]): InventoryItem[] {
+  return products.flatMap((product) =>
+    product.variants.map((variant) =>
+      recalcTotalStock({
+        variantId: variant.id,
+        sku: variant.sku,
+        productName: product.name,
+        color: variant.color,
+        size: variant.size,
+        inventory: {
+          reorderPoint: variant.inventory.reorderPoint,
+          lastRestocked: variant.inventory.lastRestocked,
+          totalStock: variant.inventory.totalStock,
+          status: variant.inventory.status,
+          locations: variant.inventory.locations.map((location) => ({
+            name: location.name,
+            stock: location.stock,
+            reorderPoint: location.reorderPoint,
+          })),
+        },
+      })
+    )
+  );
+}
 
 export function recalcTotalStock(item: InventoryItem): InventoryItem {
   if (!item.inventory?.locations) return item;

@@ -5,8 +5,8 @@ import type { InventoryItem } from "@/types/catalog";
 
 type Props = {
   item: InventoryItem;
-  onEdit: (sku: string, productId: string) => void;
-  onDelete: (sku: string) => void;
+  onEdit: (variantId: string, productId: string) => void;
+  onDelete: (variantId: string, sku: string) => void;
 };
 
 export default function VariantCard({ item, onEdit, onDelete }: Props) {
@@ -57,14 +57,14 @@ export default function VariantCard({ item, onEdit, onDelete }: Props) {
 
         <div className="flex gap-2 pt-1">
           <button
-            onClick={() => onEdit(item.sku, item.productId)}
+            onClick={() => onEdit(item.id, item.productId)}
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm text-blue-600 border border-blue-300 rounded-xl hover:bg-blue-50 font-medium"
           >
             <Pencil size={13} /> Edit
           </button>
 
           <button
-            onClick={() => onDelete(item.sku)}
+            onClick={() => onDelete(item.id, item.sku)}
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm bg-red-500 text-white rounded-xl hover:bg-red-600"
           >
             <Trash2 size={13} /> Delete

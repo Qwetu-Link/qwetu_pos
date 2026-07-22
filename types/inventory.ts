@@ -15,6 +15,7 @@ export interface InventoryData {
 }
 
 export interface InventoryItem {
+  variantId: string;
   sku: string;
   productName: string;
   color: string;

@@ -1,15 +1,17 @@
-import { TriangleAlert } from "lucide-react";
+import { Loader2, TriangleAlert } from "lucide-react";
 
 interface Props {
   sku?: string;
   isOpen: boolean;
-  onConfirm: () => void;
+  isDeleting?: boolean;
+  onConfirm: () => void | Promise<void>;
   onCancel: () => void;
 }
 
 export default function DeleteModal({
   isOpen,
   sku,
+  isDeleting = false,
   onConfirm,
   onCancel,
 }: Props) {
@@ -32,16 +34,25 @@ export default function DeleteModal({
         </p>
         <div className="flex gap-3">
           <button
-            onClick={onConfirm}
-            className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl font-medium transition-colors"
-          >
-            Delete
-          </button>
-          <button
             onClick={onCancel}
-            className="flex-1 border text-black border-slate-300 py-2.5 rounded-xl font-medium hover:bg-slate-50 transition-colors"
+            disabled={isDeleting}
+            className="flex-1 border text-black border-slate-300 py-2.5 rounded-xl font-medium hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 transition-colors"
           >
             Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="flex-1 bg-red-600 hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-400 text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            {isDeleting ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete"
+            )}
           </button>
         </div>
       </div>

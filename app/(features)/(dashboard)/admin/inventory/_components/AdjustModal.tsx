@@ -3,14 +3,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Info, SlidersHorizontal, X } from "lucide-react";
+import { Info, Loader2, SlidersHorizontal, X } from "lucide-react";
 import { LOCATIONS } from "@/data/inventory-locations";
 import type { InventoryItem } from "@/types/inventory";
 
 interface AdjustModalProps {
   item: InventoryItem;
+  isApplying?: boolean;
   onClose: () => void;
-  onConfirm: (sku: string, location: string, qty: number) => void;
+  onConfirm: (variantId: string, location: string, qty: number) => Promise<void>;
 }
 
 const adjustStockSchema = z.object({
@@ -20,7 +21,12 @@ const adjustStockSchema = z.object({
 
 type AdjustStockFormValues = z.infer<typeof adjustStockSchema>;
 
-export function AdjustModal({ item, onClose, onConfirm }: AdjustModalProps) {
+export function AdjustModal({
+  item,
+  isApplying = false,
+  onClose,
+  onConfirm,
+}: AdjustModalProps) {
   const {
     formState: { errors },
     handleSubmit,
@@ -33,8 +39,8 @@ export function AdjustModal({ item, onClose, onConfirm }: AdjustModalProps) {
     },
   });
 
-  function handleConfirm(values: AdjustStockFormValues) {
-    onConfirm(item.sku, values.location, values.qty);
+  async function handleConfirm(values: AdjustStockFormValues) {
+    await onConfirm(item.variantId, values.location, values.qty);
     onClose();
   }
 
@@ -48,6 +54,7 @@ export function AdjustModal({ item, onClose, onConfirm }: AdjustModalProps) {
           </h3>
           <button
             onClick={onClose}
+            disabled={isApplying}
             className="text-slate-400 hover:text-slate-600 transition-colors"
           >
             <X size={20} />
@@ -101,17 +108,26 @@ export function AdjustModal({ item, onClose, onConfirm }: AdjustModalProps) {
 
           <div className="flex gap-3 pt-1">
             <button
-              type="submit"
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl font-medium transition-colors"
-            >
-              Apply
-            </button>
-            <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-slate-300 py-2.5 rounded-xl font-medium hover:bg-slate-50 transition-colors text-black"
+              disabled={isApplying}
+              className="flex-1 border border-slate-300 py-2.5 rounded-xl font-medium hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 transition-colors text-black"
             >
               Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isApplying}
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400 text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              {isApplying ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Applying...
+                </>
+              ) : (
+                "Apply"
+              )}
             </button>
           </div>
         </form>

@@ -44,11 +44,13 @@ export type ProductCategory =
 export interface Product {
   id: string;         // e.g. "PRD-0001"
   name: string;
-  category: ProductCategory;
+  categoryId?: string | null;
+  category: string;
   brand: string;
   description?: string;
   imageUrl?: string;
   imageData?: string; // base64 data URL for locally uploaded images
+  images?: string[];
   variants: ProductVariant[];
 }
 
@@ -56,12 +58,15 @@ export interface Product {
 
 export interface ProductFormValues {
   name: string;
-  category: ProductCategory;
+  categoryId: string;
   brand: string;
   description: string;
-  imageData: string | null;
-  imageUrl: string | null;
+  imagesData: string[];
 }
+
+export type ProductSaveValues = ProductFormValues & {
+  variants: ProductVariant[];
+};
 
 // ---- Catalog stats ----
 
@@ -76,5 +81,5 @@ export interface CatalogStats {
 
 export interface CatalogFilters {
   search: string;
-  category: ProductCategory | "all";
+  category: string;
 }
