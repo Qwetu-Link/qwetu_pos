@@ -24,46 +24,52 @@ export function CustomerProfilePanel({ customer: c }: { customer: Customer }) {
         </div>
       </div>
 
-      <div className="p-6 space-y-5">
+      <div className="p-5 space-y-5">
         {/* Contact */}
-        <div className="space-y-2.5 text-sm">
-          <div className="flex items-start gap-2 text-slate-600">
-            <Mail size={14} className="text-slate-400 mt-0.5 flex-shrink-0" />
-            <span className="break-words">{c.email || "—"}</span>
-          </div>
-          <div className="flex items-center gap-2 text-slate-600">
-            <Phone size={14} className="text-slate-400 flex-shrink-0" />
-            <span>{c.phone}</span>
-          </div>
-          <div className="flex items-start gap-2 text-slate-600">
-            <MapPin size={14} className="text-slate-400 mt-0.5 flex-shrink-0" />
-            <span>{c.address || "Not provided"}</span>
-          </div>
-        </div>
-
-        {/* Badges */}
-        <div className="flex flex-wrap gap-2">
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${risk.color}`}>
-            <ShieldCheck size={11} /> {risk.label}
-          </span>
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${seg.color}`}>
-            <TrendingUp size={11} /> {c.segment}
-          </span>
-        </div>
-
-        {/* Stats grid */}
-        <div className="border-t pt-4 grid grid-cols-2 gap-3">
-          {[
-            { label: "Total Orders", value: c.totalOrders, bg: "bg-slate-50" },
-            { label: "Total Spent",  value: `KES ${c.totalSpent.toLocaleString()}`, bg: "bg-emerald-50 text-emerald-700" },
-            { label: "Active Plans", value: c.activeInstallments, bg: "bg-amber-50 text-amber-700" },
-            { label: "Last Purchase",value: c.lastPurchase || "—", bg: "bg-slate-50" },
-          ].map(({ label, value, bg }) => (
-            <div key={label} className={`rounded-xl p-3 ${bg}`}>
-              <p className="text-xs text-slate-400 mb-0.5">{label}</p>
-              <p className="text-sm font-bold text-slate-800">{value}</p>
+        <div className="flex flex-col gap-5">
+          <div className="space-y-4">
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-2 text-slate-600">
+                <Mail size={14} className="text-slate-400 mt-0.5 flex-shrink-0" />
+                <span className="break-words">{c.email || "—"}</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-600">
+                <Phone size={14} className="text-slate-400 flex-shrink-0" />
+                <span>{c.phone}</span>
+              </div>
+              <div className="flex items-start gap-2 text-slate-600">
+                <MapPin size={14} className="text-slate-400 mt-0.5 flex-shrink-0" />
+                <span>{c.address || "Not provided"}</span>
+              </div>
             </div>
-          ))}
+
+            {/* Badges */}
+
+
+            <div className="flex flex-wrap gap-2 pt-1">
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${risk.color}`}>
+                <ShieldCheck size={11} /> {risk.label}
+              </span>
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${seg.color}`}>
+                <TrendingUp size={11} /> {c.segment}
+              </span>
+            </div>
+          </div>
+
+          {/* Stats grid */}
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: "Total Orders", value: c.totalOrders, bg: "bg-slate-50" },
+              { label: "Total Spent", value: `KES ${c.totalSpent.toLocaleString()}`, bg: "bg-emerald-50 text-emerald-700" },
+              { label: "Active Plans", value: c.activeInstallments, bg: "bg-amber-50 text-amber-700" },
+              { label: "Last Purchase", value: c.lastPurchase || "—", bg: "bg-slate-50" },
+            ].map(({ label, value, bg }) => (
+              <div key={label} className={`rounded-xl p-3.5 ${bg}`}>
+                <p className="text-xs text-slate-400 mb-1">{label}</p>
+                <p className="text-sm font-bold text-slate-800">{value}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Loyalty bar */}

@@ -1,15 +1,21 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
 import type { Customer, CustomerFormData, Order, OrderFormData, LineItem } from "../types/customer";
 import { initialOrders } from "../data/orderData";
 import {
-  DEMO_CUSTOMERS,
   filterCustomers, computeOrderTotal,
 } from "../utils/customerUtils";
 
+const EMPTY_CUSTOMERS: Customer[] = [];
+
 export function useCustomers() {
-  const customers = DEMO_CUSTOMERS;
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+  const customersQuery = useQuery(trpc.customers.getCustomers.queryOptions());
+  const customers = customersQuery.data ?? EMPTY_CUSTOMERS;
   const orders = initialOrders;
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,20 +43,44 @@ export function useCustomers() {
     setCurrentPage(Math.min(Math.max(1, page), totalPages));
   }, [totalPages]);
 
-  const addCustomer = useCallback((data: CustomerFormData) => {
-    void data;
-    return null;
-  }, []);
+  const createCustomerMutation = useMutation(
+    trpc.customers.addCustomer.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(trpc.customers.pathFilter());
+      },
+    })
+  );
 
-  const updateCustomer = useCallback((id: string, data: CustomerFormData) => {
-    void id;
-    void data;
-    return null;
-  }, []);
+  const updateCustomerMutation = useMutation(
+    trpc.customers.editCustomer.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(trpc.customers.pathFilter());
+      },
+    })
+  );
 
-  const deleteCustomer = useCallback((id: string) => {
-    void id;
-  }, []);
+  const deleteCustomerMutation = useMutation(
+    trpc.customers.removeCustomer.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(trpc.customers.pathFilter());
+      },
+    })
+  );
+
+  const addCustomer = useCallback(async (data: CustomerFormData) => {
+    return createCustomerMutation.mutateAsync(data);
+  }, [createCustomerMutation]);
+
+  const updateCustomer = useCallback(async (id: string, data: CustomerFormData) => {
+    return updateCustomerMutation.mutateAsync({
+      id,
+      ...data,
+    });
+  }, [updateCustomerMutation]);
+
+  const deleteCustomer = useCallback(async (id: string) => {
+    await deleteCustomerMutation.mutateAsync({ id });
+  }, [deleteCustomerMutation]);
 
   const getById = useCallback((id: string) => customers.find((c) => c.id === id) ?? null, [customers]);
 
@@ -81,6 +111,15 @@ export function useCustomers() {
 
   return {
     customers, orders, filtered, paginated,
+    isLoading: customersQuery.isLoading,
+    isError: customersQuery.isError,
+    error: customersQuery.error,
+    createError: createCustomerMutation.error,
+    updateError: updateCustomerMutation.error,
+    deleteError: deleteCustomerMutation.error,
+    isCreating: createCustomerMutation.isPending,
+    isUpdating: updateCustomerMutation.isPending,
+    isDeleting: deleteCustomerMutation.isPending,
     search, setSearch: handleSetSearch, currentPage: safeCurrentPage, setCurrentPage: handleSetCurrentPage,
     perPage, setPerPage: handleSetPerPage, totalPages,
     addCustomer, updateCustomer, deleteCustomer,

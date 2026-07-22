@@ -3,14 +3,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { X, UserPlus, Pencil, Save } from "lucide-react";
+import { Loader2, X, UserPlus, Pencil, Save } from "lucide-react";
 import type { Customer, CustomerFormData, Segment } from "@/types/customer";
 
 interface CustomerFormModalProps {
   isOpen: boolean;
   editCustomer: Customer | null; // null = add mode
+  isSaving?: boolean;
   onClose: () => void;
-  onSave: (data: CustomerFormData, editId: string | null) => void;
+  onSave: (data: CustomerFormData, editId: string | null) => void | Promise<void>;
 }
 
 const INPUT =
@@ -29,6 +30,7 @@ const customerFormSchema = z.object({
 export function CustomerFormModal({
   isOpen,
   editCustomer,
+  isSaving = false,
   onClose,
   onSave,
 }: CustomerFormModalProps) {
@@ -38,6 +40,7 @@ export function CustomerFormModal({
     <CustomerFormModalContent
       key={editCustomer?.id ?? "new-customer"}
       editCustomer={editCustomer}
+      isSaving={isSaving}
       onClose={onClose}
       onSave={onSave}
     />
@@ -68,6 +71,7 @@ function getInitialFormData(editCustomer: Customer | null): CustomerFormData {
 
 function CustomerFormModalContent({
   editCustomer,
+  isSaving = false,
   onClose,
   onSave,
 }: Omit<CustomerFormModalProps, "isOpen">) {
@@ -81,8 +85,8 @@ function CustomerFormModalContent({
     defaultValues: getInitialFormData(editCustomer),
   });
 
-  function onSubmit(formData: CustomerFormData) {
-    onSave(formData, editCustomer?.id ?? null);
+  async function onSubmit(formData: CustomerFormData) {
+    await onSave(formData, editCustomer?.id ?? null);
   }
 
   return (
@@ -100,6 +104,7 @@ function CustomerFormModalContent({
           </h3>
           <button
             onClick={onClose}
+            disabled={isSaving}
             className="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors"
           >
             <X size={18} />
@@ -199,15 +204,26 @@ function CustomerFormModalContent({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2.5 border text-black border-slate-300 rounded-xl hover:bg-slate-50 text-sm font-medium transition-colors"
+                disabled={isSaving}
+                className="px-6 py-2.5 border text-black border-slate-300 rounded-xl hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 text-sm font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:shadow-lg text-sm font-medium flex items-center gap-2 transition-all"
+                disabled={isSaving}
+                className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:shadow-lg disabled:cursor-not-allowed disabled:from-emerald-400 disabled:to-teal-400 text-sm font-medium flex items-center gap-2 transition-all"
               >
-                <Save size={15} /> Save Customer
+                {isSaving ? (
+                  <>
+                    <Loader2 size={15} className="animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save size={15} /> Save Customer
+                  </>
+                )}
               </button>
             </div>
           </form>

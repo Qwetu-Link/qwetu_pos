@@ -1,4 +1,10 @@
-import type { Customer, CustomerStats, LineItem, RiskLevel } from "../types/customer";
+import type {
+  Customer,
+  CustomerFormData,
+  CustomerStats,
+  LineItem,
+  RiskLevel,
+} from "../types/customer";
 
 export { DEMO_CUSTOMERS, DEMO_ORDERS, DEMO_VARIANTS } from "@/data/customers";
 
@@ -8,6 +14,52 @@ export function getInitials(name: string): string {
 
 export function getPaymentScoreFromRisk(risk: RiskLevel): number {
   return risk === "low" ? 85 : risk === "medium" ? 65 : 45;
+}
+
+type CustomerRecord = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  address: string | null;
+  totalOrders: number | null;
+  totalSpent: number | null;
+  activeInstallments: number | null;
+  paymentScore: number | null;
+  riskLevel: RiskLevel;
+  segment: Customer["segment"];
+  joinedDate: Date;
+  lastPurchase: Date | null;
+};
+
+export function mapCustomerRecordToCustomer(row: CustomerRecord): Customer {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone ?? "",
+    address: row.address ?? "",
+    totalOrders: row.totalOrders ?? 0,
+    totalSpent: row.totalSpent ?? 0,
+    activeInstallments: row.activeInstallments ?? 0,
+    paymentScore: row.paymentScore ?? getPaymentScoreFromRisk(row.riskLevel),
+    riskLevel: row.riskLevel,
+    segment: row.segment,
+    joinedDate: row.joinedDate.toISOString(),
+    lastPurchase: row.lastPurchase?.toISOString() ?? "",
+  };
+}
+
+export function getCustomerWriteValues(values: CustomerFormData) {
+  return {
+    name: values.name,
+    email: values.email,
+    phone: values.phone,
+    address: values.address,
+    segment: values.segment,
+    riskLevel: values.riskLevel,
+    paymentScore: getPaymentScoreFromRisk(values.riskLevel),
+  };
 }
 
 export function getLoyaltyStatus(totalSpent: number): string {

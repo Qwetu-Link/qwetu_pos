@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Search, UserPlus, Users2 } from "lucide-react";
+import { Loader2, Search, UserPlus, Users2 } from "lucide-react";
 import { useCustomersContext } from "./CustomersContext";
 import { computeStats } from "@/utils/customerUtils";
 import type { Customer, CustomerFormData } from "@/types/customer";
@@ -10,7 +10,7 @@ import { CustomerCard } from "./CustomerCard";
 import { CustomerFormModal } from "./CustomerFormModal";
 import EmptyState from "@/components/common/EmptyState";
 import { Pagination } from "@/components/common/Pagination";
-import { DeleteConfirmModal } from "./DeleteConfirmModal";
+import DeleteModal from "@/components/common/DeleteModal";
 
 export function CustomerManagement() {
   const {
@@ -19,6 +19,9 @@ export function CustomerManagement() {
     currentPage, setCurrentPage,
     perPage, setPerPage, totalPages,
     addCustomer, updateCustomer, deleteCustomer,
+    isLoading, isError, error,
+    createError, updateError, deleteError,
+    isCreating, isUpdating, isDeleting,
   } = useCustomersContext();
 
   const [formOpen, setFormOpen] = useState(false);
@@ -26,19 +29,21 @@ export function CustomerManagement() {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const stats = computeStats(customers);
+  const pendingDeleteCustomer =
+    customers.find((customer) => customer.id === pendingDeleteId) ?? null;
 
   const handleOpenAdd = useCallback(() => { setEditCustomer(null); setFormOpen(true); }, []);
   const handleOpenEdit = useCallback((c: Customer) => { setEditCustomer(c); setFormOpen(true); }, []);
 
-  const handleSave = useCallback((data: CustomerFormData, editId: string | null) => {
-    if (editId) updateCustomer(editId, data);
-    else addCustomer(data);
+  const handleSave = useCallback(async (data: CustomerFormData, editId: string | null) => {
+    if (editId) await updateCustomer(editId, data);
+    else await addCustomer(data);
     setFormOpen(false);
     setEditCustomer(null);
   }, [addCustomer, updateCustomer]);
 
-  const handleConfirmDelete = useCallback(() => {
-    if (pendingDeleteId) deleteCustomer(pendingDeleteId);
+  const handleConfirmDelete = useCallback(async () => {
+    if (pendingDeleteId) await deleteCustomer(pendingDeleteId);
     setPendingDeleteId(null);
   }, [pendingDeleteId, deleteCustomer]);
 
@@ -64,6 +69,16 @@ export function CustomerManagement() {
 
         <CustomerStatsRow stats={stats} />
 
+        {(isError || createError || updateError || deleteError) && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            {createError?.message ||
+              updateError?.message ||
+              deleteError?.message ||
+              error?.message ||
+              "Could not load customers from the database."}
+          </div>
+        )}
+
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
           <div className="relative">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -76,7 +91,12 @@ export function CustomerManagement() {
           </div>
         </div>
 
-        {paginated.length === 0 ? (
+        {isLoading ? (
+          <div className="flex min-h-48 items-center justify-center rounded-xl border border-gray-100 bg-white text-gray-500 shadow-sm">
+            <Loader2 className="mr-2 animate-spin text-emerald-600" size={18} />
+            Loading customers...
+          </div>
+        ) : paginated.length === 0 ? (
           <EmptyState
             icon={Users2}
             title={
@@ -125,14 +145,19 @@ export function CustomerManagement() {
 
       <CustomerFormModal
         isOpen={formOpen} editCustomer={editCustomer}
+        isSaving={isCreating || isUpdating}
         onClose={() => { setFormOpen(false); setEditCustomer(null); }}
         onSave={handleSave}
       />
-      <DeleteConfirmModal
-        isOpen={!!pendingDeleteId}
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setPendingDeleteId(null)}
-      />
+      {pendingDeleteId && (
+        <DeleteModal
+          name={pendingDeleteCustomer?.name ?? "this customer"}
+          title={isDeleting ? "Deleting Customer" : "Delete Customer"}
+          isDeleting={isDeleting}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setPendingDeleteId(null)}
+        />
+      )}
     </div>
   );
 }

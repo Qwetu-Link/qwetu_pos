@@ -65,15 +65,15 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
         </div>
 
         {/* Two-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
+        <div className="space-y-10">
 
           {/* LEFT: Profile */}
-          <div className="lg:col-span-1">
+          <div>
             <CustomerProfilePanel customer={customer} />
           </div>
 
           {/* RIGHT: Orders */}
-          <div className="lg:col-span-2 space-y-5">
+          <div className="space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                 <ShoppingBag size={22} className="text-emerald-600" />
