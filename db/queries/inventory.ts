@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { locationTable, variantInventoryTable } from "@/db/schema/variants";
+import { locationTable, variantInventoryTable, variantsTable } from "@/db/schema/variants";
 import {
     buildVariantInventory,
     DEFAULT_STOCK_LOCATIONS,
@@ -14,6 +14,24 @@ function getInventoryStatus(stock: number, reorderPoint: number) {
     if (stock <= 3) return "critical" as const;
     if (stock <= reorderPoint * 0.6) return "low" as const;
     return "healthy" as const;
+}
+
+async function ensureVariantBelongsToBusiness(
+    client: DbClient,
+    variantId: string,
+    businessId: string,
+) {
+    const [variant] = await client
+        .select({ id: variantsTable.id })
+        .from(variantsTable)
+        .where(and(
+            eq(variantsTable.id, variantId),
+            eq(variantsTable.businessId, businessId),
+        ));
+
+    if (!variant) {
+        throw new Error("Variant not found for this business.");
+    }
 }
 
 export async function ensureDefaultLocationsQuery(
@@ -60,6 +78,7 @@ export async function createVariantInventoryRowsQuery(
     },
 ) {
     const inventory = buildVariantInventory(data.mainStock ?? 0);
+    await ensureVariantBelongsToBusiness(client, data.variantId, data.businessId);
     const locations = await ensureDefaultLocationsQuery(client, data.businessId);
 
     return client
@@ -124,6 +143,7 @@ export async function adjustVariantInventoryQuery(data: {
     quantity: number;
 }) {
     return db.transaction(async (tx) => {
+        await ensureVariantBelongsToBusiness(tx, data.variantId, data.businessId);
         await ensureDefaultLocationsQuery(tx, data.businessId);
         const row = await getInventoryRowByLocationName(tx, data);
 
@@ -165,6 +185,7 @@ export async function transferVariantInventoryQuery(data: {
     quantity: number;
 }) {
     return db.transaction(async (tx) => {
+        await ensureVariantBelongsToBusiness(tx, data.variantId, data.businessId);
         await ensureDefaultLocationsQuery(tx, data.businessId);
         await createVariantInventoryRowsQuery(tx, {
             businessId: data.businessId,

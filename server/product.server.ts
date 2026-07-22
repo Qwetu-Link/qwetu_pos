@@ -61,7 +61,22 @@ function ensureBusinessId(businessId: string | null) {
     return businessId;
 }
 
+function ensureProductExists<T>(product: T | undefined) {
+    if (!product) {
+        throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Product not found for this business.",
+        });
+    }
+
+    return product;
+}
+
 function getFriendlyProductError(error: unknown, action: "create" | "update" | "delete" | "upload"): never {
+    if (error instanceof TRPCError) {
+        throw error;
+    }
+
     const databaseError = getDatabaseError(error);
     const constraint = databaseError.constraint_name ?? databaseError.constraint;
     const errorMessage = getErrorMessage(error);
@@ -70,7 +85,9 @@ function getFriendlyProductError(error: unknown, action: "create" | "update" | "
         errorMessage.includes("Supabase storage is not configured") ||
         errorMessage.includes("Only JPEG, PNG, and WEBP") ||
         errorMessage.includes("Product images must") ||
-        errorMessage.includes("Could not read image dimensions")
+        errorMessage.includes("Could not read image dimensions") ||
+        errorMessage.includes("does not belong to this business") ||
+        errorMessage.includes("not found for this business")
     ) {
         throw new TRPCError({
             code: "BAD_REQUEST",
@@ -116,8 +133,14 @@ export const productRouter = createTRPCRouter({
 
     getProductById: baseProcedure
         .input(productIdSchema)
-        .query(async ({ input }) => {
-            return getProductByIdQuery(input.id);
+        .query(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+            const product = await getProductByIdQuery({
+                id: input.id,
+                businessId,
+            });
+
+            return ensureProductExists(product);
         }),
 
     addProduct: baseProcedure
@@ -140,9 +163,16 @@ export const productRouter = createTRPCRouter({
 
     editProduct: baseProcedure
         .input(productEditSchema)
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+
             try {
-                return await updateProductQuery(input);
+                const product = await updateProductQuery({
+                    ...input,
+                    businessId,
+                });
+
+                return ensureProductExists(product);
             } catch (error) {
                 getFriendlyProductError(error, "update");
             }
@@ -166,9 +196,16 @@ export const productRouter = createTRPCRouter({
 
     removeProduct: baseProcedure
         .input(productIdSchema)
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+
             try {
-                return await deleteProductQuery(input.id);
+                const product = await deleteProductQuery({
+                    id: input.id,
+                    businessId,
+                });
+
+                return ensureProductExists(product);
             } catch (error) {
                 getFriendlyProductError(error, "delete");
             }

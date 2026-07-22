@@ -26,7 +26,8 @@ function getInventoryError(error: unknown): never {
     if (
         message.includes("Insufficient stock") ||
         message.includes("Inventory location was not found") ||
-        message.includes("Could not create default stock locations")
+        message.includes("Could not create default stock locations") ||
+        message.includes("not found for this business")
     ) {
         throw new TRPCError({
             code: "BAD_REQUEST",

@@ -34,9 +34,32 @@ function ensureBusinessId(businessId: string | null) {
     return businessId;
 }
 
+function ensureVariantExists<T>(variant: T | undefined) {
+    if (!variant) {
+        throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Variant not found for this business.",
+        });
+    }
+
+    return variant;
+}
+
 function getFriendlyVariantError(error: unknown, action: "create" | "update" | "delete"): never {
+    if (error instanceof TRPCError) {
+        throw error;
+    }
+
     const databaseError = getDatabaseError(error);
     const constraint = databaseError.constraint_name ?? databaseError.constraint;
+    const message = error instanceof Error ? error.message : "";
+
+    if (message.includes("does not belong to this business")) {
+        throw new TRPCError({
+            code: "BAD_REQUEST",
+            message,
+        });
+    }
 
     if (databaseError.code === "23505" && constraint === "unique_variant") {
         throw new TRPCError({
@@ -73,14 +96,22 @@ function getFriendlyVariantError(error: unknown, action: "create" | "update" | "
 }
 
 export const variantRouter = createTRPCRouter({
-    getVariants: baseProcedure.query(async () => {
-        return getVariantsQuery();
+    getVariants: baseProcedure.query(async ({ ctx }) => {
+        const businessId = ensureBusinessId(ctx.businessId);
+
+        return getVariantsQuery(businessId);
     }),
 
     getVariantById: baseProcedure
         .input(variantIdSchema)
-        .query(async ({ input }) => {
-            return getVariantByIdQuery(input.id);
+        .query(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+            const variant = await getVariantByIdQuery({
+                id: input.id,
+                businessId,
+            });
+
+            return ensureVariantExists(variant);
         }),
 
     addVariant: baseProcedure
@@ -104,10 +135,12 @@ export const variantRouter = createTRPCRouter({
             const businessId = ensureBusinessId(ctx.businessId);
 
             try {
-                return await updateVariantQuery({
+                const variant = await updateVariantQuery({
                     ...input,
                     businessId,
                 });
+
+                return ensureVariantExists(variant);
             } catch (error) {
                 getFriendlyVariantError(error, "update");
             }
@@ -119,10 +152,12 @@ export const variantRouter = createTRPCRouter({
             const businessId = ensureBusinessId(ctx.businessId);
 
             try {
-                return await deleteVariantQuery({
+                const variant = await deleteVariantQuery({
                     id: input.id,
                     businessId,
                 });
+
+                return ensureVariantExists(variant);
             } catch (error) {
                 getFriendlyVariantError(error, "delete");
             }

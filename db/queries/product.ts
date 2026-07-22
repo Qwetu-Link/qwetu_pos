@@ -18,7 +18,7 @@ import {
     computeInventoryStatus,
     DEFAULT_STOCK_LOCATIONS,
 } from "@/utils/catalog-utils";
-import { asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import crypto from "crypto";
 
 function getProductImageUrl(path?: string | null) {
@@ -49,20 +49,25 @@ export const getProductsQuery = async (businessId?: string) => {
         db
             .select()
             .from(productImages)
+            .where(businessId ? eq(productImages.businessId, businessId) : undefined)
             .orderBy(asc(productImages.displayOrder), asc(productImages.createdAt)),
         db
             .select()
             .from(variantsTable)
+            .where(businessId ? eq(variantsTable.businessId, businessId) : undefined)
             .orderBy(desc(variantsTable.createdAt)),
         db
             .select()
-            .from(categoryTable),
+            .from(categoryTable)
+            .where(businessId ? eq(categoryTable.businessId, businessId) : undefined),
         db
             .select()
-            .from(variantInventoryTable),
+            .from(variantInventoryTable)
+            .where(businessId ? eq(variantInventoryTable.businessId, businessId) : undefined),
         db
             .select()
-            .from(locationTable),
+            .from(locationTable)
+            .where(businessId ? eq(locationTable.businessId, businessId) : undefined),
     ]);
 
     return productRows.map((product) => {
@@ -128,21 +133,47 @@ export const getProductsQuery = async (businessId?: string) => {
     });
 };
 
-export const getProductRowsQuery = async () => {
+export const getProductRowsQuery = async (businessId: string) => {
     return db
         .select()
         .from(productsTable)
+        .where(eq(productsTable.businessId, businessId))
         .orderBy(desc(productsTable.createdAt));
 };
 
-export const getProductByIdQuery = async (id: string) => {
+export const getProductByIdQuery = async (data: {
+    id: string;
+    businessId: string;
+}) => {
     const [product] = await db
         .select()
         .from(productsTable)
-        .where(eq(productsTable.id, id));
+        .where(and(
+            eq(productsTable.id, data.id),
+            eq(productsTable.businessId, data.businessId),
+        ));
 
     return product;
 };
+
+async function ensureCategoryBelongsToBusiness(
+    categoryId: string | null | undefined,
+    businessId: string,
+) {
+    if (!categoryId) return;
+
+    const [category] = await db
+        .select({ id: categoryTable.id })
+        .from(categoryTable)
+        .where(and(
+            eq(categoryTable.id, categoryId),
+            eq(categoryTable.businessId, businessId),
+        ));
+
+    if (!category) {
+        throw new Error("The selected category does not belong to this business.");
+    }
+}
 
 export const createProductQuery = async (data: {
     businessId: string;
@@ -151,6 +182,8 @@ export const createProductQuery = async (data: {
     brand: string;
     description?: string | null;
 }) => {
+    await ensureCategoryBelongsToBusiness(data.categoryId, data.businessId);
+
     const [product] = await db
         .insert(productsTable)
         .values({
@@ -167,12 +200,15 @@ export const createProductQuery = async (data: {
 
 export const updateProductQuery = async (data: {
     id: string;
+    businessId: string;
     name: string;
     categoryId?: string | null;
     brand: string;
     description?: string | null;
 }) => {
-    const { id, name, categoryId, brand, description } = data;
+    const { id, businessId, name, categoryId, brand, description } = data;
+
+    await ensureCategoryBelongsToBusiness(categoryId, businessId);
 
     const [product] = await db
         .update(productsTable)
@@ -182,16 +218,25 @@ export const updateProductQuery = async (data: {
             brand,
             description: description ?? null,
         })
-        .where(eq(productsTable.id, id))
+        .where(and(
+            eq(productsTable.id, id),
+            eq(productsTable.businessId, businessId),
+        ))
         .returning();
 
     return product;
 };
 
-export const deleteProductQuery = async (id: string) => {
+export const deleteProductQuery = async (data: {
+    id: string;
+    businessId: string;
+}) => {
     const [product] = await db
         .delete(productsTable)
-        .where(eq(productsTable.id, id))
+        .where(and(
+            eq(productsTable.id, data.id),
+            eq(productsTable.businessId, data.businessId),
+        ))
         .returning();
 
     return product;
@@ -204,6 +249,15 @@ export const uploadProductImagesQuery = async (data: {
 }) => {
     if (data.files.length === 0) {
         return [];
+    }
+
+    const product = await getProductByIdQuery({
+        id: data.productId,
+        businessId: data.businessId,
+    });
+
+    if (!product) {
+        throw new Error("Product not found for this business.");
     }
 
     const uploaded = await uploadProductImages(
@@ -258,6 +312,8 @@ export const createProductWithRelationsQuery = async (data: {
     }[];
 }) => {
     const productId = crypto.randomUUID();
+
+    await ensureCategoryBelongsToBusiness(data.categoryId, data.businessId);
 
     const uploaded = data.images?.length
         ? await uploadProductImages(

@@ -1,23 +1,45 @@
 import { db } from "@/db";
+import { productsTable } from "@/db/schema/products";
 import { variantInventoryTable, variantsTable } from "@/db/schema/variants";
 import { createVariantInventoryRowsQuery } from "@/db/queries/inventory";
 import { and, desc, eq } from "drizzle-orm";
 
-export const getVariantsQuery = async () => {
+export const getVariantsQuery = async (businessId: string) => {
     return db
         .select()
         .from(variantsTable)
+        .where(eq(variantsTable.businessId, businessId))
         .orderBy(desc(variantsTable.createdAt));
 };
 
-export const getVariantByIdQuery = async (id: string) => {
+export const getVariantByIdQuery = async (data: {
+    id: string;
+    businessId: string;
+}) => {
     const [variant] = await db
         .select()
         .from(variantsTable)
-        .where(eq(variantsTable.id, id));
+        .where(and(
+            eq(variantsTable.id, data.id),
+            eq(variantsTable.businessId, data.businessId),
+        ));
 
     return variant;
 };
+
+async function ensureProductBelongsToBusiness(productId: string, businessId: string) {
+    const [product] = await db
+        .select({ id: productsTable.id })
+        .from(productsTable)
+        .where(and(
+            eq(productsTable.id, productId),
+            eq(productsTable.businessId, businessId),
+        ));
+
+    if (!product) {
+        throw new Error("The selected product does not belong to this business.");
+    }
+}
 
 export const createVariantQuery = async (data: {
     businessId: string;
@@ -30,6 +52,8 @@ export const createVariantQuery = async (data: {
     mainStock?: number;
 }) => {
     const { mainStock, ...variantValues } = data;
+
+    await ensureProductBelongsToBusiness(data.productId, data.businessId);
 
     return db.transaction(async (tx) => {
         const [variant] = await tx
