@@ -9,6 +9,7 @@ import {
   getRemainingAmount,
 } from "@/data/lipa-mdogo-data";
 import type { PaymentPlan } from "@/data/lipa-mdogo-data";
+import { useRecordOrderPayment } from "@/hooks/useOrders";
 
 type RecordPaymentModalProps = {
   plan: PaymentPlan | null;
@@ -31,6 +32,7 @@ export default function RecordPaymentModal({
   isOpen,
   onClose,
 }: RecordPaymentModalProps) {
+  const recordPayment = useRecordOrderPayment();
   const today = new Date().toISOString().slice(0, 10);
   const defaultAmount = useMemo(() => {
     if (!plan) {
@@ -45,6 +47,8 @@ export default function RecordPaymentModal({
     formState: { errors },
     handleSubmit,
     register,
+    reset,
+    setError,
   } = useForm<RecordPaymentFormValues>({
     resolver: zodResolver(recordPaymentSchema),
     values: {
@@ -56,6 +60,33 @@ export default function RecordPaymentModal({
     },
   });
   const selectedPaymentMethod = useWatch({ control, name: "paymentMethod" });
+
+  async function submitPayment(values: RecordPaymentFormValues) {
+    if (!plan) return;
+
+    const remaining = getRemainingAmount(plan);
+    if (values.amount > remaining) {
+      setError("amount", {
+        message: "Payment amount exceeds the remaining balance",
+      });
+      return;
+    }
+
+    try {
+      await recordPayment.mutateAsync({
+        invoiceId: plan.id,
+        amount: values.amount,
+        paymentDate: values.paymentDate,
+        paymentMethod: values.paymentMethod,
+        reference: values.reference,
+        note: values.note,
+      });
+      reset();
+      onClose();
+    } catch {
+      // The mutation error is rendered in the form.
+    }
+  }
 
   if (!isOpen || !plan) {
     return null;
@@ -88,9 +119,7 @@ export default function RecordPaymentModal({
 
         <form
           className="space-y-5 px-6 py-5"
-          onSubmit={handleSubmit(() => {
-            onClose();
-          })}
+          onSubmit={handleSubmit(submitPayment)}
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
@@ -158,10 +187,15 @@ export default function RecordPaymentModal({
             />
           </label>
 
-          <div className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            Recording is staged in the UI. Hook this form to your payment API to
-            create receipts and update balances.
-          </div>
+          {recordPayment.isError ? (
+            <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+              {recordPayment.error.message}
+            </div>
+          ) : (
+            <div className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              Saving creates a receipt and updates the invoice balance.
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
             <button
@@ -173,9 +207,10 @@ export default function RecordPaymentModal({
             </button>
             <button
               type="submit"
-              className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+              disabled={recordPayment.isPending}
+              className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Save Payment
+              {recordPayment.isPending ? "Saving..." : "Save Payment"}
             </button>
           </div>
         </form>

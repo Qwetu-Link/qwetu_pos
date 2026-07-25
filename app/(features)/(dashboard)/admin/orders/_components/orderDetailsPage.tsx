@@ -22,7 +22,7 @@ import {
 import { formatCurrency, formatDate, getOrderDisplayNumber } from "@/utils/orderUtils";
 import type { LineItem, Order, OrderStatus } from "@/types/customer";
 import { ORDER_STATUS_CONFIG } from "@/data/customer-config";
-import { useGetOrder, useUpdateOrderStatus } from "@/hooks/useOrders";
+import { useGetOrder, useRecordOrderPayment, useUpdateOrderStatus } from "@/hooks/useOrders";
 import StatusBadge from "./statusBadge";
 
 const statusOptions: OrderStatus[] = [
@@ -48,6 +48,7 @@ export default function OrderDetailsPage() {
   const orderId = decodeURIComponent(params.id);
   const { order: fetchedOrder, isLoading, isError, error } = useGetOrder(orderId);
   const updateOrderStatus = useUpdateOrderStatus();
+  const recordOrderPayment = useRecordOrderPayment();
   const [orderOverride, setOrderOverride] = useState<Order | null>(null);
   const order = orderOverride?.id === fetchedOrder?.id ? orderOverride : fetchedOrder;
   const [isStatusOpen, setIsStatusOpen] = useState(false);
@@ -71,6 +72,7 @@ export default function OrderDetailsPage() {
   const isLocked = order ? terminalStatuses.includes(order.status) : true;
   const canRecordPayment =
     !!order &&
+    !!order.invoice &&
     order.paymentType === "installment" &&
     order.remainingAmount > 0 &&
     !isLocked;
@@ -113,7 +115,7 @@ export default function OrderDetailsPage() {
     }
   }
 
-  function recordPayment(values: OrderPaymentFormValues) {
+  async function recordPayment(values: OrderPaymentFormValues) {
     if (!order) return;
 
     if (values.amount > order.remainingAmount) {
@@ -121,18 +123,28 @@ export default function OrderDetailsPage() {
       return;
     }
 
-    const amountPaid = order.amountPaid + values.amount;
-    const remainingAmount = Math.max(0, order.total - amountPaid);
+    if (!order.invoice) {
+      showToast("This order does not have an invoice to receive payment against", "error");
+      return;
+    }
 
-    setOrderOverride({
-      ...order,
-      amountPaid,
-      remainingAmount,
-      paymentStatus: remainingAmount === 0 ? "paid" : "partial",
-    });
-    setIsPaymentOpen(false);
-    resetPayment();
-    showToast(`Payment of ${formatCurrency(values.amount)} recorded`);
+    try {
+      const updatedOrder = await recordOrderPayment.mutateAsync({
+        invoiceId: order.invoice.id,
+        amount: values.amount,
+        paymentDate: new Date().toISOString().slice(0, 10),
+        paymentMethod: values.paymentMethod,
+        reference: values.reference,
+        note: "",
+      });
+
+      setOrderOverride(updatedOrder);
+      setIsPaymentOpen(false);
+      resetPayment();
+      showToast(`Payment of ${formatCurrency(values.amount)} recorded`);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Could not record payment", "error");
+    }
   }
 
   if (isLoading) {
@@ -466,6 +478,9 @@ export default function OrderDetailsPage() {
               ))}
             </select>
             <div className="mt-5 flex gap-3">
+              <button type="button" onClick={() => setIsStatusOpen(false)} className="flex-1 rounded-lg border border-slate-300 py-2.5 text-sm font-semibold hover:bg-slate-50">
+                Cancel
+              </button>
               <button
                 type="button"
                 onClick={updateStatus}
@@ -473,9 +488,6 @@ export default function OrderDetailsPage() {
                 className="flex-1 rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {updateOrderStatus.isPending ? "Updating..." : "Update"}
-              </button>
-              <button type="button" onClick={() => setIsStatusOpen(false)} className="flex-1 rounded-lg border border-slate-300 py-2.5 text-sm font-semibold hover:bg-slate-50">
-                Cancel
               </button>
             </div>
           </div>
@@ -527,8 +539,12 @@ export default function OrderDetailsPage() {
                 />
               </label>
               <div className="flex gap-3 pt-2">
-                <button type="submit" className="flex-1 rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
-                  Record Payment
+                <button
+                  type="submit"
+                  disabled={recordOrderPayment.isPending}
+                  className="flex-1 rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {recordOrderPayment.isPending ? "Recording..." : "Record Payment"}
                 </button>
                 <button type="button" onClick={() => setIsPaymentOpen(false)} className="flex-1 rounded-lg border border-slate-300 py-2.5 text-sm font-semibold hover:bg-slate-50">
                   Cancel

@@ -1,5 +1,5 @@
 import { receipts } from "@/data/lipa-mdogo-data";
-import type { PaymentPlan, PlanStatus } from "@/types/lipa-mdogo";
+import type { PaymentPlan, PlanStatus, Receipt } from "@/types/lipa-mdogo";
 import type { Order } from "@/types/customer";
 import { getOrderDisplayNumber } from "@/utils/orderUtils";
 
@@ -9,7 +9,15 @@ export {
   formatDate,
 } from "@/utils/formatters";
 
-export function getPlanReceipts(planId: string) {
+export function getPlanReceipts(planOrId: PaymentPlan | string) {
+  if (typeof planOrId !== "string" && planOrId.receipts) {
+    return [...planOrId.receipts].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
+  }
+
+  const planId = typeof planOrId === "string" ? planOrId : planOrId.id;
+
   return receipts
     .filter((receipt) => receipt.planId === planId)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -24,7 +32,7 @@ export function getPlanPaidAmount(plan: PaymentPlan) {
 }
 
 export function getPaidInstallmentCount(plan: PaymentPlan) {
-  const receiptCount = getPlanReceipts(plan.id).length;
+  const receiptCount = getPlanReceipts(plan).length;
 
   if (receiptCount > 0) {
     return receiptCount;
@@ -91,15 +99,54 @@ export function getInstallmentSchedule(plan: PaymentPlan) {
       paidAmount: installmentPaidAmount,
       balance: Math.max(0, plan.installmentAmount - installmentPaidAmount),
       status: paid ? "paid" : overdue ? "overdue" : "pending",
-      receipt: getPlanReceipts(plan.id)[index],
+      receipt: getPlanReceipts(plan)[index],
     };
   });
+}
+
+function mapOrderReceiptToPlanReceipt(
+  receipt: NonNullable<NonNullable<Order["invoice"]>["receipts"]>[number],
+  planId: string,
+): Receipt {
+  return {
+    id: receipt.id,
+    planId,
+    amount: receipt.amount,
+    date: receipt.date,
+    method: receipt.method,
+    ref: receipt.ref,
+    note: receipt.note,
+  };
 }
 
 export function mapOrderToPaymentPlan(order: Order): PaymentPlan | null {
   if (order.paymentType !== "installment" || !order.invoice) {
     return null;
   }
+
+  const savedReceipts = order.invoice.receipts?.map((receipt) =>
+    mapOrderReceiptToPlanReceipt(receipt, order.invoice!.id)
+  ) ?? [];
+  const savedReceiptTotal = savedReceipts.reduce(
+    (sum, receipt) => sum + receipt.amount,
+    0,
+  );
+  const depositAmount = Math.max(0, order.amountPaid - savedReceiptTotal);
+  const receipts =
+    depositAmount > 0
+      ? [
+          {
+            id: `${order.invoice.invoiceNumber}-DEP`,
+            planId: order.invoice.id,
+            amount: depositAmount,
+            date: order.installmentStartDate || order.createdAt,
+            method: "Deposit",
+            ref: "Initial deposit",
+            note: "Deposit paid when the order was created",
+          },
+          ...savedReceipts,
+        ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      : savedReceipts;
 
   return {
     id: order.invoice.id,
@@ -117,6 +164,7 @@ export function mapOrderToPaymentPlan(order: Order): PaymentPlan | null {
     })),
     totalAmount: order.invoice.total,
     paidAmount: order.amountPaid,
+    receipts,
     installments: order.invoice.installments,
     installmentAmount: order.invoice.installmentAmount,
     startDate: order.invoice.startDate || order.installmentStartDate || order.createdAt,

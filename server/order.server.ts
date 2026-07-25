@@ -3,6 +3,7 @@ import {
     deleteOrderQuery,
     getOrderByIdQuery,
     getOrdersQuery,
+    recordOrderPaymentQuery,
     updateOrderQuery,
     updateOrderStatusQuery,
 } from "@/db/queries/order";
@@ -11,6 +12,7 @@ import {
     orderCreateSchema,
     orderEditSchema,
     orderIdSchema,
+    orderPaymentSchema,
     orderStatusSchema,
 } from "@/validators/order";
 import { TRPCError } from "@trpc/server";
@@ -117,6 +119,23 @@ export const orderRouter = createTRPCRouter({
 
             try {
                 const order = await updateOrderStatusQuery({
+                    ...input,
+                    businessId,
+                });
+
+                return ensureOrderExists(order);
+            } catch (error) {
+                getFriendlyOrderError(error, "update");
+            }
+        }),
+
+    recordPayment: baseProcedure
+        .input(orderPaymentSchema)
+        .mutation(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+
+            try {
+                const order = await recordOrderPaymentQuery({
                     ...input,
                     businessId,
                 });

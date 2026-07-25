@@ -34,3 +34,12 @@ export const orderStatusSchema = z.object({
     id: z.string().trim().uuid("Invalid order"),
     status: z.enum(["pending", "processing", "shipped", "delivered", "cancelled"]),
 });
+
+export const orderPaymentSchema = z.object({
+    invoiceId: z.string().trim().uuid("Invalid invoice"),
+    amount: z.number().int().positive("Amount must be greater than zero"),
+    paymentDate: z.string().trim().min(1, "Payment date is required"),
+    paymentMethod: z.enum(["M-Pesa", "Airtel Money", "Bank Transfer", "Cash", "Card"]),
+    reference: z.string().trim().max(255, "Reference is too long").optional(),
+    note: z.string().trim().max(500, "Note is too long").optional(),
+});

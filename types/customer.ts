@@ -53,6 +53,16 @@ export interface OrderInvoice {
   frequency: string;
   startDate: string;
   dueDate: string;
+  receipts?: OrderPaymentReceipt[];
+}
+
+export interface OrderPaymentReceipt {
+  id: string;
+  amount: number;
+  date: string;
+  method: string;
+  ref: string;
+  note: string;
 }
 
 export interface Order {

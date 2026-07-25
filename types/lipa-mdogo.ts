@@ -32,4 +32,5 @@ export interface PaymentPlan {
   installmentAmount: number;
   startDate: string;
   frequency: string;
+  receipts?: Receipt[];
 }

@@ -72,6 +72,20 @@ export const useUpdateOrderStatus = () => {
     );
 };
 
+export const useRecordOrderPayment = () => {
+    const trpc = useTRPC();
+    const queryClient = useQueryClient();
+
+    return useMutation(
+        trpc.orders.recordPayment.mutationOptions({
+            onSuccess: async () => {
+                await queryClient.invalidateQueries(trpc.orders.pathFilter());
+                await queryClient.invalidateQueries(trpc.customers.pathFilter());
+            },
+        }),
+    );
+};
+
 export const useDeleteOrder = () => {
     const trpc = useTRPC();
     const queryClient = useQueryClient();

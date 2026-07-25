@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { customerTable } from "@/db/schema/customers";
 import { invoiceTable } from "@/db/schema/invoice";
 import { orderItemTable, orderTable } from "@/db/schema/orders";
+import { paymentTable } from "@/db/schema/payments";
 import { productsTable } from "@/db/schema/products";
 import { locationTable, variantInventoryTable, variantsTable } from "@/db/schema/variants";
 import type {
@@ -30,6 +31,16 @@ type OrderWriteInput = {
     status: OrderStatus;
     shippingAddress: string;
     lineItems: OrderLineItemInput[];
+};
+
+type RecordOrderPaymentInput = {
+    businessId: string;
+    invoiceId: string;
+    amount: number;
+    paymentDate: string;
+    paymentMethod: "M-Pesa" | "Airtel Money" | "Bank Transfer" | "Cash" | "Card";
+    reference?: string;
+    note?: string;
 };
 
 const INVOICE_PREFIX = "INV";
@@ -130,7 +141,10 @@ function getInvoiceValues(data: {
     };
 }
 
-function mapInvoice(row: typeof invoiceTable.$inferSelect | undefined): OrderInvoice | undefined {
+function mapInvoiceWithReceipts(
+    row: typeof invoiceTable.$inferSelect | undefined,
+    payments: (typeof paymentTable.$inferSelect)[],
+): OrderInvoice | undefined {
     if (!row) return undefined;
 
     return {
@@ -144,7 +158,29 @@ function mapInvoice(row: typeof invoiceTable.$inferSelect | undefined): OrderInv
         frequency: row.frequency ?? "",
         startDate: toIsoDate(row.startDate),
         dueDate: toIsoDate(row.dueDate),
+        receipts: payments
+            .sort((a, b) => a.paidAt.getTime() - b.paidAt.getTime())
+            .map((payment) => ({
+                id: payment.id,
+                amount: payment.amount,
+                date: toIsoDate(payment.paidAt),
+                method: getReadablePaymentMethod(payment.paymentMethod),
+                ref: payment.reference ?? "",
+                note: payment.notes ?? "",
+            })),
     };
+}
+
+function getReadablePaymentMethod(method: (typeof paymentTable.$inferSelect)["paymentMethod"]) {
+    if (method === "mpesa") return "M-Pesa";
+    if (method === "bank") return "Bank Transfer";
+    return "Cash";
+}
+
+function getDbPaymentMethod(method: RecordOrderPaymentInput["paymentMethod"]) {
+    if (method === "Cash") return "cash" as const;
+    if (method === "Bank Transfer" || method === "Card") return "bank" as const;
+    return "mpesa" as const;
 }
 
 function mapOrderRecord(data: {
@@ -153,9 +189,10 @@ function mapOrderRecord(data: {
     items: (typeof orderItemTable.$inferSelect)[];
     locations: (typeof locationTable.$inferSelect)[];
     invoice?: typeof invoiceTable.$inferSelect;
+    payments?: (typeof paymentTable.$inferSelect)[];
 }): Order {
     const quantity = data.items.reduce((sum, item) => sum + item.quantity, 0);
-    const invoice = mapInvoice(data.invoice);
+    const invoice = mapInvoiceWithReceipts(data.invoice, data.payments ?? []);
     const remainingAmount = invoice?.balance ?? Math.max(0, data.order.total - data.order.depositPaid);
 
     return {
@@ -425,6 +462,10 @@ async function getMappedOrders(orders: (typeof orderTable.$inferSelect)[]) {
         db.select().from(invoiceTable).where(inArray(invoiceTable.orderId, orderIds)),
         db.select().from(locationTable).where(eq(locationTable.businessId, orders[0].businessId)),
     ]);
+    const invoiceIds = invoices.map((invoice) => invoice.id);
+    const payments = invoiceIds.length
+        ? await db.select().from(paymentTable).where(inArray(paymentTable.invoiceId, invoiceIds))
+        : [];
 
     return orders
         .map((order) => {
@@ -437,6 +478,9 @@ async function getMappedOrders(orders: (typeof orderTable.$inferSelect)[]) {
                 items: items.filter((item) => item.orderId === order.id),
                 locations,
                 invoice: invoices.find((invoice) => invoice.orderId === order.id),
+                payments: payments.filter((payment) =>
+                    payment.invoiceId === invoices.find((invoice) => invoice.orderId === order.id)?.id
+                ),
             });
         })
         .filter((order): order is Order => Boolean(order));
@@ -664,6 +708,82 @@ export async function updateOrderQuery(data: OrderWriteInput & { id: string }) {
     }
 
     return getOrderByIdQuery({ id: data.id, businessId: data.businessId });
+}
+
+export async function recordOrderPaymentQuery(data: RecordOrderPaymentInput) {
+    const [updatedOrder] = await db.transaction(async (tx) => {
+        const [invoice] = await tx
+            .select()
+            .from(invoiceTable)
+            .where(and(
+                eq(invoiceTable.id, data.invoiceId),
+                eq(invoiceTable.businessId, data.businessId),
+            ));
+
+        if (!invoice) return [];
+
+        const [order] = await tx
+            .select()
+            .from(orderTable)
+            .where(and(
+                eq(orderTable.id, invoice.orderId),
+                eq(orderTable.businessId, data.businessId),
+            ));
+
+        if (!order) return [];
+
+        const amount = Math.min(data.amount, Math.max(0, invoice.balance));
+        if (amount <= 0) {
+            throw new Error("This invoice has no remaining balance.");
+        }
+
+        const nextPaid = Math.min(order.total, order.depositPaid + amount);
+        const nextBalance = Math.max(0, invoice.total - nextPaid);
+        const paymentStatus = getPaymentStatus(order.total, nextPaid);
+        const paidAt = new Date(data.paymentDate);
+        const originalMethodNote =
+            data.paymentMethod === "Airtel Money" || data.paymentMethod === "Card"
+                ? `${data.paymentMethod}${data.note ? ` - ${data.note}` : ""}`
+                : data.note;
+
+        await tx.insert(paymentTable).values({
+            businessId: data.businessId,
+            invoiceId: invoice.id,
+            amount,
+            paymentMethod: getDbPaymentMethod(data.paymentMethod),
+            reference: data.reference || null,
+            paidAt,
+            notes: originalMethodNote || null,
+        });
+
+        await tx
+            .update(invoiceTable)
+            .set({
+                balance: nextBalance,
+                status: getInvoiceStatus(invoice.total, nextPaid),
+            })
+            .where(and(
+                eq(invoiceTable.id, invoice.id),
+                eq(invoiceTable.businessId, data.businessId),
+            ));
+
+        return tx
+            .update(orderTable)
+            .set({
+                depositPaid: nextPaid,
+                paymentStatus,
+            })
+            .where(and(
+                eq(orderTable.id, order.id),
+                eq(orderTable.businessId, data.businessId),
+            ))
+            .returning();
+    });
+
+    if (!updatedOrder) return undefined;
+
+    await recomputeCustomerOrderStats(updatedOrder.customerId, data.businessId);
+    return getOrderByIdQuery({ id: updatedOrder.id, businessId: data.businessId });
 }
 
 export async function updateOrderStatusQuery(data: {

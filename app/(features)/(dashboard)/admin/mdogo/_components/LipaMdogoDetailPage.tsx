@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import EmptyState from "@/components/common/EmptyState";
 import {
   ArrowLeft,
   Coins,
   Download,
+  MoneyBill,
   ReceiptText,
   Search,
 } from "./icons";
@@ -23,6 +24,7 @@ import {
 } from "@/data/lipa-mdogo-data";
 import { useGetOrders } from "@/hooks/useOrders";
 import type { PlanProduct } from "@/types/lipa-mdogo";
+import RecordPaymentModal from "./RecordPaymentModal";
 
 const statusStyles = {
   active: "bg-emerald-100 text-emerald-800",
@@ -32,6 +34,7 @@ const statusStyles = {
 
 export default function LipaMdogoDetailPage({ planId }: { planId: string }) {
   const { orders, isLoading, isError, error } = useGetOrders();
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const paymentPlans = useMemo<PaymentPlan[]>(() => {
     return orders
       .map(mapOrderToPaymentPlan)
@@ -85,7 +88,7 @@ export default function LipaMdogoDetailPage({ planId }: { planId: string }) {
   const paid = getPlanPaidAmount(plan);
   const remaining = getRemainingAmount(plan);
   const status = getPlanStatus(plan);
-  const receipts = getPlanReceipts(plan.id);
+  const receipts = getPlanReceipts(plan);
   const schedule = getInstallmentSchedule(plan);
   const paymentRows = schedule.filter((item) => item.paidAmount > 0);
   const progress = plan.totalAmount > 0 ? Math.min(100, (paid / plan.totalAmount) * 100) : 0;
@@ -114,14 +117,25 @@ export default function LipaMdogoDetailPage({ planId }: { planId: string }) {
               {plan.invoiceNo} - {plan.customer} - {plan.orderId}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 sm:w-auto"
-          >
-            <Download className="h-4 w-4" />
-            Download PDF
-          </button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <button
+              type="button"
+              onClick={() => setIsPaymentOpen(true)}
+              disabled={remaining <= 0}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300 sm:w-auto"
+            >
+              <MoneyBill className="h-4 w-4" />
+              Record Payment
+            </button>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 sm:w-auto"
+            >
+              <Download className="h-4 w-4" />
+              Download PDF
+            </button>
+          </div>
         </div>
 
         <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -470,6 +484,11 @@ export default function LipaMdogoDetailPage({ planId }: { planId: string }) {
           </div>
         </section>
       </div>
+      <RecordPaymentModal
+        isOpen={isPaymentOpen}
+        onClose={() => setIsPaymentOpen(false)}
+        plan={plan}
+      />
     </main>
   );
 }
