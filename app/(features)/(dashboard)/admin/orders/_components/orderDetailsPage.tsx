@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { ReactNode } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,11 +15,12 @@ import {
   PackageOpen,
   PenLine,
   Receipt,
+  Truck,
   User,
   X,
 } from "lucide-react";
 import { formatCurrency, formatDate, getOrderDisplayNumber } from "@/utils/orderUtils";
-import type { Order, OrderStatus } from "@/types/customer";
+import type { LineItem, Order, OrderStatus } from "@/types/customer";
 import { ORDER_STATUS_CONFIG } from "@/data/customer-config";
 import { useGetOrder, useUpdateOrderStatus } from "@/hooks/useOrders";
 import StatusBadge from "./statusBadge";
@@ -89,7 +89,7 @@ export default function OrderDetailsPage() {
       paidCount,
       partialPaid,
       nextPaymentDate: addMonths(order.installmentStartDate ?? order.createdAt, Math.min(paidCount + 1, months)),
-      progress: Math.min(100, Math.round((order.amountPaid / order.total) * 100)),
+      progress: order.total > 0 ? Math.min(100, Math.round((order.amountPaid / order.total) * 100)) : 0,
     };
   }, [order]);
 
@@ -137,8 +137,8 @@ export default function OrderDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-100 p-4 md:p-8">
-        <div className="mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500 shadow-sm">
+      <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+        <div className="mx-auto max-w-3xl rounded-lg border border-slate-200 bg-white p-8 text-center text-slate-500 shadow-sm">
           Loading order...
         </div>
       </div>
@@ -147,15 +147,15 @@ export default function OrderDetailsPage() {
 
   if (!order || isError) {
     return (
-      <div className="min-h-screen bg-slate-100 p-4 md:p-8">
-        <div className="mx-auto max-w-3xl rounded-xl border border-red-200 bg-red-50 p-8 text-center shadow-sm">
+      <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+        <div className="mx-auto max-w-3xl rounded-lg border border-red-200 bg-red-50 p-8 text-center shadow-sm">
           <Receipt className="mx-auto mb-3 h-10 w-10 text-red-500" />
           <p className="font-semibold text-red-700">
             {error?.message ?? "Order not found."}
           </p>
           <Link
             href="/admin/orders"
-            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white"
+            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Orders
@@ -165,211 +165,299 @@ export default function OrderDetailsPage() {
     );
   }
 
+  const paymentProgress = order.total > 0 ? Math.min(100, (order.amountPaid / order.total) * 100) : 0;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 p-4 md:p-6">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <div className="space-y-2">
+    <div className="min-h-screen bg-slate-50 text-slate-950">
+      <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 sm:px-6 lg:py-7">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <Link
               href="/admin/orders"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 transition hover:text-emerald-900"
+              className="mb-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to Orders
             </Link>
-            <div>
-              <h1 className="flex items-center gap-2 text-3xl font-extrabold text-black">
-                <Receipt className="h-8 w-8 text-emerald-600" />
-                Order Details
-              </h1>
-              <p className="mt-1 font-mono text-sm text-slate-500">
-                {getOrderDisplayNumber(order)}
-              </p>
-            </div>
+            <h1 className="flex items-center gap-2 text-xl font-extrabold text-slate-950 sm:text-3xl">
+              <Receipt className="h-6 w-6 shrink-0 text-emerald-600 sm:h-8 sm:w-8" />
+              Order Details
+            </h1>
+            <p className="mt-1 break-words font-mono text-xs text-slate-500 sm:text-sm">
+              {getOrderDisplayNumber(order)} - {order.customer}
+            </p>
           </div>
-          <StatusBadge status={order.status} />
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge status={order.status} />
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold capitalize text-slate-600 ring-1 ring-slate-200">
+              {order.paymentStatus}
+            </span>
+          </div>
         </div>
 
-        <section className="space-y-6">
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-              <MetaTile label="Order Number" value={getOrderDisplayNumber(order)} mono />
-              <MetaTile label="Date" value={formatDate(order.createdAt)} />
-              <MetaTile label="Status" value={ORDER_STATUS_CONFIG[order.status].label} />
-              <MetaTile
-                label="Payment"
-                value={order.paymentType === "installment" ? `Installment (${order.installmentPlan})` : "Full Payment"}
-              />
-              <MetaTile label="Amount Paid" value={formatCurrency(order.amountPaid)} />
-              <MetaTile label="Balance" value={formatCurrency(order.remainingAmount)} danger={order.remainingAmount > 0} />
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <InfoPanel icon={User} title="Customer Information">
-                <p className="font-semibold text-slate-800">{order.customer}</p>
-                <p className="mt-1 text-sm text-slate-500">{order.email || "No email provided"}</p>
-                <p className="text-sm text-slate-600">{order.phone || "No phone provided"}</p>
-              </InfoPanel>
-              <InfoPanel icon={CalendarDays} title="Order Information">
-                <p className="text-sm text-slate-600">
-                  <span className="text-slate-400">Created:</span> {formatDate(order.createdAt)}
-                </p>
-                <p className="mt-1 text-sm text-slate-600">
-                  <span className="text-slate-400">Total items:</span> {order.items}
-                </p>
-                <p className="mt-1 text-sm text-slate-600">
-                  <span className="text-slate-400">Payment status:</span> {order.paymentStatus}
-                </p>
-                {order.installmentStartDate && (
-                  <p className="mt-1 text-sm text-slate-600">
-                    <span className="text-slate-400">Installment start:</span> {formatDate(order.installmentStartDate)}
-                  </p>
-                )}
-              </InfoPanel>
-            </div>
-
-            <div>
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                  <PackageOpen className="h-4 w-4 text-emerald-600" />
-                  Order Items
-                </h2>
-                <span className="text-xs font-medium text-slate-400">
-                  {order.items} items
-                </span>
-              </div>
-              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[840px] text-sm">
-                    <thead className="border-b border-slate-200 bg-slate-50">
-                      <tr>
-                        {["Item", "SKU", "Location", "Qty", "Unit Price", "Subtotal"].map((heading) => (
-                          <th key={heading} className="px-4 py-3 text-left text-xs font-semibold text-slate-600">
-                            {heading}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {order.lineItems.map((item) => (
-                        <tr key={`${item.sku}-${item.name}`} className="transition hover:bg-slate-50">
-                          <td className="px-4 py-3 font-medium text-slate-800">{item.name}</td>
-                          <td className="px-4 py-3 font-mono text-xs text-slate-400">{item.sku}</td>
-                          <td className="px-4 py-3 text-slate-600">{item.locationName ?? "Not recorded"}</td>
-                          <td className="px-4 py-3 text-slate-600">{item.qty}</td>
-                          <td className="px-4 py-3 text-slate-600">
-                            {item.price < item.originalPrice ? (
-                              <span>
-                                <span className="mr-1 text-xs text-slate-400 line-through">
-                                  {formatCurrency(item.originalPrice)}
-                                </span>
-                                <span className="font-semibold text-emerald-700">
-                                  {formatCurrency(item.price)}
-                                </span>
-                              </span>
-                            ) : (
-                              formatCurrency(item.price)
-                            )}
-                          </td>
-                          <td className="px-4 py-3 font-semibold text-emerald-700">
-                            {formatCurrency(item.qty * item.price)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot className="border-t border-slate-200 bg-slate-50">
-                      <tr>
-                        <td colSpan={5} className="px-4 py-3 text-right font-bold text-slate-700">
-                          Total
-                        </td>
-                        <td className="px-4 py-3 text-base font-extrabold text-emerald-700">
-                          {formatCurrency(order.total)}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
+        <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 bg-slate-950 px-4 py-5 text-white sm:px-5">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <div className="text-[11px] font-semibold uppercase text-emerald-300">
+                  Customer Order
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-3">
+                  <h2 className="max-w-full break-all font-mono text-xl font-extrabold sm:text-2xl md:text-3xl">
+                    {getOrderDisplayNumber(order)}
+                  </h2>
+                  <StatusBadge status={order.status} />
+                </div>
+                <div className="mt-3 grid gap-3 text-sm text-slate-300 sm:grid-cols-3">
+                  <InfoBlock label="Customer" value={order.customer} />
+                  <InfoBlock label="Phone" value={order.phone || "-"} />
+                  <InfoBlock label="Email" value={order.email || "-"} />
                 </div>
               </div>
+              <div className="grid w-full gap-2 rounded-lg border border-white/10 bg-white/5 p-4 text-sm lg:w-auto lg:min-w-[280px]">
+                <InfoLine label="Created" value={formatDate(order.createdAt)} />
+                <InfoLine label="Items" value={String(order.items)} />
+                <InfoLine
+                  label="Payment"
+                  value={order.paymentType === "installment" ? order.installmentPlan ?? "Installment" : "Full Payment"}
+                />
+                <InfoLine label="Payment status" value={order.paymentStatus} />
+              </div>
             </div>
+          </div>
 
-            {installmentSummary ? (
-              <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="grid lg:grid-cols-[1fr_340px]">
+            <div className="space-y-5 p-4 sm:space-y-6 sm:p-5">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <SummaryTile label="Total" value={formatCurrency(order.total)} />
+                <SummaryTile label="Paid" value={formatCurrency(order.amountPaid)} tone="text-emerald-700" />
+                <SummaryTile
+                  label="Balance"
+                  value={formatCurrency(order.remainingAmount)}
+                  tone={order.remainingAmount > 0 ? "text-red-600" : "text-emerald-700"}
+                />
+                <SummaryTile label="Status" value={ORDER_STATUS_CONFIG[order.status].label} />
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-2">
+                <InfoCard icon={User} title="Customer">
+                  <DetailRow label="Name" value={order.customer} />
+                  <DetailRow label="Email" value={order.email || "No email provided"} />
+                  <DetailRow label="Phone" value={order.phone || "No phone provided"} />
+                </InfoCard>
+                <InfoCard icon={Truck} title="Fulfillment">
+                  <DetailRow label="Created" value={formatDate(order.createdAt)} />
+                  <DetailRow label="Order status" value={ORDER_STATUS_CONFIG[order.status].label} />
+                  <DetailRow label="Shipping" value={order.shippingAddress || "No shipping address"} />
+                </InfoCard>
+              </div>
+
+              <section className="rounded-lg border border-slate-200">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
                   <div>
-                    <h2 className="flex items-center gap-2 font-semibold text-slate-800">
-                      <CreditCard className="h-4 w-4 text-purple-600" />
-                      Lipa Mdogo Installment Plan
-                    </h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {order.installmentPlan} plan, approximately {formatCurrency(installmentSummary.installmentAmount)} per installment.
+                    <h3 className="flex items-center gap-2 font-semibold text-slate-900">
+                      <PackageOpen className="h-4 w-4 text-emerald-600" />
+                      Order Items
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      {order.items} item{order.items === 1 ? "" : "s"} in this order
                     </p>
                   </div>
-                  <div className="text-sm md:text-right">
-                    <p className="font-semibold text-emerald-700">{formatCurrency(order.amountPaid)} paid</p>
-                    <p className="text-red-600">{formatCurrency(order.remainingAmount)} remaining</p>
+                  <div className="text-right text-xs text-slate-500">
+                    Order total
+                    <div className="text-sm font-bold text-slate-900">
+                      {formatCurrency(order.total)}
+                    </div>
                   </div>
                 </div>
-                <div className="mt-4 h-2 rounded-full bg-slate-100">
+
+                {order.lineItems.length === 0 ? (
+                  <div className="p-5 text-center text-sm text-slate-500">
+                    No line items recorded for this order.
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-3 p-3 sm:hidden">
+                      {order.lineItems.map((item) => (
+                        <OrderItemCard key={`${item.sku}-${item.name}`} item={item} />
+                      ))}
+                      <div className="rounded-lg bg-slate-50 p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-sm font-bold text-slate-900">Total</span>
+                          <span className="text-base font-extrabold text-emerald-700">
+                            {formatCurrency(order.total)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="hidden overflow-x-auto sm:block">
+                      <table className="w-full min-w-[860px] border-collapse text-left text-sm">
+                        <thead>
+                          <tr className="bg-slate-50 text-[10px] font-bold uppercase text-slate-500">
+                            {["Item", "SKU", "Location", "Qty", "Unit Price", "Subtotal"].map((heading) => (
+                              <th key={heading} className="px-4 py-3">
+                                {heading}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {order.lineItems.map((item) => (
+                            <tr key={`${item.sku}-${item.name}`} className="border-t border-slate-100">
+                              <td className="px-4 py-3 font-semibold text-slate-900">{item.name}</td>
+                              <td className="px-4 py-3 font-mono text-xs text-slate-500">{item.sku}</td>
+                              <td className="px-4 py-3 text-slate-600">{item.locationName ?? "Not recorded"}</td>
+                              <td className="px-4 py-3 text-slate-600">{item.qty}</td>
+                              <td className="px-4 py-3 text-slate-600">
+                                <PriceDisplay item={item} />
+                              </td>
+                              <td className="px-4 py-3 font-bold text-emerald-700">
+                                {formatCurrency(item.qty * item.price)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="border-t border-slate-200 bg-slate-50">
+                            <td colSpan={5} className="px-4 py-3 text-right font-bold text-slate-900">
+                              Total
+                            </td>
+                            <td className="px-4 py-3 text-base font-extrabold text-emerald-700">
+                              {formatCurrency(order.total)}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </>
+                )}
+              </section>
+
+              {installmentSummary ? (
+                <section className="rounded-lg border border-slate-200 bg-white p-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h3 className="flex items-center gap-2 font-semibold text-slate-900">
+                        <CreditCard className="h-4 w-4 text-purple-600" />
+                        Lipa Mdogo Plan
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {order.installmentPlan} plan, approximately {formatCurrency(installmentSummary.installmentAmount)} per installment.
+                      </p>
+                    </div>
+                    <div className="text-sm sm:text-right">
+                      <p className="font-semibold text-emerald-700">{formatCurrency(order.amountPaid)} paid</p>
+                      <p className="font-semibold text-red-600">{formatCurrency(order.remainingAmount)} remaining</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className="h-full rounded-full bg-emerald-600 transition-all"
+                      style={{ width: `${installmentSummary.progress}%` }}
+                    />
+                  </div>
+                  <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+                    <SummaryPill label="Paid installments" value={`${installmentSummary.paidCount}/${installmentSummary.months}`} />
+                    <SummaryPill label="Partial paid" value={formatCurrency(installmentSummary.partialPaid)} />
+                    <SummaryPill label="Next due" value={formatDate(installmentSummary.nextPaymentDate)} />
+                  </div>
+                </section>
+              ) : (
+                <section className="rounded-lg border border-slate-200 bg-white p-5 text-center text-sm text-slate-600">
+                  <CreditCard className="mx-auto mb-2 h-5 w-5 text-slate-400" />
+                  Full payment order with no installment schedule.
+                </section>
+              )}
+            </div>
+
+            <aside className="space-y-4 border-t border-slate-200 bg-slate-50 p-4 sm:p-5 lg:border-l lg:border-t-0">
+              <section className="rounded-lg border border-slate-200 bg-white p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-semibold text-slate-900">Payment Summary</h3>
+                    <p className="text-xs text-slate-500">Collection status</p>
+                  </div>
+                  <HandCoins className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div className="break-words text-2xl font-extrabold text-slate-950">
+                  {formatCurrency(order.remainingAmount)}
+                </div>
+                <p className="mt-1 text-xs text-slate-500">remaining balance</p>
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
                   <div
-                    className="h-2 rounded-full bg-emerald-600 transition-all"
-                    style={{ width: `${installmentSummary.progress}%` }}
+                    className="h-full rounded-full bg-emerald-600"
+                    style={{ width: `${paymentProgress}%` }}
                   />
                 </div>
-                <div className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
-                  <SummaryPill label="Paid installments" value={`${installmentSummary.paidCount}/${installmentSummary.months}`} />
-                  <SummaryPill label="Partial paid" value={formatCurrency(installmentSummary.partialPaid)} />
-                  <SummaryPill label="Next due" value={formatDate(installmentSummary.nextPaymentDate)} />
+                <div className="mt-3 flex justify-between text-xs text-slate-500">
+                  <span>{formatCurrency(order.amountPaid)} paid</span>
+                  <span>{paymentProgress.toFixed(0)}%</span>
                 </div>
               </section>
-            ) : (
-              <section className="rounded-xl border border-slate-200 bg-white p-5 text-center text-sm text-slate-600 shadow-sm">
-                <CreditCard className="mx-auto mb-2 h-5 w-5 text-slate-400" />
-                Full payment order with no installment schedule.
-              </section>
-            )}
 
-            {order.shippingAddress && (
-              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                <p className="mb-1 flex items-center gap-2 text-xs font-semibold text-slate-400">
-                  <MapPin className="h-3.5 w-3.5" />
+              <section className="rounded-lg border border-slate-200 bg-white p-4">
+                <h3 className="mb-3 flex items-center gap-2 font-semibold text-slate-900">
+                  <MapPin className="h-4 w-4 text-emerald-600" />
                   Shipping Address
+                </h3>
+                <p className="text-sm leading-6 text-slate-600">
+                  {order.shippingAddress || "No shipping address recorded."}
                 </p>
-                <p className="text-sm font-medium text-slate-700">{order.shippingAddress}</p>
-              </div>
-            )}
-          <div className="flex flex-col justify-end gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm sm:flex-row">
-            <button
-              type="button"
-              onClick={() => {
-                setDraftStatus(order.status);
-                setIsStatusOpen(true);
-              }}
-              disabled={isLocked}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-            >
-              <PenLine className="h-4 w-4" />
-              Update Status
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsPaymentOpen(true)}
-              disabled={!canRecordPayment}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-            >
-              <HandCoins className="h-4 w-4" />
-              Record Payment
-            </button>
+              </section>
+
+              <section className="rounded-lg border border-slate-200 bg-white p-4">
+                <h3 className="mb-3 flex items-center gap-2 font-semibold text-slate-900">
+                  <CalendarDays className="h-4 w-4 text-emerald-600" />
+                  Timeline
+                </h3>
+                <div className="space-y-3">
+                  <TimelineRow label="Created" value={formatDate(order.createdAt)} />
+                  {order.installmentStartDate ? (
+                    <TimelineRow label="Installment start" value={formatDate(order.installmentStartDate)} />
+                  ) : null}
+                  <TimelineRow label="Current status" value={ORDER_STATUS_CONFIG[order.status].label} />
+                </div>
+              </section>
+
+              <section className="rounded-lg border border-slate-200 bg-white p-4">
+                <h3 className="mb-3 font-semibold text-slate-900">Actions</h3>
+                <div className="grid gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDraftStatus(order.status);
+                      setIsStatusOpen(true);
+                    }}
+                    disabled={isLocked}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  >
+                    <PenLine className="h-4 w-4" />
+                    Update Status
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsPaymentOpen(true)}
+                    disabled={!canRecordPayment}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  >
+                    <HandCoins className="h-4 w-4" />
+                    Record Payment
+                  </button>
+                </div>
+              </section>
+            </aside>
           </div>
         </section>
       </div>
 
       {isStatusOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-2xl">
             <ModalHeader title="Update Order Status" onClose={() => setIsStatusOpen(false)} />
             <select
               value={draftStatus}
               onChange={(event) => setDraftStatus(event.target.value as OrderStatus)}
-              className="mt-5 w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+              className="mt-5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
             >
               {statusOptions.map((status) => (
                 <option key={status} value={status}>
@@ -382,11 +470,11 @@ export default function OrderDetailsPage() {
                 type="button"
                 onClick={updateStatus}
                 disabled={updateOrderStatus.isPending}
-                className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex-1 rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {updateOrderStatus.isPending ? "Updating..." : "Update"}
               </button>
-              <button type="button" onClick={() => setIsStatusOpen(false)} className="flex-1 rounded-xl border border-slate-300 py-2.5 text-sm font-semibold hover:bg-slate-50">
+              <button type="button" onClick={() => setIsStatusOpen(false)} className="flex-1 rounded-lg border border-slate-300 py-2.5 text-sm font-semibold hover:bg-slate-50">
                 Cancel
               </button>
             </div>
@@ -396,9 +484,9 @@ export default function OrderDetailsPage() {
 
       {isPaymentOpen && installmentSummary && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-2xl">
             <ModalHeader title="Record Payment" onClose={() => setIsPaymentOpen(false)} />
-            <div className="mt-5 rounded-xl bg-emerald-50 p-4 text-sm text-slate-700">
+            <div className="mt-5 rounded-lg bg-emerald-50 p-4 text-sm text-slate-700">
               <p className="font-semibold text-slate-800">{order.customer}</p>
               <p>Remaining: {formatCurrency(order.remainingAmount)}</p>
               <p>Suggested installment: {formatCurrency(Math.min(installmentSummary.installmentAmount, order.remainingAmount))}</p>
@@ -411,7 +499,7 @@ export default function OrderDetailsPage() {
                   min={1}
                   max={order.remainingAmount}
                   {...registerPayment("amount", { valueAsNumber: true })}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 {paymentErrors.amount ? (
                   <span className="mt-1 block text-xs text-red-500">{paymentErrors.amount.message}</span>
@@ -421,7 +509,7 @@ export default function OrderDetailsPage() {
                 <span className="mb-1.5 block text-sm font-semibold text-slate-700">Payment Method</span>
                 <select
                   {...registerPayment("paymentMethod")}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option>M-Pesa</option>
                   <option>Airtel Money</option>
@@ -435,14 +523,14 @@ export default function OrderDetailsPage() {
                   type="text"
                   {...registerPayment("reference")}
                   placeholder="Transaction ID"
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </label>
               <div className="flex gap-3 pt-2">
-                <button type="submit" className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
+                <button type="submit" className="flex-1 rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
                   Record Payment
                 </button>
-                <button type="button" onClick={() => setIsPaymentOpen(false)} className="flex-1 rounded-xl border border-slate-300 py-2.5 text-sm font-semibold hover:bg-slate-50">
+                <button type="button" onClick={() => setIsPaymentOpen(false)} className="flex-1 rounded-lg border border-slate-300 py-2.5 text-sm font-semibold hover:bg-slate-50">
                   Cancel
                 </button>
               </div>
@@ -452,7 +540,7 @@ export default function OrderDetailsPage() {
       )}
 
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-[60] rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-2xl ${toast.type === "success" ? "bg-emerald-600" : "bg-red-600"}`}>
+        <div className={`fixed bottom-4 left-3 right-3 z-[60] rounded-lg px-5 py-3 text-sm font-semibold text-white shadow-2xl sm:left-auto sm:right-6 ${toast.type === "success" ? "bg-emerald-600" : "bg-red-600"}`}>
           {toast.message}
         </div>
       )}
@@ -460,59 +548,149 @@ export default function OrderDetailsPage() {
   );
 }
 
-function MetaTile({
-  label,
-  value,
-  mono = false,
-  danger = false,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-  danger?: boolean;
-}) {
+function InfoBlock({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="mb-1 text-xs font-medium text-slate-400">{label}</p>
-      <p className={`text-sm font-semibold ${mono ? "font-mono" : ""} ${danger ? "text-red-600" : "text-slate-800"}`}>
-        {value}
-      </p>
+    <div className="min-w-0">
+      <div className="text-[10px] font-semibold uppercase text-slate-400">{label}</div>
+      <div className="truncate font-medium text-white">{value}</div>
     </div>
   );
 }
 
-function InfoPanel({
+function InfoLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-slate-400">{label}</span>
+      <span className="text-right font-semibold capitalize text-white">{value}</span>
+    </div>
+  );
+}
+
+function SummaryTile({
+  label,
+  value,
+  tone = "text-slate-950",
+}: {
+  label: string;
+  value: string;
+  tone?: string;
+}) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <div className="text-[10px] font-bold uppercase text-slate-500">{label}</div>
+      <div className={`mt-1 truncate text-lg font-extrabold ${tone}`}>{value}</div>
+    </div>
+  );
+}
+
+function InfoCard({
   icon: Icon,
   title,
   children,
 }: {
   icon: typeof User;
   title: string;
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+    <section className="rounded-lg border border-slate-200 bg-white p-4">
+      <h3 className="mb-3 flex items-center gap-2 font-semibold text-slate-900">
         <Icon className="h-4 w-4 text-emerald-600" />
         {title}
-      </h2>
-      {children}
+      </h3>
+      <div className="space-y-2">{children}</div>
     </section>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-3 text-sm">
+      <span className="shrink-0 text-slate-500">{label}</span>
+      <span className="text-right font-medium text-slate-900">{value}</span>
+    </div>
+  );
+}
+
+function OrderItemCard({ item }: { item: LineItem }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <div className="font-semibold text-slate-900">{item.name}</div>
+      <div className="mt-1 font-mono text-xs text-slate-500">{item.sku}</div>
+      <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+        <MobileMetric label="Qty" value={String(item.qty)} />
+        <MobileMetric label="Unit" value={formatCurrency(item.price)} />
+        <MobileMetric label="Total" value={formatCurrency(item.qty * item.price)} strong tone="text-emerald-700" />
+      </div>
+      <div className="mt-3 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-600">
+        Location: <span className="font-semibold">{item.locationName ?? "Not recorded"}</span>
+      </div>
+    </div>
+  );
+}
+
+function PriceDisplay({ item }: { item: LineItem }) {
+  if (item.price < item.originalPrice) {
+    return (
+      <span>
+        <span className="mr-1 text-xs text-slate-400 line-through">
+          {formatCurrency(item.originalPrice)}
+        </span>
+        <span className="font-semibold text-emerald-700">
+          {formatCurrency(item.price)}
+        </span>
+      </span>
+    );
+  }
+
+  return <span>{formatCurrency(item.price)}</span>;
+}
+
+function MobileMetric({
+  label,
+  value,
+  tone = "text-slate-900",
+  strong = false,
+}: {
+  label: string;
+  value: string;
+  tone?: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="min-w-0 rounded-md bg-slate-50 p-2">
+      <div className="text-[10px] font-bold uppercase text-slate-500">{label}</div>
+      <div className={`mt-1 truncate ${strong ? "font-extrabold" : "font-semibold"} ${tone}`}>
+        {value}
+      </div>
+    </div>
   );
 }
 
 function SummaryPill({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className="font-semibold text-slate-800">{value}</p>
+      <p className="text-xs text-slate-500">{label}</p>
+      <p className="font-semibold text-slate-900">{value}</p>
+    </div>
+  );
+}
+
+function TimelineRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex gap-3 text-sm">
+      <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+      <div>
+        <p className="font-semibold text-slate-900">{label}</p>
+        <p className="text-slate-500">{value}</p>
+      </div>
     </div>
   );
 }
 
 function ModalHeader({ title, onClose }: { title: string; onClose: () => void }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-4">
       <h3 className="flex items-center gap-2 text-xl font-bold text-slate-800">
         <Receipt className="h-5 w-5 text-emerald-600" />
         {title}
