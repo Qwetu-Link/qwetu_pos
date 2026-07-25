@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import EmptyState from "@/components/common/EmptyState";
 import {
@@ -13,12 +14,15 @@ import {
   formatCurrency,
   formatDate,
   getInstallmentSchedule,
-  getPaidAmount,
+  getPlanPaidAmount,
   getPlanReceipts,
   getPlanStatus,
   getRemainingAmount,
+  mapOrderToPaymentPlan,
   PaymentPlan,
 } from "@/data/lipa-mdogo-data";
+import { useGetOrders } from "@/hooks/useOrders";
+import type { PlanProduct } from "@/types/lipa-mdogo";
 
 const statusStyles = {
   active: "bg-emerald-100 text-emerald-800",
@@ -26,315 +30,616 @@ const statusStyles = {
   completed: "bg-blue-100 text-blue-800",
 };
 
-export default function LipaMdogoDetailPage({ plan }: { plan: PaymentPlan }) {
-  const paid = getPaidAmount(plan.id);
+export default function LipaMdogoDetailPage({ planId }: { planId: string }) {
+  const { orders, isLoading, isError, error } = useGetOrders();
+  const paymentPlans = useMemo<PaymentPlan[]>(() => {
+    return orders
+      .map(mapOrderToPaymentPlan)
+      .filter((plan): plan is PaymentPlan => Boolean(plan));
+  }, [orders]);
+  const plan = paymentPlans.find(
+    (item) => item.id === planId || item.invoiceNo === planId,
+  );
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
+        <div className="mx-auto max-w-7xl rounded-lg border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+          Loading Lipa Mdogo details...
+        </div>
+      </main>
+    );
+  }
+
+  if (isError) {
+    return (
+      <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
+        <div className="mx-auto max-w-7xl rounded-lg border border-red-200 bg-red-50 p-8 text-center text-sm text-red-700">
+          {error?.message ?? "Could not load Lipa Mdogo details."}
+        </div>
+      </main>
+    );
+  }
+
+  if (!plan) {
+    return (
+      <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
+        <div className="mx-auto max-w-7xl rounded-lg border border-slate-200 bg-white p-8 text-center">
+          <Search className="mx-auto mb-3 h-10 w-10 text-slate-300" />
+          <h1 className="text-lg font-bold text-slate-800">Plan not found</h1>
+          <p className="mt-2 text-sm text-slate-500">
+            No live installment invoice matches {planId}.
+          </p>
+          <Link
+            href="/admin/mdogo"
+            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Lipa Mdogo
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const paid = getPlanPaidAmount(plan);
   const remaining = getRemainingAmount(plan);
   const status = getPlanStatus(plan);
   const receipts = getPlanReceipts(plan.id);
   const schedule = getInstallmentSchedule(plan);
+  const paymentRows = schedule.filter((item) => item.paidAmount > 0);
+  const progress = plan.totalAmount > 0 ? Math.min(100, (paid / plan.totalAmount) * 100) : 0;
+  const nextPayment = schedule.find((item) => item.status !== "paid");
 
   return (
-    <main className="min-h-screen bg-[#f9f7f4] text-[#1a1f2e]">
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6">
-        <div className="no-print flex flex-wrap items-center justify-between gap-3">
-          <div>
+    <main className="min-h-screen bg-slate-50 text-slate-950">
+      <div className="mx-auto max-w-7xl space-y-4 px-3 py-4 sm:space-y-5 sm:px-6 lg:py-7">
+        <div className="no-print flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <Link
               href="/admin/mdogo"
-              className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#f0ede8] px-4 py-2 text-sm font-medium text-[#1a1f2e] transition hover:bg-[#e5e0d8]"
+              className="mb-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
             </Link>
-            <h1 className="flex items-center gap-3 text-3xl font-extrabold text-black">
-              <ReceiptText className="h-8 w-8 text-amber-600" />
+            <h1 className="flex items-center gap-2 text-xl font-extrabold text-slate-950 sm:gap-3 sm:text-3xl">
+              <ReceiptText className="h-6 w-6 shrink-0 text-amber-600 sm:h-7 sm:w-7" />
               Lipa Mdogo Details
             </h1>
+            <p className="mt-1 break-words text-xs text-slate-500 sm:text-sm">
+              {plan.invoiceNo} - {plan.customer} - {plan.orderId}
+            </p>
           </div>
           <button
             type="button"
             onClick={() => window.print()}
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-emerald-700"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 sm:w-auto"
           >
             <Download className="h-4 w-4" />
-            Download Full PDF
+            Download PDF
           </button>
         </div>
 
-        <div className="flex flex-wrap items-stretch gap-4">
-          <section className="min-w-[260px] flex-[1.4] overflow-hidden rounded-xl bg-white shadow-[0_8px_32px_-12px_rgba(26,31,46,0.12)]">
-            <div className="bg-amber-600 px-5 py-5 text-white">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.1em] opacity-70">
-                    Lipa Mdogo
-                  </div>
-                  <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">
-                    INVOICE
-                  </h2>
-                  <div className="mt-1 font-mono text-sm opacity-85">
-                    {plan.invoiceNo}
-                  </div>
+        <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 bg-slate-950 px-4 py-5 text-white sm:px-5">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <div className="text-[11px] font-semibold uppercase text-amber-300">
+                  Installment Invoice
                 </div>
-                <div className="text-right">
+                <div className="mt-1 flex flex-wrap items-center gap-3">
+                  <h2 className="max-w-full break-all font-mono text-xl font-extrabold tracking-tight sm:text-2xl md:text-3xl">
+                    {plan.invoiceNo}
+                  </h2>
                   <span
-                    className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase ${statusStyles[status]}`}
+                    className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase ${statusStyles[status]}`}
                   >
                     {status}
                   </span>
-                  <div className="mt-2 text-xs opacity-75">
-                    Issue: {formatDate(plan.startDate)}
-                  </div>
-                  <div className="text-xs opacity-75">Order: {plan.orderId}</div>
+                </div>
+                <div className="mt-3 grid gap-3 text-sm text-slate-300 sm:grid-cols-3">
+                  <InfoBlock label="Customer" value={plan.customer} />
+                  <InfoBlock label="Phone" value={plan.phone || "-"} />
+                  <InfoBlock label="Email" value={plan.email || "-"} />
                 </div>
               </div>
-              <div className="mt-5 flex flex-wrap gap-6">
-                <div>
-                  <div className="text-[10px] uppercase tracking-wide opacity-60">
-                    Bill To
+              <div className="grid w-full gap-2 rounded-lg border border-white/10 bg-white/5 p-4 text-sm lg:w-auto lg:min-w-[260px]">
+                <InfoLine label="Order" value={plan.orderId} />
+                <InfoLine label="Issued" value={formatDate(plan.startDate)} />
+                <InfoLine label="Frequency" value={plan.frequency} />
+                <InfoLine label="Installments" value={String(plan.installments)} />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-0 lg:grid-cols-[1fr_340px]">
+            <div className="space-y-5 p-4 sm:space-y-6 sm:p-5">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <SummaryTile label="Total" value={formatCurrency(plan.totalAmount)} />
+                <SummaryTile label="Paid" value={formatCurrency(paid)} tone="text-emerald-700" />
+                <SummaryTile
+                  label="Remaining"
+                  value={formatCurrency(remaining)}
+                  tone={remaining > 0 ? "text-red-600" : "text-emerald-700"}
+                />
+                <SummaryTile
+                  label="Next Due"
+                  value={nextPayment ? formatDate(nextPayment.dueDate) : "Complete"}
+                />
+              </div>
+
+              <div className="rounded-lg border border-slate-200">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+                  <div>
+                    <h3 className="font-semibold text-slate-900">Invoice Items</h3>
+                    <p className="text-xs text-slate-500">
+                      {plan.products.length} line item{plan.products.length === 1 ? "" : "s"}
+                    </p>
                   </div>
-                  <div className="text-base font-semibold">{plan.customer}</div>
-                  <div className="text-sm opacity-80">{plan.phone}</div>
-                  <div className="text-sm opacity-80">{plan.email}</div>
+                  <div className="text-right text-xs text-slate-500">
+                    Monthly installment
+                    <div className="text-sm font-bold text-slate-900">
+                      {formatCurrency(plan.installmentAmount)}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-wide opacity-60">
-                    Payment Method
+                {plan.products.length === 0 ? (
+                  <div className="p-4">
+                    <EmptyState
+                      compact
+                      icon={Search}
+                      title="No products on this plan"
+                      description="Line items connected to this installment plan will appear here when returned from the backend."
+                    />
                   </div>
-                  <div className="text-base font-semibold">
-                    {plan.paymentMethod}
+                ) : (
+                  <>
+                  <div className="space-y-3 p-3 sm:hidden">
+                    {plan.products.map((product) => (
+                      <InvoiceItemCard key={product.name} product={product} />
+                    ))}
+                    <div className="rounded-lg bg-slate-50 p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-sm font-bold text-slate-900">Invoice Total</span>
+                        <span className="text-base font-extrabold text-slate-950">
+                          {formatCurrency(plan.totalAmount)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-sm opacity-80">
-                    {plan.installments} installments
+                  <div className="hidden overflow-x-auto sm:block">
+                    <table className="w-full min-w-[620px] border-collapse text-left">
+                      <thead>
+                        <tr className="bg-slate-50 text-[10px] font-bold uppercase text-slate-500">
+                          <th className="px-4 py-3">Item</th>
+                          <th className="px-4 py-3 text-right">Qty</th>
+                          <th className="px-4 py-3 text-right">Unit</th>
+                          <th className="px-4 py-3 text-right">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {plan.products.map((product) => (
+                          <tr key={product.name} className="border-t border-slate-100">
+                            <td className="px-4 py-3 text-sm font-semibold text-slate-900">
+                              {product.name}
+                            </td>
+                            <td className="px-4 py-3 text-right text-sm text-slate-600">
+                              {product.quantity}
+                            </td>
+                            <td className="px-4 py-3 text-right text-sm text-slate-600">
+                              {formatCurrency(product.unitPrice)}
+                            </td>
+                            <td className="px-4 py-3 text-right text-sm font-bold text-slate-900">
+                              {formatCurrency(product.total)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="border-t border-slate-200 bg-slate-50">
+                          <td className="px-4 py-3 text-sm font-bold text-slate-900" colSpan={3}>
+                            Invoice Total
+                          </td>
+                          <td className="px-4 py-3 text-right text-base font-extrabold text-slate-950">
+                            {formatCurrency(plan.totalAmount)}
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                  </>
+                )}
+              </div>
+
+              <div className="rounded-lg border border-slate-200">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+                  <div>
+                    <h3 className="font-semibold text-slate-900">Payment Schedule</h3>
+                    <p className="text-xs text-slate-500">
+                      {plan.installments} installments - {progress.toFixed(0)}% paid
+                    </p>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 sm:w-40">
+                    <div
+                      className="h-full rounded-full bg-emerald-600"
+                      style={{ width: `${progress}%` }}
+                    />
                   </div>
                 </div>
+                {schedule.length === 0 ? (
+                  <div className="p-4">
+                    <EmptyState
+                      compact
+                      icon={Search}
+                      title="No installment schedule"
+                      description="Scheduled installment rows will appear when the payment plan has a valid start date and installment count."
+                    />
+                  </div>
+                ) : (
+                  <>
+                  <div className="space-y-3 p-3 sm:hidden">
+                    {schedule.map((item) => (
+                      <ScheduleCard key={item.installmentNo} item={item} />
+                    ))}
+                  </div>
+                  <div className="hidden overflow-x-auto sm:block">
+                    <table className="w-full min-w-[760px] border-collapse text-left">
+                      <thead>
+                        <tr className="bg-slate-50 text-[10px] font-bold uppercase text-slate-500">
+                          {["#", "Due Date", "Amount", "Paid", "Balance", "Status", "Ref"].map(
+                            (heading) => (
+                              <th key={heading} className="px-4 py-3">
+                                {heading}
+                              </th>
+                            ),
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {schedule.map((item) => (
+                          <tr key={item.installmentNo} className="border-t border-slate-100">
+                            <td className="px-4 py-3 text-xs font-bold text-slate-500">
+                              #{item.installmentNo}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-slate-700">
+                              {formatDate(item.dueDate)}
+                            </td>
+                            <td className="px-4 py-3 text-sm font-medium text-slate-900">
+                              {formatCurrency(item.amount)}
+                            </td>
+                            <td className="px-4 py-3 text-sm font-semibold text-emerald-700">
+                              {formatCurrency(item.paidAmount)}
+                            </td>
+                            <td
+                              className={`px-4 py-3 text-sm font-semibold ${
+                                item.balance > 0 ? "text-red-600" : "text-emerald-700"
+                              }`}
+                            >
+                              {formatCurrency(item.balance)}
+                            </td>
+                            <td className="px-4 py-3">
+                              <ScheduleStatus status={item.status} />
+                            </td>
+                            <td className="px-4 py-3 font-mono text-[11px] text-slate-500">
+                              {item.receipt?.ref || "-"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  </>
+                )}
               </div>
             </div>
 
-            <div className="bg-white p-5">
-              <div className="mb-6">
-                <div className="mb-2 flex justify-between border-b border-slate-200 pb-2 text-xs uppercase tracking-wide text-slate-500">
-                  <span>Description</span>
-                  <span>Amount</span>
+            <aside className="space-y-4 border-t border-slate-200 bg-slate-50 p-4 sm:space-y-5 sm:p-5 lg:border-l lg:border-t-0">
+              <div className="rounded-lg border border-slate-200 bg-white p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-semibold text-slate-900">Balance</h3>
+                    <p className="text-xs text-slate-500">Collection status</p>
+                  </div>
+                  <Coins className="h-5 w-5 text-emerald-600" />
                 </div>
-                {plan.products.length === 0 ? (
-                  <EmptyState
-                    compact
-                    icon={Search}
-                    title="No products on this plan"
-                    description="Line items connected to this installment plan will appear here when returned from the backend."
+                <div className="break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">
+                  {formatCurrency(remaining)}
+                </div>
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-emerald-600"
+                    style={{ width: `${progress}%` }}
                   />
-                ) : (
-                  plan.products.map((product) => (
-                    <div
-                      key={product.name}
-                      className="flex items-center justify-between border-b border-[#f3f0eb] py-2.5"
-                    >
-                      <div>
-                        <div className="text-sm font-semibold">{product.name}</div>
-                        <div className="text-xs text-slate-500">
-                          Qty: {product.quantity} x{" "}
-                          {formatCurrency(product.unitPrice)}
-                        </div>
-                      </div>
-                      <div className="text-sm font-semibold">
-                        {formatCurrency(product.total)}
-                      </div>
-                    </div>
-                  ))
-                )}
-                <div className="mt-3 flex justify-between border-t border-slate-200 pt-3 font-bold">
-                  <span>Total</span>
-                  <span>{formatCurrency(plan.totalAmount)}</span>
                 </div>
-                <div className="mt-2 text-xs text-slate-500">
-                  Installment plan · {plan.installments} months x{" "}
-                  {formatCurrency(plan.installmentAmount)} monthly
+                <div className="mt-3 flex justify-between text-xs text-slate-500">
+                  <span>{formatCurrency(paid)} paid</span>
+                  <span>{progress.toFixed(0)}%</span>
                 </div>
               </div>
 
-              <div>
-                <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-800">
-                  Payment Schedule
+              <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-4 py-3">
+                  <div>
+                    <h3 className="flex items-center gap-2 font-bold">
+                      <ReceiptText className="h-5 w-5 text-emerald-600" />
+                      Payments
+                    </h3>
+                    <p className="text-xs text-slate-500">Paid installments</p>
+                  </div>
+                  <div className="rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-800">
+                    {formatCurrency(paid)}
+                  </div>
                 </div>
-                {schedule.length === 0 ? (
-                  <EmptyState
-                    compact
-                    icon={Search}
-                    title="No installment schedule"
-                    description="Scheduled installment rows will appear when the payment plan has a valid start date and installment count."
-                  />
-                ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[680px] border-collapse text-left">
-                    <thead>
-                      <tr className="border-b border-slate-200">
-                        {["#", "Due Date", "Amount", "Paid", "Balance", "Status", "Ref"].map(
-                          (heading) => (
+
+                {receipts.length || paymentRows.length ? (
+                  <>
+                  <div className="max-h-[420px] space-y-3 overflow-auto p-3 sm:hidden">
+                    {receipts.length
+                      ? receipts.map((receipt) => (
+                          <PaymentCard
+                            key={receipt.id}
+                            id={receipt.id}
+                            date={receipt.date}
+                            amount={receipt.amount}
+                            method={receipt.method}
+                            reference={receipt.ref}
+                          />
+                        ))
+                      : paymentRows.map((payment) => (
+                          <PaymentCard
+                            key={payment.installmentNo}
+                            id={`${plan.invoiceNo}-${payment.installmentNo}`}
+                            date={payment.dueDate}
+                            amount={payment.paidAmount}
+                            method={plan.paymentMethod}
+                            reference="-"
+                          />
+                        ))}
+                  </div>
+                  <div className="hidden max-h-[470px] overflow-auto sm:block">
+                    <table className="w-full min-w-[560px] border-collapse">
+                      <thead>
+                        <tr>
+                          {["Payment", "Date", "Amount", "Method", "Ref"].map((heading) => (
                             <th
                               key={heading}
-                              className="py-2 pr-2 text-[10px] uppercase text-slate-400"
+                              className="bg-slate-50 p-3 text-left text-[10px] font-semibold uppercase text-slate-500"
                             >
                               {heading}
                             </th>
-                          ),
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {schedule.map((item) => (
-                        <tr key={item.installmentNo} className="border-b border-slate-100">
-                          <td className="py-2 text-xs">#{item.installmentNo}</td>
-                          <td className="py-2 text-xs">
-                            {formatDate(item.dueDate)}
-                          </td>
-                          <td className="py-2 text-xs font-medium">
-                            {formatCurrency(item.amount)}
-                          </td>
-                          <td className="py-2 text-xs text-emerald-700">
-                            {formatCurrency(item.paidAmount)}
-                          </td>
-                          <td
-                            className={`py-2 text-xs ${
-                              item.balance > 0 ? "text-red-600" : "text-emerald-700"
-                            }`}
-                          >
-                            {formatCurrency(item.balance)}
-                          </td>
-                          <td className="py-2 text-xs font-medium capitalize">
-                            {item.status}
-                          </td>
-                          <td className="py-2 font-mono text-[10px] text-slate-500">
-                            {item.receipt?.ref || "-"}
-                          </td>
+                          ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {receipts.length
+                          ? receipts.map((receipt) => (
+                              <PaymentRow
+                                key={receipt.id}
+                                id={receipt.id}
+                                date={receipt.date}
+                                amount={receipt.amount}
+                                method={receipt.method}
+                                reference={receipt.ref}
+                              />
+                            ))
+                          : paymentRows.map((payment) => (
+                              <PaymentRow
+                                key={payment.installmentNo}
+                                id={`${plan.invoiceNo}-${payment.installmentNo}`}
+                                date={payment.dueDate}
+                                amount={payment.paidAmount}
+                                method={plan.paymentMethod}
+                                reference="-"
+                              />
+                            ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  </>
+                ) : (
+                  <div className="p-5">
+                    <EmptyState
+                      compact
+                      icon={Search}
+                      title="No payments recorded"
+                      description="Payments will appear here after installments are collected."
+                    />
+                  </div>
                 )}
-              </div>
-
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-4">
-                <SummaryMetric label="Total" value={formatCurrency(plan.totalAmount)} />
-                <SummaryMetric
-                  label="Paid"
-                  value={formatCurrency(paid)}
-                  valueClassName="text-emerald-700"
-                />
-                <SummaryMetric
-                  label="Remaining"
-                  value={formatCurrency(remaining)}
-                  valueClassName={remaining > 0 ? "text-red-600" : "text-emerald-700"}
-                />
-              </div>
-            </div>
-          </section>
-
-          <section className="min-w-[280px] flex-1 overflow-hidden rounded-xl border border-[#e5e0d8] bg-white shadow-[0_4px_12px_rgba(26,31,46,0.05)]">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-white px-4 py-3">
-              <div>
-                <h2 className="flex items-center gap-2 text-lg font-bold">
-                  <ReceiptText className="h-5 w-5 text-emerald-600" />
-                  Payment receipts
-                </h2>
-                <p className="text-xs text-slate-500">
-                  Complete payment history
-                </p>
-              </div>
-              <div className="rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-800">
-                <Coins className="mr-1 inline h-4 w-4" />
-                {formatCurrency(paid)}
-              </div>
-            </div>
-
-            {receipts.length ? (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[700px] border-collapse">
-                  <thead>
-                    <tr>
-                      {["Receipt ID", "Date", "Amount", "Method", "Ref", "Note", "Download"].map(
-                        (heading) => (
-                          <th
-                            key={heading}
-                            className="bg-slate-50 p-3 text-left text-[10px] font-semibold uppercase tracking-wide text-slate-500"
-                          >
-                            {heading}
-                          </th>
-                        ),
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {receipts.map((receipt) => (
-                      <tr
-                        key={receipt.id}
-                        className="border-b border-slate-100 transition hover:bg-slate-50"
-                      >
-                        <td className="px-3 py-3 font-mono text-sm font-medium">
-                          {receipt.id}
-                        </td>
-                        <td className="px-3 py-3 text-sm">
-                          {formatDate(receipt.date)}
-                        </td>
-                        <td className="px-3 py-3 text-sm font-bold text-emerald-700">
-                          {formatCurrency(receipt.amount)}
-                        </td>
-                        <td className="px-3 py-3 text-xs">
-                          <span className="rounded-full bg-slate-100 px-2 py-1">
-                            {receipt.method}
-                          </span>
-                        </td>
-                        <td className="px-3 py-3 font-mono text-xs text-slate-500">
-                          {receipt.ref}
-                        </td>
-                        <td className="max-w-[160px] truncate px-3 py-3 text-xs text-slate-500">
-                          {receipt.note}
-                        </td>
-                        <td className="no-print px-3 py-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => window.print()}
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-[#e5e0d8] bg-white px-3 py-1.5 text-xs font-semibold transition hover:bg-[#f9f7f4]"
-                          >
-                            <Download className="h-3.5 w-3.5" />
-                            PDF
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="p-5">
-                <EmptyState
-                  compact
-                  icon={Search}
-                  title="No receipts recorded"
-                  description="Payment receipts will appear here after installments are collected."
-                />
-              </div>
-            )}
-          </section>
-        </div>
+              </section>
+            </aside>
+          </div>
+        </section>
       </div>
     </main>
   );
 }
 
-function SummaryMetric({
+function InfoBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <div className="text-[10px] font-semibold uppercase text-slate-400">{label}</div>
+      <div className="truncate font-medium text-white">{value}</div>
+    </div>
+  );
+}
+
+function InfoLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-slate-400">{label}</span>
+      <span className="text-right font-semibold text-white">{value}</span>
+    </div>
+  );
+}
+
+function SummaryTile({
   label,
   value,
-  valueClassName = "text-slate-900",
+  tone = "text-slate-950",
 }: {
   label: string;
   value: string;
-  valueClassName?: string;
+  tone?: string;
 }) {
   return (
-    <div>
-      <div className="text-[10px] uppercase text-slate-400">{label}</div>
-      <div className={`text-lg font-bold ${valueClassName}`}>{value}</div>
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <div className="text-[10px] font-bold uppercase text-slate-500">{label}</div>
+      <div className={`mt-1 text-lg font-extrabold ${tone}`}>{value}</div>
     </div>
+  );
+}
+
+function ScheduleStatus({ status }: { status: string }) {
+  const className =
+    status === "paid"
+      ? "bg-emerald-100 text-emerald-700"
+      : status === "overdue"
+        ? "bg-red-100 text-red-700"
+        : "bg-amber-100 text-amber-700";
+
+  return (
+    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold capitalize ${className}`}>
+      {status}
+    </span>
+  );
+}
+
+function InvoiceItemCard({ product }: { product: PlanProduct }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <div className="text-sm font-bold text-slate-900">{product.name}</div>
+      <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+        <MobileMetric label="Qty" value={String(product.quantity)} />
+        <MobileMetric label="Unit" value={formatCurrency(product.unitPrice)} />
+        <MobileMetric label="Total" value={formatCurrency(product.total)} strong />
+      </div>
+    </div>
+  );
+}
+
+function ScheduleCard({
+  item,
+}: {
+  item: ReturnType<typeof getInstallmentSchedule>[number];
+}) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-xs font-bold text-slate-500">
+            Installment #{item.installmentNo}
+          </div>
+          <div className="mt-1 text-sm font-semibold text-slate-900">
+            {formatDate(item.dueDate)}
+          </div>
+        </div>
+        <ScheduleStatus status={item.status} />
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+        <MobileMetric label="Amount" value={formatCurrency(item.amount)} />
+        <MobileMetric label="Paid" value={formatCurrency(item.paidAmount)} strong />
+        <MobileMetric
+          label="Balance"
+          value={formatCurrency(item.balance)}
+          tone={item.balance > 0 ? "text-red-600" : "text-emerald-700"}
+          strong
+        />
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-3 rounded-md bg-slate-50 px-3 py-2 text-xs">
+        <span className="font-medium text-slate-500">Ref</span>
+        <span className="max-w-[70%] truncate font-mono text-slate-700">
+          {item.receipt?.ref || "-"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function PaymentCard({
+  id,
+  date,
+  amount,
+  method,
+  reference,
+}: {
+  id: string;
+  date: string;
+  amount: number;
+  method: string;
+  reference: string;
+}) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="truncate font-mono text-xs font-semibold text-slate-700">
+            {id}
+          </div>
+          <div className="mt-1 text-xs text-slate-500">{formatDate(date)}</div>
+        </div>
+        <div className="text-right text-sm font-extrabold text-emerald-700">
+          {formatCurrency(amount)}
+        </div>
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-2 text-xs">
+        <span className="rounded-full bg-slate-100 px-2 py-1 font-medium text-slate-700">
+          {method}
+        </span>
+        <span className="max-w-[50%] truncate font-mono text-slate-500">
+          {reference}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function MobileMetric({
+  label,
+  value,
+  tone = "text-slate-900",
+  strong = false,
+}: {
+  label: string;
+  value: string;
+  tone?: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="min-w-0 rounded-md bg-slate-50 p-2">
+      <div className="text-[10px] font-bold uppercase text-slate-500">{label}</div>
+      <div className={`mt-1 truncate ${strong ? "font-extrabold" : "font-semibold"} ${tone}`}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function PaymentRow({
+  id,
+  date,
+  amount,
+  method,
+  reference,
+}: {
+  id: string;
+  date: string;
+  amount: number;
+  method: string;
+  reference: string;
+}) {
+  return (
+    <tr className="border-b border-slate-100 transition hover:bg-slate-50">
+      <td className="px-3 py-3 font-mono text-xs font-medium text-slate-700">{id}</td>
+      <td className="px-3 py-3 text-xs text-slate-600">{formatDate(date)}</td>
+      <td className="px-3 py-3 text-xs font-bold text-emerald-700">
+        {formatCurrency(amount)}
+      </td>
+      <td className="px-3 py-3 text-xs">
+        <span className="rounded-full bg-slate-100 px-2 py-1 text-slate-700">{method}</span>
+      </td>
+      <td className="px-3 py-3 font-mono text-xs text-slate-500">{reference}</td>
+    </tr>
   );
 }

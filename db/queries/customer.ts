@@ -1,10 +1,33 @@
 import { db } from "@/db";
 import { customerTable } from "@/db/schema/customers";
 import {
+    generateCustomerSlug,
     getCustomerWriteValues,
     mapCustomerRecordToCustomer,
 } from "@/utils/customerUtils";
 import { and, desc, eq } from "drizzle-orm";
+
+async function getUniqueCustomerSlug(name: string) {
+    const baseSlug = generateCustomerSlug(name);
+    let candidate = baseSlug;
+    let suffix = 2;
+
+    while (true) {
+        const [existingCustomer] = await db
+            .select({ id: customerTable.id })
+            .from(customerTable)
+            .where(eq(customerTable.slug, candidate))
+            .limit(1);
+
+        if (!existingCustomer) {
+            return candidate;
+        }
+
+        const suffixText = `-${suffix}`;
+        candidate = `${baseSlug.slice(0, 200 - suffixText.length)}${suffixText}`;
+        suffix += 1;
+    }
+}
 
 export async function getCustomersQuery(businessId: string) {
     const rows = await db
@@ -40,10 +63,13 @@ export async function createCustomerQuery(data: {
     segment: "New" | "Regular" | "VIP";
     riskLevel: "low" | "medium" | "high";
 }) {
+    const slug = await getUniqueCustomerSlug(data.name);
+
     const [customer] = await db
         .insert(customerTable)
         .values({
             businessId: data.businessId,
+            slug,
             ...getCustomerWriteValues(data),
         })
         .returning();

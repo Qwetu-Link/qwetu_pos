@@ -3,6 +3,7 @@ import { paymentStatusEnum, paymentTypeEnum } from "./payments";
 import { customerTable } from "./customers";
 import { productsTable } from "./products";
 import { variantsTable } from "./variants";
+import { locationTable } from "./variants";
 import { businessTable } from "./business";
 
 export const orderStatusEnum = pgEnum("order_status", ["pending", "processing", "shipped", "delivered", "cancelled"]);
@@ -29,6 +30,9 @@ export const orderItemTable = pgTable("order_items", {
         .references(() => productsTable.id, {
             onDelete: "restrict", // Prevent deleting products with existing order items
         }),
+    locationId: uuid("location_id").references(() => locationTable.id, {
+        onDelete: "set null",
+    }),
     quantity: integer("quantity").notNull(),
     price: integer("price").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -55,6 +59,7 @@ export const orderTable = pgTable("orders", {
         .references(() => customerTable.id, {
             onDelete: "restrict", // Prevent deleting customers with existing orders
         }),
+    orderNo: varchar("order_no", { length: 100 }),
     total: integer("total").notNull(),
     depositPaid: integer("deposit_paid").default(0).notNull(), // deposit or amount paid by the customer
     paymentStatus: paymentStatusEnum("payment_status").default("unpaid").notNull(),

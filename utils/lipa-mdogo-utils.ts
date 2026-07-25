@@ -1,5 +1,7 @@
 import { receipts } from "@/data/lipa-mdogo-data";
 import type { PaymentPlan, PlanStatus } from "@/types/lipa-mdogo";
+import type { Order } from "@/types/customer";
+import { getOrderDisplayNumber } from "@/utils/orderUtils";
 
 export {
   formatCompactCurrency,
@@ -17,12 +19,33 @@ export function getPaidAmount(planId: string) {
   return getPlanReceipts(planId).reduce((sum, receipt) => sum + receipt.amount, 0);
 }
 
+export function getPlanPaidAmount(plan: PaymentPlan) {
+  return plan.paidAmount ?? getPaidAmount(plan.id);
+}
+
+export function getPaidInstallmentCount(plan: PaymentPlan) {
+  const receiptCount = getPlanReceipts(plan.id).length;
+
+  if (receiptCount > 0) {
+    return receiptCount;
+  }
+
+  if (plan.installmentAmount <= 0) {
+    return 0;
+  }
+
+  return Math.min(
+    plan.installments,
+    Math.floor(getPlanPaidAmount(plan) / plan.installmentAmount),
+  );
+}
+
 export function getRemainingAmount(plan: PaymentPlan) {
-  return Math.max(0, plan.totalAmount - getPaidAmount(plan.id));
+  return Math.max(0, plan.totalAmount - getPlanPaidAmount(plan));
 }
 
 export function getNextDueDate(plan: PaymentPlan) {
-  const paidInstallments = getPlanReceipts(plan.id).length;
+  const paidInstallments = getPaidInstallmentCount(plan);
 
   if (paidInstallments >= plan.installments) {
     return null;
@@ -34,7 +57,7 @@ export function getNextDueDate(plan: PaymentPlan) {
 }
 
 export function getPlanStatus(plan: PaymentPlan): PlanStatus {
-  if (getPaidAmount(plan.id) >= plan.totalAmount) {
+  if (getPlanPaidAmount(plan) >= plan.totalAmount) {
     return "completed";
   }
 
@@ -48,22 +71,55 @@ export function getPlanStatus(plan: PaymentPlan): PlanStatus {
 }
 
 export function getInstallmentSchedule(plan: PaymentPlan) {
-  const paidCount = getPlanReceipts(plan.id).length;
+  const paidCount = getPaidInstallmentCount(plan);
+  const paidAmount = getPlanPaidAmount(plan);
 
   return Array.from({ length: plan.installments }, (_, index) => {
     const dueDate = new Date(plan.startDate);
     dueDate.setMonth(dueDate.getMonth() + index + 1);
     const paid = index < paidCount;
     const overdue = !paid && dueDate < new Date();
+    const installmentPaidAmount = Math.min(
+      plan.installmentAmount,
+      Math.max(0, paidAmount - index * plan.installmentAmount),
+    );
 
     return {
       installmentNo: index + 1,
       dueDate: dueDate.toISOString().slice(0, 10),
       amount: plan.installmentAmount,
-      paidAmount: paid ? plan.installmentAmount : 0,
-      balance: paid ? 0 : plan.installmentAmount,
+      paidAmount: installmentPaidAmount,
+      balance: Math.max(0, plan.installmentAmount - installmentPaidAmount),
       status: paid ? "paid" : overdue ? "overdue" : "pending",
       receipt: getPlanReceipts(plan.id)[index],
     };
   });
+}
+
+export function mapOrderToPaymentPlan(order: Order): PaymentPlan | null {
+  if (order.paymentType !== "installment" || !order.invoice) {
+    return null;
+  }
+
+  return {
+    id: order.invoice.id,
+    invoiceNo: order.invoice.invoiceNumber,
+    customer: order.customer,
+    orderId: getOrderDisplayNumber(order),
+    phone: order.phone,
+    email: order.email,
+    paymentMethod: "Installment",
+    products: order.lineItems.map((item) => ({
+      name: item.name,
+      quantity: item.qty,
+      unitPrice: item.price,
+      total: item.qty * item.price,
+    })),
+    totalAmount: order.invoice.total,
+    paidAmount: order.amountPaid,
+    installments: order.invoice.installments,
+    installmentAmount: order.invoice.installmentAmount,
+    startDate: order.invoice.startDate || order.installmentStartDate || order.createdAt,
+    frequency: order.invoice.frequency || "monthly",
+  };
 }

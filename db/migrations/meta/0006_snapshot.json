@@ -1,5 +1,5 @@
 {
-  "id": "12c22fee-08ea-42e7-b5d5-8f4f9c80d249",
+  "id": "39d278ba-dc74-4a55-8304-47d77b665c10",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -382,7 +382,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "business_location_unique": {
+          "name": "business_location_unique",
+          "columns": [
+            {
+              "expression": "business_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "locations_business_id_business_id_fk": {
           "name": "locations_business_id_business_id_fk",
@@ -399,15 +421,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "locations_name_unique": {
-          "name": "locations_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -739,6 +753,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "email": {
           "name": "email",
           "type": "varchar(255)",
@@ -869,6 +889,13 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
+        "customers_slug_unique": {
+          "name": "customers_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        },
         "customers_email_unique": {
           "name": "customers_email_unique",
           "nullsNotDistinct": false,
@@ -927,6 +954,12 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         },
         "quantity": {
           "name": "quantity",
@@ -1030,6 +1063,19 @@
           ],
           "onDelete": "restrict",
           "onUpdate": "no action"
+        },
+        "order_items_location_id_locations_id_fk": {
+          "name": "order_items_location_id_locations_id_fk",
+          "tableFrom": "order_items",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1060,6 +1106,12 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "order_no": {
+          "name": "order_no",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
         },
         "total": {
           "name": "total",
@@ -2182,15 +2234,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "roles_name_unique": {
-          "name": "roles_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

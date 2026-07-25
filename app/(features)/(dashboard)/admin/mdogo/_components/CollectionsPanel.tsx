@@ -1,20 +1,24 @@
 import {
   formatCurrency,
-  getPaidAmount,
+  getPlanPaidAmount,
   getPlanStatus,
-  paymentPlans,
 } from "@/data/lipa-mdogo-data";
+import type { PaymentPlan } from "@/data/lipa-mdogo-data";
 import { Mail } from "./icons";
 import CollectionChart from "./CollectionChart";
 import PlanMetric from "./PlanMetric";
 
-export default function CollectionsPanel() {
+type CollectionsPanelProps = {
+  paymentPlans: PaymentPlan[];
+};
+
+export default function CollectionsPanel({ paymentPlans }: CollectionsPanelProps) {
   const expected = paymentPlans.reduce(
     (sum, plan) => sum + plan.installmentAmount,
     0,
   );
   const collected = paymentPlans.reduce(
-    (sum, plan) => sum + getPaidAmount(plan.id),
+    (sum, plan) => sum + getPlanPaidAmount(plan),
     0,
   );
   const overdue = paymentPlans.filter(
@@ -43,7 +47,7 @@ export default function CollectionsPanel() {
             valueClassName="text-red-600"
           />
         </div>
-        <CollectionChart />
+        <CollectionChart paymentPlans={paymentPlans} />
       </div>
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-2 text-emerald-700">

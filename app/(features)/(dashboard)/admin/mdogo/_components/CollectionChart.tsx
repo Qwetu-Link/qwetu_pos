@@ -1,9 +1,8 @@
 import {
   formatCompactCurrency,
   getInstallmentSchedule,
-  paymentPlans,
-  receipts,
 } from "@/data/lipa-mdogo-data";
+import type { PaymentPlan } from "@/data/lipa-mdogo-data";
 
 type ChartRow = {
   label: string;
@@ -11,8 +10,12 @@ type ChartRow = {
   collected: number;
 };
 
-export default function CollectionChart() {
-  const rows = getCollectionRows();
+type CollectionChartProps = {
+  paymentPlans: PaymentPlan[];
+};
+
+export default function CollectionChart({ paymentPlans }: CollectionChartProps) {
+  const rows = getCollectionRows(paymentPlans);
   const maxAmount = Math.max(
     1,
     ...rows.flatMap((row) => [row.expected, row.collected]),
@@ -100,9 +103,11 @@ function ChartBar({
   );
 }
 
-function getCollectionRows(): ChartRow[] {
-  const receiptMonths = receipts.map((receipt) => getMonthKey(receipt.date));
-  const latestReceiptMonth = receiptMonths.sort().at(-1) ?? getMonthKey(new Date());
+function getCollectionRows(paymentPlans: PaymentPlan[]): ChartRow[] {
+  const scheduleMonths = paymentPlans.flatMap((plan) =>
+    getInstallmentSchedule(plan).map((item) => getMonthKey(item.dueDate)),
+  );
+  const latestReceiptMonth = scheduleMonths.sort().at(-1) ?? getMonthKey(new Date());
   const monthKeys = getMonthWindow(latestReceiptMonth, 6);
 
   return monthKeys.map((monthKey) => {
@@ -116,9 +121,19 @@ function getCollectionRows(): ChartRow[] {
         dueForMonth.reduce((monthTotal, item) => monthTotal + item.amount, 0)
       );
     }, 0);
-    const collected = receipts
-      .filter((receipt) => getMonthKey(receipt.date) === monthKey)
-      .reduce((sum, receipt) => sum + receipt.amount, 0);
+    const collected = paymentPlans.reduce((sum, plan) => {
+      const paidForMonth = getInstallmentSchedule(plan).filter(
+        (item) => getMonthKey(item.dueDate) === monthKey,
+      );
+
+      return (
+        sum +
+        paidForMonth.reduce(
+          (monthTotal, item) => monthTotal + item.paidAmount,
+          0,
+        )
+      );
+    }, 0);
 
     return {
       label: formatMonthLabel(monthKey),

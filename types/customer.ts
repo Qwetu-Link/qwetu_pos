@@ -3,9 +3,11 @@ export type Segment = "New" | "Regular" | "VIP";
 export type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
 export type PaymentType = "full" | "installment";
 export type PaymentStatus = "paid" | "partial" | "unpaid";
+export type OrderLocationName = "Main Store" | "Warehouse A" | "Outlet";
 
 export interface Customer {
   id: string;
+  slug: string;
   name: string;
   email: string;
   phone: string;
@@ -37,10 +39,25 @@ export interface LineItem {
   qty: number;
   price: number;
   originalPrice: number;
+  locationName?: OrderLocationName;
+}
+
+export interface OrderInvoice {
+  id: string;
+  invoiceNumber: string;
+  total: number;
+  balance: number;
+  installments: number;
+  installmentAmount: number;
+  status: "draft" | "issued" | "partially_paid" | "paid" | "overdue" | "cancelled";
+  frequency: string;
+  startDate: string;
+  dueDate: string;
 }
 
 export interface Order {
   id: string;
+  orderNumber?: string;
   customerId: string;
   customer: string;
   email: string;
@@ -57,6 +74,7 @@ export interface Order {
   createdAt: string;
   shippingAddress: string;
   lineItems: LineItem[];
+  invoice?: OrderInvoice;
 }
 
 export interface OrderFormData {

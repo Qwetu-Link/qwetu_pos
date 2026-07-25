@@ -14,6 +14,15 @@ export { formatCurrency };
 
 export const formatDate = (date: string) => new Date(date).toLocaleDateString();
 
+export function getOrderDisplayNumber(order: Pick<Order, "id" | "createdAt" | "orderNumber">) {
+  if (order.orderNumber) return order.orderNumber;
+  if (order.id.toUpperCase().startsWith("ORD-")) return order.id;
+
+  const orderSegment = order.id.split("-")[1]?.toUpperCase() ?? order.id.slice(0, 4).toUpperCase();
+  const minute = String(new Date(order.createdAt).getMinutes()).padStart(2, "0");
+  return `ORD-${orderSegment}-${minute}`;
+}
+
 export function findOrderById(orders: Order[], id: string) {
   return orders.find((order) => order.id.toLowerCase() === id.toLowerCase());
 }

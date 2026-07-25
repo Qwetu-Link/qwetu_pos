@@ -53,8 +53,7 @@ CREATE TABLE "locations" (
 	"stock" integer DEFAULT 0 NOT NULL,
 	"reorder_point" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "locations_name_unique" UNIQUE("name")
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "variant_inventory" (
@@ -88,6 +87,7 @@ CREATE TABLE "customers" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"business_id" uuid NOT NULL,
 	"name" varchar(255) NOT NULL,
+	"slug" varchar(200),
 	"email" varchar(255) NOT NULL,
 	"phone" varchar(255),
 	"address" varchar(255),
@@ -101,6 +101,7 @@ CREATE TABLE "customers" (
 	"last_purchase" timestamp,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "customers_slug_unique" UNIQUE("slug"),
 	CONSTRAINT "customers_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
@@ -112,6 +113,7 @@ CREATE TABLE "order_items" (
 	"name" varchar(255) NOT NULL,
 	"order_id" uuid NOT NULL,
 	"product_id" uuid NOT NULL,
+	"location_id" uuid,
 	"quantity" integer NOT NULL,
 	"price" integer NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -122,6 +124,7 @@ CREATE TABLE "orders" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"business_id" uuid NOT NULL,
 	"customer_id" uuid NOT NULL,
+	"order_no" varchar(100),
 	"total" integer NOT NULL,
 	"deposit_paid" integer DEFAULT 0 NOT NULL,
 	"payment_status" "payment_status" DEFAULT 'unpaid' NOT NULL,
@@ -266,8 +269,7 @@ CREATE TABLE "roles" (
 	"description" varchar(255),
 	"salary" integer DEFAULT 0,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "roles_name_unique" UNIQUE("name")
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 ALTER TABLE "product_images" ADD CONSTRAINT "product_images_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -286,6 +288,7 @@ ALTER TABLE "order_items" ADD CONSTRAINT "order_items_business_id_business_id_fk
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_variant_id_variants_id_fk" FOREIGN KEY ("variant_id") REFERENCES "public"."variants"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "order_items" ADD CONSTRAINT "order_items_location_id_locations_id_fk" FOREIGN KEY ("location_id") REFERENCES "public"."locations"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "orders" ADD CONSTRAINT "orders_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "orders" ADD CONSTRAINT "orders_customer_id_customers_id_fk" FOREIGN KEY ("customer_id") REFERENCES "public"."customers"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payments" ADD CONSTRAINT "payments_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -300,6 +303,7 @@ ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "roles" ADD CONSTRAINT "roles_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "category_business_name_idx" ON "category" USING btree ("business_id","name");--> statement-breakpoint
+CREATE UNIQUE INDEX "business_location_unique" ON "locations" USING btree ("business_id","name");--> statement-breakpoint
 CREATE UNIQUE INDEX "variant_location_unique" ON "variant_inventory" USING btree ("variant_id","location_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "unique_variant" ON "variants" USING btree ("product_id","color","size");--> statement-breakpoint
 CREATE UNIQUE INDEX "unique_sku" ON "variants" USING btree ("sku","business_id");--> statement-breakpoint

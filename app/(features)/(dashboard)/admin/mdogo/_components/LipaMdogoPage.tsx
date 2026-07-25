@@ -7,7 +7,7 @@ import {
   formatCompactCurrency,
   getPlanStatus,
   getRemainingAmount,
-  paymentPlans,
+  mapOrderToPaymentPlan,
 } from "@/data/lipa-mdogo-data";
 import CollectionsPanel from "./CollectionsPanel";
 import {
@@ -23,13 +23,21 @@ import PaymentPlanCard from "./PaymentPlanCard";
 import RecordPaymentModal from "./RecordPaymentModal";
 import ReminderModal from "./ReminderModal";
 import StatCard from "./StatCard";
+import { useGetOrders } from "@/hooks/useOrders";
 
 export default function LipaMdogoPage() {
+  const { orders, isLoading, isError, error } = useGetOrders();
   const [activeTab, setActiveTab] = useState<"plans" | "collections">("plans");
   const [reminderPlan, setReminderPlan] = useState<PaymentPlan | null>(null);
   const [recordPlan, setRecordPlan] = useState<PaymentPlan | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+
+  const paymentPlans = useMemo<PaymentPlan[]>(() => {
+    return orders
+      .map(mapOrderToPaymentPlan)
+      .filter((plan): plan is PaymentPlan => Boolean(plan));
+  }, [orders]);
 
   const stats = useMemo(() => {
     const activePlans = paymentPlans.filter(
@@ -57,7 +65,7 @@ export default function LipaMdogoPage() {
       totalOutstanding,
       expectedMonthly,
     };
-  }, []);
+  }, [paymentPlans]);
 
   const visiblePlans = paymentPlans.filter(
     (plan) => getPlanStatus(plan) !== "completed",
@@ -146,7 +154,15 @@ export default function LipaMdogoPage() {
 
           {activeTab === "plans" ? (
             <section className="space-y-4">
-              {paginatedPlans.length === 0 ? (
+              {isError ? (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                  {error?.message ?? "Could not load installment invoices."}
+                </div>
+              ) : isLoading ? (
+                <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+                  Loading installment invoices...
+                </div>
+              ) : paginatedPlans.length === 0 ? (
                 <EmptyState
                   icon={HandCoins}
                   title={
@@ -182,7 +198,7 @@ export default function LipaMdogoPage() {
               )}
             </section>
           ) : (
-            <CollectionsPanel />
+            <CollectionsPanel paymentPlans={paymentPlans} />
           )}
         </div>
       </main>

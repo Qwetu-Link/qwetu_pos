@@ -4,7 +4,7 @@ import {
   formatCurrency,
   formatDate,
   getNextDueDate,
-  getPaidAmount,
+  getPlanPaidAmount,
   getPlanStatus,
   getRemainingAmount,
 } from "@/data/lipa-mdogo-data";
@@ -49,7 +49,7 @@ export default function PaymentPlanCard({
   const status = getPlanStatus(plan);
   const config = statusConfig[status];
   const StatusIcon = config.icon;
-  const paid = getPaidAmount(plan.id);
+  const paid = getPlanPaidAmount(plan);
   const remaining = getRemainingAmount(plan);
   const progress = Math.min(100, (paid / plan.totalAmount) * 100);
   const nextDue = getNextDueDate(plan);
@@ -64,7 +64,7 @@ export default function PaymentPlanCard({
                 {plan.customer}
               </h3>
               <p className="text-sm text-slate-500">
-                {plan.id} - Order: {plan.orderId}
+                {plan.invoiceNo} - Order: {plan.orderId}
               </p>
             </div>
             <span

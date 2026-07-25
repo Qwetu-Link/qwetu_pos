@@ -16,14 +16,14 @@ import {
   PackageOpen,
   PenLine,
   Receipt,
-  ShieldCheck,
   User,
   X,
 } from "lucide-react";
-import { initialOrders } from "@/data/orderData";
-import { findOrderById, formatCurrency, formatDate } from "@/utils/orderUtils";
+import { formatCurrency, formatDate, getOrderDisplayNumber } from "@/utils/orderUtils";
 import type { Order, OrderStatus } from "@/types/customer";
 import { ORDER_STATUS_CONFIG } from "@/data/customer-config";
+import { useGetOrder, useUpdateOrderStatus } from "@/hooks/useOrders";
+import StatusBadge from "./statusBadge";
 
 const statusOptions: OrderStatus[] = [
   "pending",
@@ -45,13 +45,14 @@ type OrderPaymentFormValues = z.infer<typeof orderPaymentSchema>;
 
 export default function OrderDetailsPage() {
   const params = useParams<{ id: string }>();
-  const initialOrder = findOrderById(initialOrders, decodeURIComponent(params.id));
-  const [order, setOrder] = useState<Order | null>(initialOrder ?? null);
+  const orderId = decodeURIComponent(params.id);
+  const { order: fetchedOrder, isLoading, isError, error } = useGetOrder(orderId);
+  const updateOrderStatus = useUpdateOrderStatus();
+  const [orderOverride, setOrderOverride] = useState<Order | null>(null);
+  const order = orderOverride?.id === fetchedOrder?.id ? orderOverride : fetchedOrder;
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-  const [draftStatus, setDraftStatus] = useState<OrderStatus>(
-    initialOrder?.status ?? "pending",
-  );
+  const [draftStatus, setDraftStatus] = useState<OrderStatus>("pending");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const {
     formState: { errors: paymentErrors },
@@ -97,11 +98,19 @@ export default function OrderDetailsPage() {
     window.setTimeout(() => setToast(null), 3000);
   }
 
-  function updateStatus() {
+  async function updateStatus() {
     if (!order) return;
-    setOrder({ ...order, status: draftStatus });
-    setIsStatusOpen(false);
-    showToast(`Order status updated to ${ORDER_STATUS_CONFIG[draftStatus].label}`);
+    try {
+      const updatedOrder = await updateOrderStatus.mutateAsync({
+        id: order.id,
+        status: draftStatus,
+      });
+      setOrderOverride(updatedOrder);
+      setIsStatusOpen(false);
+      showToast(`Order status updated to ${ORDER_STATUS_CONFIG[draftStatus].label}`);
+    } catch {
+      showToast("Could not update order status", "error");
+    }
   }
 
   function recordPayment(values: OrderPaymentFormValues) {
@@ -115,7 +124,7 @@ export default function OrderDetailsPage() {
     const amountPaid = order.amountPaid + values.amount;
     const remainingAmount = Math.max(0, order.total - amountPaid);
 
-    setOrder({
+    setOrderOverride({
       ...order,
       amountPaid,
       remainingAmount,
@@ -126,12 +135,24 @@ export default function OrderDetailsPage() {
     showToast(`Payment of ${formatCurrency(values.amount)} recorded`);
   }
 
-  if (!order) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-100 p-4 md:p-8">
+        <div className="mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500 shadow-sm">
+          Loading order...
+        </div>
+      </div>
+    );
+  }
+
+  if (!order || isError) {
     return (
       <div className="min-h-screen bg-slate-100 p-4 md:p-8">
         <div className="mx-auto max-w-3xl rounded-xl border border-red-200 bg-red-50 p-8 text-center shadow-sm">
           <Receipt className="mx-auto mb-3 h-10 w-10 text-red-500" />
-          <p className="font-semibold text-red-700">Order not found.</p>
+          <p className="font-semibold text-red-700">
+            {error?.message ?? "Order not found."}
+          </p>
           <Link
             href="/admin/orders"
             className="mt-5 inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white"
@@ -144,41 +165,36 @@ export default function OrderDetailsPage() {
     );
   }
 
-  const statusCfg = ORDER_STATUS_CONFIG[order.status];
-
   return (
-    <div className="min-h-screen bg-slate-100 p-4 md:p-8">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <Link
-          href="/admin/orders"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 transition hover:text-emerald-900"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Orders
-        </Link>
-
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-teal-50 px-5 py-5 md:px-6">
-            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-              <div>
-                <h1 className="flex items-center gap-2 text-2xl font-extrabold text-black">
-                  <Receipt className="h-7 w-7 text-emerald-600" />
-                  Order Details
-                </h1>
-                <p className="mt-1 font-mono text-sm text-slate-500">Order #{order.id}</p>
-              </div>
-              <span className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${statusCfg.color}`}>
-                <ShieldCheck className="h-3.5 w-3.5" />
-                {statusCfg.label}
-              </span>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 p-4 md:p-6">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="space-y-2">
+            <Link
+              href="/admin/orders"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 transition hover:text-emerald-900"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Orders
+            </Link>
+            <div>
+              <h1 className="flex items-center gap-2 text-3xl font-extrabold text-black">
+                <Receipt className="h-8 w-8 text-emerald-600" />
+                Order Details
+              </h1>
+              <p className="mt-1 font-mono text-sm text-slate-500">
+                {getOrderDisplayNumber(order)}
+              </p>
             </div>
           </div>
+          <StatusBadge status={order.status} />
+        </div>
 
-          <div className="space-y-6 p-5 md:p-6">
+        <section className="space-y-6">
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-              <MetaTile label="Order ID" value={order.id} mono />
+              <MetaTile label="Order Number" value={getOrderDisplayNumber(order)} mono />
               <MetaTile label="Date" value={formatDate(order.createdAt)} />
-              <MetaTile label="Status" value={statusCfg.label} />
+              <MetaTile label="Status" value={ORDER_STATUS_CONFIG[order.status].label} />
               <MetaTile
                 label="Payment"
                 value={order.paymentType === "installment" ? `Installment (${order.installmentPlan})` : "Full Payment"}
@@ -212,16 +228,21 @@ export default function OrderDetailsPage() {
             </div>
 
             <div>
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
-                <PackageOpen className="h-4 w-4 text-emerald-600" />
-                Order Items
-              </h2>
-              <div className="overflow-hidden rounded-xl border border-slate-200">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  <PackageOpen className="h-4 w-4 text-emerald-600" />
+                  Order Items
+                </h2>
+                <span className="text-xs font-medium text-slate-400">
+                  {order.items} items
+                </span>
+              </div>
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[720px] text-sm">
+                  <table className="w-full min-w-[840px] text-sm">
                     <thead className="border-b border-slate-200 bg-slate-50">
                       <tr>
-                        {["Item", "SKU", "Qty", "Unit Price", "Subtotal"].map((heading) => (
+                        {["Item", "SKU", "Location", "Qty", "Unit Price", "Subtotal"].map((heading) => (
                           <th key={heading} className="px-4 py-3 text-left text-xs font-semibold text-slate-600">
                             {heading}
                           </th>
@@ -233,6 +254,7 @@ export default function OrderDetailsPage() {
                         <tr key={`${item.sku}-${item.name}`} className="transition hover:bg-slate-50">
                           <td className="px-4 py-3 font-medium text-slate-800">{item.name}</td>
                           <td className="px-4 py-3 font-mono text-xs text-slate-400">{item.sku}</td>
+                          <td className="px-4 py-3 text-slate-600">{item.locationName ?? "Not recorded"}</td>
                           <td className="px-4 py-3 text-slate-600">{item.qty}</td>
                           <td className="px-4 py-3 text-slate-600">
                             {item.price < item.originalPrice ? (
@@ -254,9 +276,9 @@ export default function OrderDetailsPage() {
                         </tr>
                       ))}
                     </tbody>
-                    <tfoot className="border-t border-slate-200 bg-emerald-50">
+                    <tfoot className="border-t border-slate-200 bg-slate-50">
                       <tr>
-                        <td colSpan={4} className="px-4 py-3 text-right font-bold text-slate-700">
+                        <td colSpan={5} className="px-4 py-3 text-right font-bold text-slate-700">
                           Total
                         </td>
                         <td className="px-4 py-3 text-base font-extrabold text-emerald-700">
@@ -270,7 +292,7 @@ export default function OrderDetailsPage() {
             </div>
 
             {installmentSummary ? (
-              <section className="rounded-xl border border-purple-100 bg-purple-50 p-5">
+              <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
                     <h2 className="flex items-center gap-2 font-semibold text-slate-800">
@@ -286,9 +308,9 @@ export default function OrderDetailsPage() {
                     <p className="text-red-600">{formatCurrency(order.remainingAmount)} remaining</p>
                   </div>
                 </div>
-                <div className="mt-4 h-2 rounded-full bg-purple-100">
+                <div className="mt-4 h-2 rounded-full bg-slate-100">
                   <div
-                    className="h-2 rounded-full bg-purple-600 transition-all"
+                    className="h-2 rounded-full bg-emerald-600 transition-all"
                     style={{ width: `${installmentSummary.progress}%` }}
                   />
                 </div>
@@ -299,14 +321,14 @@ export default function OrderDetailsPage() {
                 </div>
               </section>
             ) : (
-              <section className="rounded-xl border border-slate-200 bg-slate-50 p-5 text-center text-sm text-slate-600">
+              <section className="rounded-xl border border-slate-200 bg-white p-5 text-center text-sm text-slate-600 shadow-sm">
                 <CreditCard className="mx-auto mb-2 h-5 w-5 text-slate-400" />
                 Full payment order with no installment schedule.
               </section>
             )}
 
             {order.shippingAddress && (
-              <div className="rounded-xl bg-slate-50 p-4">
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <p className="mb-1 flex items-center gap-2 text-xs font-semibold text-slate-400">
                   <MapPin className="h-3.5 w-3.5" />
                   Shipping Address
@@ -314,9 +336,7 @@ export default function OrderDetailsPage() {
                 <p className="text-sm font-medium text-slate-700">{order.shippingAddress}</p>
               </div>
             )}
-          </div>
-
-          <div className="flex flex-col justify-between gap-3 border-t border-slate-100 bg-slate-50 px-5 py-4 sm:flex-row md:px-6">
+          <div className="flex flex-col justify-end gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm sm:flex-row">
             <button
               type="button"
               onClick={() => {
@@ -358,8 +378,13 @@ export default function OrderDetailsPage() {
               ))}
             </select>
             <div className="mt-5 flex gap-3">
-              <button type="button" onClick={updateStatus} className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
-                Update
+              <button
+                type="button"
+                onClick={updateStatus}
+                disabled={updateOrderStatus.isPending}
+                className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {updateOrderStatus.isPending ? "Updating..." : "Update"}
               </button>
               <button type="button" onClick={() => setIsStatusOpen(false)} className="flex-1 rounded-xl border border-slate-300 py-2.5 text-sm font-semibold hover:bg-slate-50">
                 Cancel
@@ -447,8 +472,8 @@ function MetaTile({
   danger?: boolean;
 }) {
   return (
-    <div className="rounded-xl bg-slate-50 p-3">
-      <p className="mb-0.5 text-xs text-slate-400">{label}</p>
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <p className="mb-1 text-xs font-medium text-slate-400">{label}</p>
       <p className={`text-sm font-semibold ${mono ? "font-mono" : ""} ${danger ? "text-red-600" : "text-slate-800"}`}>
         {value}
       </p>
@@ -466,7 +491,7 @@ function InfoPanel({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-xl bg-slate-50 p-5">
+    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
         <Icon className="h-4 w-4 text-emerald-600" />
         {title}
@@ -478,7 +503,7 @@ function InfoPanel({
 
 function SummaryPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-purple-100 bg-white/70 p-3">
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
       <p className="text-xs text-slate-400">{label}</p>
       <p className="font-semibold text-slate-800">{value}</p>
     </div>

@@ -18,6 +18,7 @@ export function getPaymentScoreFromRisk(risk: RiskLevel): number {
 
 type CustomerRecord = {
   id: string;
+  slug: string | null;
   name: string;
   email: string;
   phone: string | null;
@@ -35,6 +36,7 @@ type CustomerRecord = {
 export function mapCustomerRecordToCustomer(row: CustomerRecord): Customer {
   return {
     id: row.id,
+    slug: row.slug ?? generateCustomerSlug(row.name),
     name: row.name,
     email: row.email,
     phone: row.phone ?? "",
@@ -48,6 +50,17 @@ export function mapCustomerRecordToCustomer(row: CustomerRecord): Customer {
     joinedDate: row.joinedDate.toISOString(),
     lastPurchase: row.lastPurchase?.toISOString() ?? "",
   };
+}
+
+export function generateCustomerSlug(name: string): string {
+  const slug = name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 180);
+
+  return slug || "customer";
 }
 
 export function getCustomerWriteValues(values: CustomerFormData) {

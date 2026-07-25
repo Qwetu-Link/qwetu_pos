@@ -1,26 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CircleUser, ShoppingBag } from "lucide-react";
 import { ShoppingCart } from "lucide-react";
 import { useCustomersContext } from "./CustomersContext";
-import type { OrderFormData, LineItem } from "@/types/customer";
 import { CustomerProfilePanel } from "./CustomerProfilePanel";
 import { OrdersTable } from "./OrdersTable";
-import { NewOrderModal } from "./NewOrderModal";
 
 interface CustomerDetailViewProps {
   customerId: string;
 }
 
 export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
-  const { getById, getOrdersByCustomer, createOrder } = useCustomersContext();
+  const { getById, getOrdersByCustomer } = useCustomersContext();
 
   const customer = getById(customerId);
-  const orders = customer ? getOrdersByCustomer(customerId) : [];
-
-  const [newOrderOpen, setNewOrderOpen] = useState(false);
+  const orders = customer ? getOrdersByCustomer(customer.id) : [];
 
   if (!customer) {
     return (
@@ -41,11 +36,6 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
       </div>
     );
   }
-
-  const handleCreateOrder = (formData: OrderFormData, lineItems: LineItem[]) => {
-    createOrder(customer, formData, lineItems);
-    setNewOrderOpen(false);
-  };
 
   return (
     <div className="min-h-screen bg-slate-100 antialiased">
@@ -82,12 +72,12 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
                   ({orders.length})
                 </span>
               </h2>
-              <button
-                onClick={() => setNewOrderOpen(true)}
+              <Link
+                href={`/admin/customers/${encodeURIComponent(customer.slug)}/orders/add`}
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:shadow-lg text-white px-5 py-2.5 rounded-xl font-medium transition-all text-sm hover:-translate-y-0.5"
               >
                 <ShoppingCart size={15} /> + New Order
-              </button>
+              </Link>
             </div>
 
             <OrdersTable orders={orders} />
@@ -95,13 +85,6 @@ export function CustomerDetailView({ customerId }: CustomerDetailViewProps) {
         </div>
       </div>
 
-      {/* Modals */}
-      <NewOrderModal
-        customer={customer}
-        isOpen={newOrderOpen}
-        onClose={() => setNewOrderOpen(false)}
-        onSubmit={handleCreateOrder}
-      />
     </div>
   );
 }

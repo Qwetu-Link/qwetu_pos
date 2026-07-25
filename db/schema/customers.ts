@@ -13,6 +13,7 @@ export const customerTable = pgTable("customers", {
             onDelete: "cascade",
         }),
     name: varchar("name", { length: 255 }).notNull(),
+    slug: varchar("slug", { length: 200 }).unique(),
     email: varchar("email", { length: 255 }).notNull().unique(),
     phone: varchar("phone", { length: 255 }),
     address: varchar("address", { length: 255 }),

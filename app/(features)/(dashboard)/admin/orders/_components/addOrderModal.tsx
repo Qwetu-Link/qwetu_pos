@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch, UseFormRegister } from "react-hook-form";
 import { z } from "zod";
 import {
+  ArrowLeft,
   Calculator,
   CheckCircle2,
   PackagePlus,
@@ -14,17 +15,49 @@ import {
   Tag,
   Trash2,
 } from "lucide-react";
-import ModalFrame from "./modalFrame";
 import { formatCurrency } from "../../../../../../utils/orderUtils";
-import type { Customer } from "@/types/customer";
-import { DEMO_VARIANTS } from "@/data/customers";
+import type {
+  Customer,
+  CustomerFormData,
+  LineItem,
+  OrderLocationName,
+  OrderStatus,
+  PaymentType,
+} from "@/types/customer";
 
 interface LineItemRow {
   id: number;
   variantId: string;
+  locationName: string;
   qty: number;
   originalPrice: number;
   discountPrice: string;
+}
+
+interface OrderVariantLocationOption {
+  name: OrderLocationName;
+  stock: number;
+}
+
+export interface OrderVariantOption {
+  variantId: string;
+  productId: string;
+  sku: string;
+  name: string;
+  sellPrice: number;
+  locations: OrderVariantLocationOption[];
+}
+
+export interface AddOrderSubmitValues {
+  customerId: string;
+  newCustomer?: CustomerFormData;
+  paymentType: PaymentType;
+  amountPaid: number;
+  installmentPlan?: string;
+  installmentStartDate?: string;
+  status: OrderStatus;
+  shippingAddress: string;
+  lineItems: (LineItem & { locationName: OrderLocationName })[];
 }
 
 const addOrderSchema = z.object({
@@ -34,6 +67,7 @@ const addOrderSchema = z.object({
   phone: z.string().trim(),
   address: z.string().trim(),
   paymentType: z.enum(["full", "installment"]),
+  amountPaid: z.number().min(0, "Amount paid cannot be negative"),
   installmentPlan: z.string(),
   installmentStartDate: z.string(),
   status: z.enum(["pending", "processing", "shipped", "delivered"]),
@@ -52,10 +86,16 @@ const addOrderSchema = z.object({
 type AddOrderFormValues = z.infer<typeof addOrderSchema>;
 
 let rowCounter = 0;
+const orderLocationNames: OrderLocationName[] = ["Main Store", "Warehouse A", "Outlet"];
+
+function isOrderLocationName(value: string): value is OrderLocationName {
+  return orderLocationNames.includes(value as OrderLocationName);
+}
 
 const createBlankLineItem = (): LineItemRow => ({
   id: ++rowCounter,
   variantId: "",
+  locationName: "",
   qty: 1,
   originalPrice: 0,
   discountPrice: "",
@@ -97,11 +137,21 @@ function FormField({
 
 export default function AddOrderModal({
   customers,
+  variants,
+  defaultCustomerId = "",
+  hideCustomerSelect = false,
+  title = "Manual Add Order",
+  isSaving = false,
   onAdd,
   onClose,
 }: {
   customers: Customer[];
-  onAdd: () => void;
+  variants: OrderVariantOption[];
+  defaultCustomerId?: string;
+  hideCustomerSelect?: boolean;
+  title?: string;
+  isSaving?: boolean;
+  onAdd: (values: AddOrderSubmitValues) => Promise<void> | void;
   onClose: () => void;
 }) {
   const [lineItems, setLineItems] = useState<LineItemRow[]>([createBlankLineItem()]);
@@ -113,12 +163,13 @@ export default function AddOrderModal({
   } = useForm<AddOrderFormValues>({
     resolver: zodResolver(addOrderSchema),
     defaultValues: {
-      selectedCustomerId: "",
+      selectedCustomerId: defaultCustomerId,
       customer: "",
       email: "",
       phone: "",
       address: "",
       paymentType: "full",
+      amountPaid: 0,
       installmentPlan: "3 months",
       installmentStartDate: new Date().toISOString().slice(0, 10),
       status: "pending",
@@ -133,7 +184,10 @@ export default function AddOrderModal({
   const isNewCustomer = selectedCustomerId === "new";
 
   const getVariant = (id: string) =>
-    DEMO_VARIANTS.find((variant) => variant.variantId === id);
+    variants.find((variant) => variant.variantId === id);
+
+  const getAvailableLocations = (variantId: string) =>
+    getVariant(variantId)?.locations.filter((location) => location.stock > 0) ?? [];
 
   const getEffectivePrice = (item: LineItemRow) => {
     const discountPrice = Number(item.discountPrice);
@@ -160,8 +214,10 @@ export default function AddOrderModal({
 
   const handleVariantChange = (id: number, variantId: string) => {
     const variant = getVariant(variantId);
+    const firstLocation = variant?.locations.find((location) => location.stock > 0);
     updateLineItem(id, {
       variantId,
+      locationName: firstLocation?.name ?? "",
       originalPrice: variant?.sellPrice ?? 0,
       discountPrice: "",
     });
@@ -175,46 +231,109 @@ export default function AddOrderModal({
     );
   };
 
-  const submitOrder = (values: AddOrderFormValues) => {
+  const submitOrder = async (values: AddOrderFormValues) => {
     const validLineItems = lineItems.filter(
-      (item) => item.variantId && item.qty > 0 && getEffectivePrice(item) > 0,
+      (item) => item.variantId && item.locationName && item.qty > 0 && getEffectivePrice(item) > 0,
     );
 
     if (validLineItems.length === 0) return;
 
-    void values;
-    onAdd();
+    const selectedLineItems = validLineItems
+      .map((item) => {
+        const variant = getVariant(item.variantId);
+        if (!variant || !isOrderLocationName(item.locationName)) return null;
+
+        return {
+          variantId: variant.variantId,
+          productId: variant.productId,
+          sku: variant.sku,
+          name: variant.name,
+          qty: item.qty,
+          price: getEffectivePrice(item),
+          originalPrice: item.originalPrice,
+          locationName: item.locationName,
+        };
+      })
+      .filter((item): item is LineItem & { locationName: OrderLocationName } => Boolean(item));
+
+    if (selectedLineItems.length === 0) return;
+
+    await onAdd({
+      customerId: values.selectedCustomerId,
+      newCustomer: isNewCustomer
+        ? {
+            name: values.customer,
+            email: values.email,
+            phone: values.phone,
+            address: values.address,
+            segment: "New",
+            riskLevel: "low",
+          }
+        : undefined,
+      paymentType: values.paymentType,
+      amountPaid: values.paymentType === "full" ? totalPreview : values.amountPaid,
+      installmentPlan: values.paymentType === "installment" ? values.installmentPlan : undefined,
+      installmentStartDate:
+        values.paymentType === "installment" ? values.installmentStartDate : undefined,
+      status: values.status,
+      shippingAddress: isNewCustomer
+        ? values.address
+        : selectedCustomer?.address ?? values.address,
+      lineItems: selectedLineItems,
+    });
   };
 
   return (
-    <ModalFrame
-      title="Manual Add Order"
-      icon={<ShoppingCart className="h-6 w-6 text-emerald-600" />}
-      maxWidth="max-w-4xl"
-      onClose={onClose}
-    >
-      <form onSubmit={handleSubmit(submitOrder)} className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 p-4 md:p-6">
+      <div className="mx-auto max-w-5xl space-y-6">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="flex items-center gap-2 text-3xl font-extrabold text-black">
+              <ShoppingCart className="h-8 w-8 text-emerald-600" />
+              {title}
+            </h1>
+            <p className="mt-1 text-slate-500">
+              Create a customer order, choose stock locations, and set payment details.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSaving}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </button>
+        </div>
+
+        <form
+          onSubmit={handleSubmit(submitOrder)}
+          className="space-y-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:p-6"
+        >
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          <label className="block md:col-span-2">
-            <span className="mb-1.5 block text-sm font-semibold text-slate-700">
-              Customer
-            </span>
-            <select
-              {...register("selectedCustomerId")}
-              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-slate-400 transition outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              <option value="">Select customer</option>
-              <option value="new">Add new customer</option>
-              {customers.map((customer) => (
-                <option key={customer.id} value={customer.id}>
-                  {customer.name} - {customer.phone}
-                </option>
-              ))}
-            </select>
-            {errors.selectedCustomerId ? (
-              <p className="mt-1 text-xs text-red-500">{errors.selectedCustomerId.message}</p>
-            ) : null}
-          </label>
+          {!hideCustomerSelect ? (
+            <label className="block md:col-span-2">
+              <span className="mb-1.5 block text-sm font-semibold text-slate-700">
+                Customer
+              </span>
+              <select
+                {...register("selectedCustomerId")}
+                className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-slate-400 transition outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="">Select customer</option>
+                <option value="new">Add new customer</option>
+                {customers.map((customer) => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.name} - {customer.phone}
+                  </option>
+                ))}
+              </select>
+              {errors.selectedCustomerId ? (
+                <p className="mt-1 text-xs text-red-500">{errors.selectedCustomerId.message}</p>
+              ) : null}
+            </label>
+          ) : null}
 
           {isNewCustomer ? (
             <>
@@ -279,6 +398,22 @@ export default function AddOrderModal({
           </label>
           {paymentType === "installment" && (
             <>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-semibold text-slate-700">
+                  Amount Paid
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  max={totalPreview}
+                  {...register("amountPaid", { valueAsNumber: true })}
+                  placeholder="Deposit or first installment"
+                  className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-slate-400 transition outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+                {errors.amountPaid ? (
+                  <p className="mt-1 text-xs text-red-500">{errors.amountPaid.message}</p>
+                ) : null}
+              </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm font-semibold text-slate-700">
                   Installment Plan
@@ -357,23 +492,50 @@ export default function AddOrderModal({
                     className="w-full rounded-xl text-black placeholder:text-slate-400 transition border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="">Select product variant...</option>
-                    {DEMO_VARIANTS.length === 0 ? (
-                      <option value="" disabled>
-                        No variants available
+                  {variants.length === 0 ? (
+                    <option value="" disabled>
+                      No variants available
                       </option>
                     ) : null}
-                    {DEMO_VARIANTS.map((variant) => (
+                    {variants.map((variant) => (
                       <option key={variant.variantId} value={variant.variantId}>
                         {variant.name} - {formatCurrency(variant.sellPrice)}
                       </option>
                     ))}
                   </select>
-                  {DEMO_VARIANTS.length === 0 ? (
+                  {variants.length === 0 ? (
                     <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
                       Add product variants before creating order line items.
                     </p>
                   ) : null}
                 </div>
+
+                {item.variantId ? (
+                  <div className="mb-3">
+                    <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                      Stock Location
+                    </label>
+                    <select
+                      value={item.locationName}
+                      onChange={(event) =>
+                        updateLineItem(item.id, { locationName: event.target.value })
+                      }
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-black outline-none transition focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="">Select stock location...</option>
+                      {getAvailableLocations(item.variantId).map((location) => (
+                        <option key={location.name} value={location.name}>
+                          {location.name} - {location.stock} available
+                        </option>
+                      ))}
+                    </select>
+                    {getAvailableLocations(item.variantId).length === 0 ? (
+                      <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                        This variant is out of stock in all locations.
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                   <label className="block">
@@ -466,19 +628,22 @@ export default function AddOrderModal({
           <button
             type="button"
             onClick={onClose}
+            disabled={isSaving}
             className="rounded-xl border border-slate-300 px-6 py-2.5 font-medium text-slate-700 hover:bg-slate-50"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-2.5 font-medium text-white hover:shadow-lg"
+            disabled={isSaving}
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-2.5 font-medium text-white hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
           >
             <CheckCircle2 className="h-4 w-4" />
-            Create Order
+            {isSaving ? "Creating Order..." : "Create Order"}
           </button>
         </div>
       </form>
-    </ModalFrame>
+      </div>
+    </div>
   );
 }

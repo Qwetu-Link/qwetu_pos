@@ -1,27 +1,28 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Download,
   Plus,
   ReceiptText,
   RefreshCw,
 } from "lucide-react";
-import AddOrderModal from "./addOrderModal";
-import { initialOrders } from "../../../../../../data/orderData";
 import OrderFilters from "./orderFilters";
 import Pagination from "@/components/common/Pagination";
 import OrderStatsCards from "./orderStatsCards";
 import { OrderStatus } from "@/data/order-options";
 import OrdersTable from "./ordersTable";
-import { DEMO_CUSTOMERS } from "@/data/customers";
+import { useGetOrders, useUpdateOrderStatus } from "@/hooks/useOrders";
+import type { Order } from "@/types/orderTypes";
+import { getOrderDisplayNumber } from "@/utils/orderUtils";
 
 export default function OrdersPage() {
-  const orders = initialOrders;
-  const customers = DEMO_CUSTOMERS;
+  const { orders, isLoading, isError, error, refetch } = useGetOrders();
+  const updateOrderStatus = useUpdateOrderStatus();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
 
@@ -49,9 +50,11 @@ export default function OrdersPage() {
     const normalizedSearch = searchTerm.toLowerCase();
 
     return orders.filter((order) => {
+      const orderNumber = getOrderDisplayNumber(order).toLowerCase();
       const matchesSearch =
         !normalizedSearch ||
         order.id.toLowerCase().includes(normalizedSearch) ||
+        orderNumber.includes(normalizedSearch) ||
         order.customer.toLowerCase().includes(normalizedSearch) ||
         order.email.toLowerCase().includes(normalizedSearch) ||
         order.phone.includes(searchTerm);
@@ -84,6 +87,19 @@ export default function OrdersPage() {
     setCurrentPage(1);
   };
 
+  const handleCancelOrder = async (order: Order) => {
+    setCancellingOrderId(order.id);
+
+    try {
+      await updateOrderStatus.mutateAsync({
+        id: order.id,
+        status: "cancelled",
+      });
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 p-4 md:p-6">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -98,20 +114,20 @@ export default function OrdersPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setIsAddModalOpen(true)}
+            <Link
+              href="/admin/orders/add"
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2.5 font-medium text-white transition hover:shadow-lg"
             >
               <Plus className="h-4 w-4" />
               Manual Add Order
-            </button>
+            </Link>
             <button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 setSearchTerm("");
                 setStatusFilter("all");
                 setCurrentPage(1);
+                await refetch();
               }}
               className="inline-flex text-black items-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 transition hover:bg-white"
             >
@@ -135,7 +151,22 @@ export default function OrdersPage() {
           onSearchChange={handleSearchChange}
           onStatusChange={handleStatusChange}
         />
-        <OrdersTable orders={paginatedOrders} />
+        {isError ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error?.message ?? "Could not load orders."}
+          </div>
+        ) : null}
+        {isLoading ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+            Loading orders...
+          </div>
+        ) : (
+          <OrdersTable
+            orders={paginatedOrders}
+            cancellingOrderId={updateOrderStatus.isPending ? cancellingOrderId : null}
+            onCancel={handleCancelOrder}
+          />
+        )}
         {filteredOrders.length > 0 && (
           <Pagination
             currentPage={safeCurrentPage}
@@ -147,15 +178,6 @@ export default function OrdersPage() {
         )}
       </div>
 
-      {isAddModalOpen && (
-        <AddOrderModal
-          customers={customers}
-          onAdd={() => {
-            setIsAddModalOpen(false);
-          }}
-          onClose={() => setIsAddModalOpen(false)}
-        />
-      )}
     </div>
   );
 }

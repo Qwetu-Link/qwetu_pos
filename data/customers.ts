@@ -2,35 +2,35 @@ import type { Customer, Order } from "@/types/customer";
 
 export const DEMO_CUSTOMERS: Customer[] = [
   {
-    id: "CUST-001", name: "Sarah Mwangi", email: "sarah.mwangi@email.com",
+    id: "CUST-001", slug: "sarah-mwangi", name: "Sarah Mwangi", email: "sarah.mwangi@email.com",
     phone: "+254 712 345 678", totalOrders: 24, totalSpent: 125400,
     activeInstallments: 2, paymentScore: 95, riskLevel: "low", segment: "VIP",
     joinedDate: "2025-06-15", lastPurchase: "2026-04-09",
     address: "123 Kimathi Street, Nairobi",
   },
   {
-    id: "CUST-002", name: "John Kamau", email: "john.kamau@email.com",
+    id: "CUST-002", slug: "john-kamau", name: "John Kamau", email: "john.kamau@email.com",
     phone: "+254 723 456 789", totalOrders: 12, totalSpent: 67800,
     activeInstallments: 1, paymentScore: 72, riskLevel: "medium", segment: "Regular",
     joinedDate: "2025-08-22", lastPurchase: "2026-04-08",
     address: "45 Moi Avenue, Mombasa",
   },
   {
-    id: "CUST-003", name: "Grace Njeri", email: "grace.njeri@email.com",
+    id: "CUST-003", slug: "grace-njeri", name: "Grace Njeri", email: "grace.njeri@email.com",
     phone: "+254 734 567 890", totalOrders: 8, totalSpent: 42500,
     activeInstallments: 3, paymentScore: 88, riskLevel: "low", segment: "Regular",
     joinedDate: "2025-10-11", lastPurchase: "2026-04-08",
     address: "78 Ngong Road, Nairobi",
   },
   {
-    id: "CUST-004", name: "Peter Omondi", email: "peter.omondi@email.com",
+    id: "CUST-004", slug: "peter-omondi", name: "Peter Omondi", email: "peter.omondi@email.com",
     phone: "+254 745 678 901", totalOrders: 5, totalSpent: 28900,
     activeInstallments: 1, paymentScore: 55, riskLevel: "high", segment: "New",
     joinedDate: "2025-12-03", lastPurchase: "2026-04-07",
     address: "12 Kenyatta Avenue, Kisumu",
   },
   {
-    id: "CUST-005", name: "Mary Wanjiku", email: "mary.wanjiku@email.com",
+    id: "CUST-005", slug: "mary-wanjiku", name: "Mary Wanjiku", email: "mary.wanjiku@email.com",
     phone: "+254 756 789 012", totalOrders: 18, totalSpent: 89300,
     activeInstallments: 2, paymentScore: 92, riskLevel: "low", segment: "VIP",
     joinedDate: "2025-05-20", lastPurchase: "2026-04-07",

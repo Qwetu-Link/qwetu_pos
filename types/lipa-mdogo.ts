@@ -27,9 +27,9 @@ export interface PaymentPlan {
   paymentMethod: string;
   products: PlanProduct[];
   totalAmount: number;
+  paidAmount?: number;
   installments: number;
   installmentAmount: number;
   startDate: string;
   frequency: string;
 }
-

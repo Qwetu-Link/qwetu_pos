@@ -22,6 +22,34 @@
       "when": 1784750546428,
       "tag": "0002_friendly_tombstone",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784756921293,
+      "tag": "0003_tiresome_franklin_richards",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784757371668,
+      "tag": "0004_abnormal_master_mold",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1785007415148,
+      "tag": "0005_nifty_namor",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785007688649,
+      "tag": "0006_nifty_blob",
+      "breakpoints": true
     }
   ]
 }

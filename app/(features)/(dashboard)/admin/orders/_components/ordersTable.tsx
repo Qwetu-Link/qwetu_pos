@@ -8,21 +8,28 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import EmptyState from "@/components/common/EmptyState";
-import { Eye, Inbox } from "lucide-react";
+import { Eye, Inbox, XCircle } from "lucide-react";
 import StatusBadge from "./statusBadge";
 import { Order } from "@/types/orderTypes";
-import { formatCurrency, formatDate } from "@/utils/orderUtils";
+import { formatCurrency, formatDate, getOrderDisplayNumber } from "@/utils/orderUtils";
 
-const columns: ColumnDef<Order>[] = [
+function getColumns({
+  cancellingOrderId,
+  onCancel,
+}: {
+  cancellingOrderId?: string | null;
+  onCancel?: (order: Order) => void;
+}): ColumnDef<Order>[] {
+  return [
   {
     accessorKey: "id",
-    header: "Order ID",
+    header: "Order Number",
     cell: ({ row }) => (
       <Link
         href={`/admin/orders/${row.original.id}`}
         className="font-medium text-slate-800 hover:text-emerald-700"
       >
-        {row.original.id}
+        {getOrderDisplayNumber(row.original)}
       </Link>
     ),
   },
@@ -73,21 +80,41 @@ const columns: ColumnDef<Order>[] = [
   },
   {
     id: "action",
-    header: "Action",
-    cell: ({ row }) => <ViewLink orderId={row.original.id} />,
+    header: "Actions",
+    cell: ({ row }) => (
+      <div className="flex justify-end gap-2">
+        <ViewLink orderId={row.original.id} />
+        {onCancel && row.original.status !== "cancelled" ? (
+          <button
+            type="button"
+            onClick={() => onCancel(row.original)}
+            disabled={cancellingOrderId === row.original.id}
+            className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <XCircle className="h-4 w-4" />
+            {cancellingOrderId === row.original.id ? "Cancelling..." : "Cancel"}
+          </button>
+        ) : null}
+      </div>
+    ),
   },
-];
+  ];
+}
 
 export default function OrdersTable({
   orders,
+  cancellingOrderId,
+  onCancel,
 }: {
   orders: Order[];
+  cancellingOrderId?: string | null;
+  onCancel?: (order: Order) => void;
 }) {
   // TanStack Table intentionally returns function-heavy instances that React Compiler cannot memoize safely.
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: orders,
-    columns,
+    columns: getColumns({ cancellingOrderId, onCancel }),
     getCoreRowModel: getCoreRowModel(),
   });
 

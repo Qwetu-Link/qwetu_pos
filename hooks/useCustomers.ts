@@ -4,10 +4,10 @@ import { useState, useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import type { Customer, CustomerFormData, Order, OrderFormData, LineItem } from "../types/customer";
-import { initialOrders } from "../data/orderData";
 import {
   filterCustomers, computeOrderTotal,
 } from "../utils/customerUtils";
+import { useGetOrders } from "./useOrders";
 
 const EMPTY_CUSTOMERS: Customer[] = [];
 
@@ -15,8 +15,9 @@ export function useCustomers() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const customersQuery = useQuery(trpc.customers.getCustomers.queryOptions());
+  const ordersQuery = useGetOrders();
   const customers = customersQuery.data ?? EMPTY_CUSTOMERS;
-  const orders = initialOrders;
+  const orders = ordersQuery.orders;
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -82,7 +83,13 @@ export function useCustomers() {
     await deleteCustomerMutation.mutateAsync({ id });
   }, [deleteCustomerMutation]);
 
-  const getById = useCallback((id: string) => customers.find((c) => c.id === id) ?? null, [customers]);
+  const getById = useCallback(
+    (identifier: string) =>
+      customers.find(
+        (customer) => customer.id === identifier || customer.slug === identifier,
+      ) ?? null,
+    [customers],
+  );
 
   const getOrdersByCustomer = useCallback((customerId: string) =>
     orders.filter((o) => o.customerId === customerId)
@@ -111,9 +118,9 @@ export function useCustomers() {
 
   return {
     customers, orders, filtered, paginated,
-    isLoading: customersQuery.isLoading,
-    isError: customersQuery.isError,
-    error: customersQuery.error,
+    isLoading: customersQuery.isLoading || ordersQuery.isLoading,
+    isError: customersQuery.isError || ordersQuery.isError,
+    error: customersQuery.error ?? ordersQuery.error,
     createError: createCustomerMutation.error,
     updateError: updateCustomerMutation.error,
     deleteError: deleteCustomerMutation.error,

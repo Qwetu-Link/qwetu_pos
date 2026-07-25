@@ -9,9 +9,11 @@ export {
   getInstallmentSchedule,
   getNextDueDate,
   getPaidAmount,
+  getPlanPaidAmount,
   getPlanReceipts,
   getPlanStatus,
   getRemainingAmount,
+  mapOrderToPaymentPlan,
 } from "@/utils/lipa-mdogo-utils";
 export type { PaymentPlan, PlanStatus, Receipt } from "@/types/lipa-mdogo";
 

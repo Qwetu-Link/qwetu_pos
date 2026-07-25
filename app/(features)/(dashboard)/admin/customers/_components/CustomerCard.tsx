@@ -95,7 +95,7 @@ export function CustomerCard({ customer: c, onEdit, onDelete }: CustomerCardProp
 
       {/* View 360° link */}
       <Link
-        href={`/admin/customers/${c.id}`}
+        href={`/admin/customers/${encodeURIComponent(c.slug)}`}
         className="mt-4 flex items-center justify-center gap-1.5 w-full py-2 rounded-md bg-emerald-50 text-emerald-700 text-sm font-medium hover:bg-emerald-100 transition-colors border border-emerald-200"
       >
         View Customer 360° <ChevronRight size={14} />

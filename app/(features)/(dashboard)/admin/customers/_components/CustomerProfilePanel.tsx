@@ -2,6 +2,11 @@ import { Mail, Phone, MapPin, ShieldCheck, TrendingUp } from "lucide-react";
 import type { Customer } from "@/types/customer";
 import { RISK_CONFIG, SEGMENT_CONFIG } from "@/data/customer-config";
 import { getInitials, getLoyaltyStatus, getLoyaltyProgress } from "@/utils/customerUtils";
+import { formatDate } from "@/utils/formatters";
+
+function formatCustomerDate(value?: string) {
+  return value ? formatDate(value) : "—";
+}
 
 export function CustomerProfilePanel({ customer: c }: { customer: Customer }) {
   const risk = RISK_CONFIG[c.riskLevel];
@@ -62,7 +67,7 @@ export function CustomerProfilePanel({ customer: c }: { customer: Customer }) {
               { label: "Total Orders", value: c.totalOrders, bg: "bg-slate-50" },
               { label: "Total Spent", value: `KES ${c.totalSpent.toLocaleString()}`, bg: "bg-emerald-50 text-emerald-700" },
               { label: "Active Plans", value: c.activeInstallments, bg: "bg-amber-50 text-amber-700" },
-              { label: "Last Purchase", value: c.lastPurchase || "—", bg: "bg-slate-50" },
+              { label: "Last Purchase", value: formatCustomerDate(c.lastPurchase), bg: "bg-slate-50" },
             ].map(({ label, value, bg }) => (
               <div key={label} className={`rounded-xl p-3.5 ${bg}`}>
                 <p className="text-xs text-slate-400 mb-1">{label}</p>
