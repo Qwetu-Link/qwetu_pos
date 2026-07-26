@@ -10,15 +10,13 @@ import {
   SlidersHorizontal,
   XCircle,
 } from "lucide-react";
-import {
-  generatedReports,
-  reportMetrics,
-  reportTemplates,
-  scheduledReports,
-  type GeneratedReport,
-  type ReportStatus,
-  type ReportTemplate,
-} from "@/data/report-center-data";
+import type { AdminReportCenterData } from "@/db/queries/admin-reports";
+import type {
+  GeneratedReport,
+  ReportStatus,
+  ReportTemplate,
+  ScheduledReport,
+} from "@/types/reports";
 import EmptyState from "@/components/common/EmptyState";
 import GeneratedReportsTable from "./GeneratedReportsTable";
 import ReportMetricCard from "./ReportMetricCard";
@@ -26,7 +24,6 @@ import ReportTemplateCard from "./ReportTemplateCard";
 import ScheduledReportsPanel from "./ScheduledReportsPanel";
 
 const metricIcons = [FileBarChart, CalendarDays, CheckCircle2, XCircle];
-const allCategories = ["All", ...reportTemplates.map((report) => report.category)];
 const allStatuses: Array<"all" | ReportStatus> = [
   "all",
   "ready",
@@ -34,28 +31,124 @@ const allStatuses: Array<"all" | ReportStatus> = [
   "failed",
 ];
 
-function fileName(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+function formatDate(value: Date) {
+  return new Intl.DateTimeFormat("en-KE", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(value);
 }
 
-function downloadFile(name: string, content: string, type = "text/plain") {
-  const blob = new Blob([content], { type });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = name;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+function formatBytes(value: number) {
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${Math.round(value / 1024)} KB`;
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function ReportsPage() {
+function getStatus(hasReview: boolean): ReportStatus {
+  return hasReview ? "processing" : "ready";
+}
+
+function exportUrl(format: string) {
+  return `/admin/reports/export/${format.toLowerCase()}`;
+}
+
+function buildTemplates(data: AdminReportCenterData): ReportTemplate[] {
+  return data.reportCards.map((report) => ({
+    title: report.title,
+    description: report.description,
+    category:
+      report.id === "sales"
+        ? "Sales"
+        : report.id === "collections"
+          ? "Collections"
+          : report.id === "inventory"
+            ? "Inventory"
+            : "Customers",
+    lastGenerated: `Generated ${formatDate(data.generatedAt)}`,
+    formats: ["CSV", "XLS", "PDF"],
+  }));
+}
+
+function buildGeneratedReports(data: AdminReportCenterData): GeneratedReport[] {
+  const estimatedRows =
+    data.topProducts.length +
+    data.inventory.length +
+    data.customerSegments.length +
+    data.transactions.length +
+    data.revenueTrend.length;
+  const size = formatBytes(Math.max(estimatedRows, 1) * 420);
+
+  return [
+    {
+      id: "ADMIN-CSV",
+      title: `${data.business.name} operational export`,
+      period: data.periodLabel,
+      createdAt: formatDate(data.generatedAt),
+      size,
+      status: "ready",
+    },
+    {
+      id: "ADMIN-XLS",
+      title: `${data.business.name} workbook export`,
+      period: data.periodLabel,
+      createdAt: formatDate(data.generatedAt),
+      size,
+      status: "ready",
+    },
+    {
+      id: "ADMIN-PDF",
+      title: `${data.business.name} PDF summary`,
+      period: data.periodLabel,
+      createdAt: formatDate(data.generatedAt),
+      size,
+      status: getStatus(data.inventory.length > 0),
+    },
+  ];
+}
+
+function buildScheduledReports(data: AdminReportCenterData): ScheduledReport[] {
+  return [
+    {
+      title: "Daily sales and collections",
+      owner: data.business.name,
+      frequency: "Daily",
+      nextRun: "Next run tomorrow",
+      recipients: 1,
+    },
+    {
+      title: "Weekly inventory review",
+      owner: data.business.name,
+      frequency: "Weekly",
+      nextRun: "Next run Monday",
+      recipients: 1,
+    },
+  ];
+}
+
+function downloadGeneratedReport(report: GeneratedReport) {
+  if (report.status !== "ready") return;
+
+  const format = report.id.endsWith("XLS")
+    ? "xls"
+    : report.id.endsWith("PDF")
+      ? "pdf"
+      : "csv";
+
+  window.location.href = exportUrl(format);
+}
+
+export default function ReportsPage({ data }: { data: AdminReportCenterData }) {
   const [showFilters, setShowFilters] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState<"all" | ReportStatus>("all");
-  const reports = generatedReports;
+
+  const reportTemplates = useMemo(() => buildTemplates(data), [data]);
+  const generatedReports = useMemo(() => buildGeneratedReports(data), [data]);
+  const scheduledReports = useMemo(() => buildScheduledReports(data), [data]);
+  const allCategories = useMemo(
+    () => ["All", ...new Set(reportTemplates.map((report) => report.category))],
+    [reportTemplates],
+  );
 
   const filteredTemplates = useMemo(() => {
     if (categoryFilter === "All") {
@@ -63,69 +156,28 @@ export default function ReportsPage() {
     }
 
     return reportTemplates.filter((report) => report.category === categoryFilter);
-  }, [categoryFilter]);
+  }, [categoryFilter, reportTemplates]);
 
   const filteredReports = useMemo(() => {
     if (statusFilter === "all") {
-      return reports;
+      return generatedReports;
     }
 
-    return reports.filter((report) => report.status === statusFilter);
-  }, [reports, statusFilter]);
+    return generatedReports.filter((report) => report.status === statusFilter);
+  }, [generatedReports, statusFilter]);
 
   function downloadTemplate(report: ReportTemplate) {
-    const content = [
-      `${report.title}`,
-      `Category: ${report.category}`,
-      `Last generated: ${report.lastGenerated}`,
-      "",
-      report.description,
-      "",
-      `Available formats: ${report.formats.join(", ")}`,
-    ].join("\n");
-
-    downloadFile(`${fileName(report.title)}-template.txt`, content);
+    const format = report.formats[0]?.toLowerCase() ?? "csv";
+    window.location.href = exportUrl(format);
   }
 
   function runReport(report: ReportTemplate) {
-    void report;
-  }
-
-  function downloadGeneratedReport(report: GeneratedReport) {
-    if (report.status !== "ready") {
-      return;
-    }
-
-    const content = [
-      "Report ID,Title,Period,Created,Size,Status",
-      [
-        report.id,
-        report.title,
-        report.period,
-        report.createdAt,
-        report.size,
-        report.status,
-      ].join(","),
-    ].join("\n");
-
-    downloadFile(`${fileName(report.title)}-${report.id}.csv`, content, "text/csv");
+    const format = report.formats.includes("PDF") ? "pdf" : "csv";
+    window.location.href = exportUrl(format);
   }
 
   function exportReportPack() {
-    const content = JSON.stringify(
-      {
-        exportedAt: new Date().toISOString(),
-        categoryFilter,
-        statusFilter,
-        templates: filteredTemplates,
-        reports: filteredReports,
-        scheduledReports,
-      },
-      null,
-      2,
-    );
-
-    downloadFile("report-center-export-pack.json", content, "application/json");
+    window.location.href = exportUrl("csv");
   }
 
   function resetFilters() {
@@ -142,7 +194,7 @@ export default function ReportsPage() {
             Reports Center
           </h1>
           <p className="mt-1 text-slate-500">
-            Generate, schedule, and review operational business reports.
+            Generate, schedule, and review live operational reports for {data.business.name}.
           </p>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
@@ -154,13 +206,27 @@ export default function ReportsPage() {
             <SlidersHorizontal className="h-4 w-4" />
             Filters
           </button>
+          <a
+            href={exportUrl("xls")}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto"
+          >
+            <DownloadCloud className="h-4 w-4" />
+            XLS
+          </a>
+          <a
+            href={exportUrl("pdf")}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto"
+          >
+            <DownloadCloud className="h-4 w-4" />
+            PDF
+          </a>
           <button
             type="button"
             onClick={exportReportPack}
             className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:w-auto"
           >
             <DownloadCloud className="h-4 w-4" />
-            Export Pack
+            Export CSV
           </button>
         </div>
       </header>
@@ -206,14 +272,24 @@ export default function ReportsPage() {
       ) : null}
 
       <section className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] gap-4">
-        {reportMetrics.map((metric, index) => (
+        {data.metrics.map((metric, index) => (
           <ReportMetricCard
             key={metric.label}
             icon={metricIcons[index]}
             label={metric.label}
             value={metric.value}
             detail={metric.detail}
-            tone={metric.tone}
+            tone={
+              metric.tone === "emerald"
+                ? "text-emerald-700"
+                : metric.tone === "blue"
+                  ? "text-blue-700"
+                  : metric.tone === "red"
+                    ? "text-red-700"
+                    : metric.tone === "amber"
+                      ? "text-amber-700"
+                      : "text-slate-700"
+            }
           />
         ))}
       </section>
@@ -225,23 +301,15 @@ export default function ReportsPage() {
               Report Templates
             </h2>
             <p className="text-sm text-slate-500">
-              Run the most used reports or export in your preferred format.
+              Run live sales, inventory, customer, and collection reports.
             </p>
           </div>
         </div>
         {filteredTemplates.length === 0 ? (
           <EmptyState
             icon={FileText}
-            title={
-              reportTemplates.length === 0
-                ? "No report templates available"
-                : "No report templates match these filters"
-            }
-            description={
-              reportTemplates.length === 0
-                ? "Templates returned from the backend will appear here for sales, inventory, customer, and collection reports."
-                : "Try another filter or reset the category to All."
-            }
+            title="No report templates match these filters"
+            description="Try another filter or reset the category to All."
           />
         ) : (
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,260px),1fr))] items-stretch gap-4">

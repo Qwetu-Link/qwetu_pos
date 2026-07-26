@@ -146,6 +146,11 @@ export default function LoginForm() {
           )}
         </AuthSubmitButton>
       </form>
+
+      <div className="mt-5">
+        <p>email:   happyjoy@gmail.com</p>
+        <p>password: @Happy123</p>
+      </div>
     </AuthLayout>
   );
 }

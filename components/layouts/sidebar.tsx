@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import {
   LogOut,
   Menu,
@@ -31,7 +32,6 @@ export default function Sidebar({
   userRole,
 }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [statusMessage, setStatusMessage] = useState("");
   const pathname = usePathname();
 
   // Filter navigation items based on the user's role permissions
@@ -45,9 +45,8 @@ export default function Sidebar({
     setIsOpen(false);
   };
 
-  const handleLogout = () => {
-    setStatusMessage("Demo logout hook ready. Connect this to your auth flow.");
-    window.setTimeout(() => setStatusMessage(""), 3200);
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/login" });
   };
 
   return (
@@ -69,7 +68,15 @@ export default function Sidebar({
             {userRole} Profile
           </span>
         </div>
-        <div className="w-10"></div> {/* Spacer balance */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-600 transition hover:bg-red-100"
+          aria-label="Sign out"
+          title="Sign out"
+        >
+          <LogOut size={18} />
+        </button>
       </div>
 
       {/* Overlay Backdrop for Mobile */}
@@ -157,11 +164,6 @@ export default function Sidebar({
 
         {/* User Workspace Profile Footer */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-          {statusMessage ? (
-            <div className="mb-3 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
-              {statusMessage}
-            </div>
-          ) : null}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center shadow-inner">
               <ShieldAlert className="w-5 h-5 text-emerald-700" />
@@ -175,9 +177,11 @@ export default function Sidebar({
               </p>
             </div>
             <button
+              type="button"
               onClick={handleLogout}
               className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-              title="Logout Profile"
+              title="Sign out"
+              aria-label="Sign out"
             >
               <LogOut size={18} />
             </button>

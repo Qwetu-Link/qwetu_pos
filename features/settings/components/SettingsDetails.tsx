@@ -1,20 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, CreditCard, MessageCircle, Settings, ShieldCheck, UserCircle, UserCog, Users } from "lucide-react";
+import { ArrowRight, CreditCard, Settings, ShieldCheck, UserCircle, UserCog, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useState } from "react";
 import { teamUsers } from "@/utils/pos-details-data";
 import BillingSection from "./BillingSection";
-import WhatsAppSection from "./WhatsAppSection";
-import type { WhatsappStatus } from "./StatusBadge";
 
 export default function SettingsDetails() {
   const users = teamUsers;
   const isBillingActive = false;
-  const [whatsappStatus, setWhatsappStatus] =
-    useState<WhatsappStatus>("checking");
-  const [pairingCode, setPairingCode] = useState("");
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
@@ -25,7 +19,7 @@ export default function SettingsDetails() {
             Settings
           </h1>
           <p className="mt-1 text-slate-500">
-            Manage business profile, WhatsApp, roles, and permissions
+            Manage business profile, billing, roles, and permissions
           </p>
           </div>
           <Link
@@ -36,13 +30,7 @@ export default function SettingsDetails() {
             View Profile
           </Link>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <SettingsSummary
-            icon={MessageCircle}
-            label="WhatsApp"
-            value={whatsappStatus === "ready" ? "Connected" : "Needs setup"}
-            tone="text-blue-700"
-          />
+        <div className="grid gap-3 sm:grid-cols-2">
           <SettingsSummary
             icon={CreditCard}
             label="Billing"
@@ -57,12 +45,6 @@ export default function SettingsDetails() {
           />
         </div>
 
-        <WhatsAppSection
-          pairingCode={pairingCode}
-          status={whatsappStatus}
-          onPair={setPairingCode}
-          onStatus={setWhatsappStatus}
-        />
         <BillingSection isActive={isBillingActive} />
         <AccessManagementLinks teamCount={users.length} />
     </div>
