@@ -3,6 +3,8 @@ CREATE TYPE "public"."risk" AS ENUM('low', 'medium', 'high');--> statement-break
 CREATE TYPE "public"."segment" AS ENUM('New', 'Regular', 'VIP');--> statement-breakpoint
 CREATE TYPE "public"."order_status" AS ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled');--> statement-breakpoint
 CREATE TYPE "public"."bank_channel" AS ENUM('transfer', 'cheque', 'deposit', 'rtgs', 'eft');--> statement-breakpoint
+CREATE TYPE "public"."expense_category" AS ENUM('rent', 'utilities', 'salaries', 'transport', 'supplies', 'inventory_purchase', 'marketing', 'equipment', 'maintenance', 'insurance', 'taxes', 'loan_repayment', 'other');--> statement-breakpoint
+CREATE TYPE "public"."expense_status" AS ENUM('approved', 'pending', 'rejected');--> statement-breakpoint
 CREATE TYPE "public"."mpesa_channel" AS ENUM('paybill', 'till', 'send_money');--> statement-breakpoint
 CREATE TYPE "public"."payment_method" AS ENUM('cash', 'mpesa', 'airtel_money', 'bank', 'card');--> statement-breakpoint
 CREATE TYPE "public"."payment_receipt_status" AS ENUM('pending', 'completed', 'failed', 'reversed');--> statement-breakpoint
@@ -15,6 +17,7 @@ CREATE TABLE "product_images" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"business_id" uuid NOT NULL,
 	"product_id" uuid NOT NULL,
+	"variant_id" uuid,
 	"original_path" varchar(1000) NOT NULL,
 	"optimized_path" varchar(1000),
 	"thumbnail_path" varchar(1000),
@@ -121,6 +124,7 @@ CREATE TABLE "order_items" (
 	"location_id" uuid,
 	"quantity" integer NOT NULL,
 	"price" integer NOT NULL,
+	"original_price" integer,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
@@ -143,6 +147,37 @@ CREATE TABLE "orders" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "expense_items" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"business_id" uuid NOT NULL,
+	"expense_id" uuid NOT NULL,
+	"name" varchar(255) NOT NULL,
+	"quantity" integer DEFAULT 1 NOT NULL,
+	"unit_cost" integer NOT NULL,
+	"total" integer NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "expenses" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"business_id" uuid NOT NULL,
+	"expense_no" varchar(20) NOT NULL,
+	"transaction_id" uuid NOT NULL,
+	"category" "expense_category" NOT NULL,
+	"vendor_name" varchar(150),
+	"vendor_contact" varchar(50),
+	"amount" integer NOT NULL,
+	"status" "expense_status" DEFAULT 'pending' NOT NULL,
+	"receipt_url" varchar(500),
+	"is_recurring" boolean DEFAULT false,
+	"approved_by" uuid,
+	"approved_at" timestamp,
+	"notes" varchar(500),
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "payments" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"business_id" uuid NOT NULL,
@@ -159,7 +194,7 @@ CREATE TABLE "payments" (
 CREATE TABLE "transactions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"business_id" uuid NOT NULL,
-	"payment_id" uuid NOT NULL,
+	"payment_id" uuid,
 	"tnx_id" varchar(50) NOT NULL,
 	"currency" varchar(10) DEFAULT 'KES' NOT NULL,
 	"amount" integer NOT NULL,
@@ -309,6 +344,7 @@ CREATE TABLE "roles" (
 --> statement-breakpoint
 ALTER TABLE "product_images" ADD CONSTRAINT "product_images_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_images" ADD CONSTRAINT "product_images_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_images" ADD CONSTRAINT "product_images_variant_id_variants_id_fk" FOREIGN KEY ("variant_id") REFERENCES "public"."variants"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "products" ADD CONSTRAINT "products_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "products" ADD CONSTRAINT "products_category_id_category_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."category"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "category" ADD CONSTRAINT "category_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -326,6 +362,10 @@ ALTER TABLE "order_items" ADD CONSTRAINT "order_items_product_id_products_id_fk"
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_location_id_locations_id_fk" FOREIGN KEY ("location_id") REFERENCES "public"."locations"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "orders" ADD CONSTRAINT "orders_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "orders" ADD CONSTRAINT "orders_customer_id_customers_id_fk" FOREIGN KEY ("customer_id") REFERENCES "public"."customers"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "expense_items" ADD CONSTRAINT "expense_items_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "expense_items" ADD CONSTRAINT "expense_items_expense_id_expenses_id_fk" FOREIGN KEY ("expense_id") REFERENCES "public"."expenses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "expenses" ADD CONSTRAINT "expenses_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "expenses" ADD CONSTRAINT "expenses_transaction_id_transactions_id_fk" FOREIGN KEY ("transaction_id") REFERENCES "public"."transactions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payments" ADD CONSTRAINT "payments_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payments" ADD CONSTRAINT "payments_invoice_id_invoices_id_fk" FOREIGN KEY ("invoice_id") REFERENCES "public"."invoices"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -347,6 +387,8 @@ CREATE UNIQUE INDEX "unique_sku" ON "variants" USING btree ("sku","business_id")
 CREATE UNIQUE INDEX "business_customer_email_idx" ON "customers" USING btree ("business_id","email");--> statement-breakpoint
 CREATE UNIQUE INDEX "unique_order_item_idx" ON "order_items" USING btree ("order_id","variant_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "unique_order_customer_idx" ON "orders" USING btree ("customer_id","id");--> statement-breakpoint
+CREATE INDEX "expense_items_expense_idx" ON "expense_items" USING btree ("expense_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "business_expense_no_idx" ON "expenses" USING btree ("business_id","expense_no");--> statement-breakpoint
 CREATE INDEX "payments_invoice_idx" ON "payments" USING btree ("invoice_id");--> statement-breakpoint
 CREATE INDEX "payments_business_paid_at_idx" ON "payments" USING btree ("business_id","paid_at");--> statement-breakpoint
 CREATE UNIQUE INDEX "transactions_payment_unique_idx" ON "transactions" USING btree ("payment_id");--> statement-breakpoint

@@ -2,13 +2,10 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SessionProvider } from "next-auth/react";
 import "@/styles/globals.css";
-import { Geist } from "next/font/google";
 import { cn } from "@/utils/utils";
 import { TRPCReactProvider } from '@/trpc/client';
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "sonner";
-
-const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
   title: "QwetuLinks | Store POS",
@@ -22,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("dark h-full antialiased", "font-sans", geist.variable)} suppressHydrationWarning>
+    <html lang="en" className={cn("dark h-full antialiased", "font-sans")} suppressHydrationWarning>
       <body className="min-h-full flex flex-col">
         <TRPCReactProvider>
           <ThemeProvider>

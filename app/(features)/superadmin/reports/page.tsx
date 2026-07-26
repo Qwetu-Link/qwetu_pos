@@ -18,6 +18,8 @@ import {
 } from "@/features/superadmin/components/SuperAdminUI";
 import { getSuperAdminReportCenterData } from "@/db/queries/superadmin-reports";
 
+export const dynamic = "force-dynamic";
+
 const metricIcons = [CircleDollarSign, TrendingUp, Building2, ShieldAlert];
 
 const exportFormats = [

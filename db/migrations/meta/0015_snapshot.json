@@ -1,6 +1,6 @@
 {
-  "id": "4c9abfab-ac29-4073-bf5d-d7d313cd9851",
-  "prevId": "bc9ac987-53ad-47a7-862a-c34466e3e45e",
+  "id": "c53b8d90-366c-4d4c-8b28-c1de10d95ede",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -26,6 +26,12 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "variant_id": {
+          "name": "variant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         },
         "original_path": {
           "name": "original_path",
@@ -136,6 +142,19 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "product_images_variant_id_variants_id_fk": {
+          "name": "product_images_variant_id_variants_id_fk",
+          "tableFrom": "product_images",
+          "tableTo": "variants",
+          "columnsFrom": [
+            "variant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },

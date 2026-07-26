@@ -6,6 +6,8 @@ import {
   buildSuperAdminReportXls,
 } from "@/features/superadmin/reports/report-export";
 
+export const dynamic = "force-dynamic";
+
 const exportConfig = {
   csv: {
     contentType: "text/csv; charset=utf-8",
