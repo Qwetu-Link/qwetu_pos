@@ -12,17 +12,19 @@ import {
 } from "lucide-react";
 import Pagination from "@/components/common/Pagination";
 import {
-  expenses,
   formatCurrency,
 } from "@/data/transaction-data";
 import type { Expense } from "@/types/transactions";
-import AddExpenseModal from "./AddExpenseModal";
+import {
+  useDeleteExpense,
+  useGetExpenses,
+} from "@/hooks/useExpenses";
 import ExpensesTable from "./ExpensesTable";
 import TransactionStatCard from "./TransactionStatCard";
 
 export default function ExpensesPage() {
-  const expenseItems = expenses;
-  const [isExpenseOpen, setIsExpenseOpen] = useState(false);
+  const { expenses: expenseItems, isLoading, isError, error } = useGetExpenses();
+  const deleteExpense = useDeleteExpense();
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
@@ -47,8 +49,8 @@ export default function ExpensesPage() {
     visiblePage * perPage,
   );
 
-  function addExpense(expense: Expense) {
-    void expense;
+  async function removeExpense(expense: Expense) {
+    await deleteExpense.mutateAsync({ id: expense.id });
     setCurrentPage(1);
   }
 
@@ -58,8 +60,7 @@ export default function ExpensesPage() {
   }
 
   return (
-    <>
-      <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50">
         <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
           <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
@@ -78,14 +79,13 @@ export default function ExpensesPage() {
                 Review business spending, approvals, and expense categories.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsExpenseOpen(true)}
+            <Link
+              href="/admin/transactions/expenses/add"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
             >
               <Plus className="h-4 w-4" />
               Add Expense
-            </button>
+            </Link>
           </header>
 
           <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -125,19 +125,31 @@ export default function ExpensesPage() {
                   Operational expenses and approval state.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsExpenseOpen(true)}
+              <Link
+                href="/admin/transactions/expenses/add"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 <Plus className="h-4 w-4" />
                 Add Expense
-              </button>
+              </Link>
             </div>
 
-            <ExpensesTable expenses={paginatedExpenses} />
+            {isError ? (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {error?.message ?? "Could not load expenses."}
+              </div>
+            ) : isLoading ? (
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
+                Loading expenses...
+              </div>
+            ) : (
+              <ExpensesTable
+                expenses={paginatedExpenses}
+                onDelete={removeExpense}
+              />
+            )}
           </section>
-          {expenseItems.length > 0 && (
+          {!isLoading && !isError && expenseItems.length > 0 && (
             <Pagination
               currentPage={visiblePage}
               totalPages={totalPages}
@@ -148,12 +160,6 @@ export default function ExpensesPage() {
             />
           )}
         </div>
-      </main>
-      <AddExpenseModal
-        isOpen={isExpenseOpen}
-        onClose={() => setIsExpenseOpen(false)}
-        onAddExpense={addExpense}
-      />
-    </>
+    </main>
   );
 }

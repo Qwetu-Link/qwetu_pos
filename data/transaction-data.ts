@@ -13,6 +13,7 @@ export const transactions: Transaction[] = [
   {
     id: "TXN-1001",
     date: "2026-05-29",
+    customerId: "demo-sarah-mwangi",
     customer: "Sarah Mwangi",
     customerPhone: "+254 712 345 678",
     type: "sale",
@@ -24,6 +25,7 @@ export const transactions: Transaction[] = [
   {
     id: "TXN-1002",
     date: "2026-05-29",
+    customerId: "demo-john-kamau",
     customer: "John Kamau",
     customerPhone: "+254 723 456 789",
     type: "installment",
@@ -35,6 +37,7 @@ export const transactions: Transaction[] = [
   {
     id: "TXN-1003",
     date: "2026-05-28",
+    customerId: "demo-grace-njeri",
     customer: "Grace Njeri",
     customerPhone: "+254 734 567 890",
     type: "sale",
@@ -46,6 +49,7 @@ export const transactions: Transaction[] = [
   {
     id: "TXN-1004",
     date: "2026-05-28",
+    customerId: "demo-mary-wanjiku",
     customer: "Mary Wanjiku",
     customerPhone: "+254 745 678 901",
     type: "refund",
@@ -57,6 +61,7 @@ export const transactions: Transaction[] = [
   {
     id: "TXN-1005",
     date: "2026-05-27",
+    customerId: "demo-peter-omondi",
     customer: "Peter Omondi",
     customerPhone: "+254 756 789 012",
     type: "sale",
@@ -68,6 +73,7 @@ export const transactions: Transaction[] = [
   {
     id: "TXN-1006",
     date: "2026-05-27",
+    customerId: "demo-james-otieno",
     customer: "James Otieno",
     customerPhone: "+254 767 890 123",
     type: "installment",
@@ -81,6 +87,7 @@ export const transactions: Transaction[] = [
 export const expenses: Expense[] = [
   {
     id: "EXP-501",
+    expenseNo: "EXP-DEMOA",
     date: "2026-05-29",
     category: "Stock purchase",
     vendor: "Nairobi Garment Suppliers",
@@ -88,9 +95,11 @@ export const expenses: Expense[] = [
     amount: 86000,
     status: "approved",
     note: "Denim jackets and leather belts restock",
+    items: [{ id: "EXP-501-ITEM-1", name: "Denim jackets and leather belts restock", quantity: 1, unitCost: 86000, total: 86000 }],
   },
   {
     id: "EXP-502",
+    expenseNo: "EXP-DEMOB",
     date: "2026-05-28",
     category: "Logistics",
     vendor: "Rider Dispatch",
@@ -98,9 +107,11 @@ export const expenses: Expense[] = [
     amount: 4200,
     status: "approved",
     note: "Customer deliveries",
+    items: [{ id: "EXP-502-ITEM-1", name: "Customer deliveries", quantity: 1, unitCost: 4200, total: 4200 }],
   },
   {
     id: "EXP-503",
+    expenseNo: "EXP-DEMOC",
     date: "2026-05-27",
     category: "Utilities",
     vendor: "Kenya Power",
@@ -108,9 +119,11 @@ export const expenses: Expense[] = [
     amount: 11800,
     status: "pending",
     note: "Monthly electricity token",
+    items: [{ id: "EXP-503-ITEM-1", name: "Monthly electricity token", quantity: 1, unitCost: 11800, total: 11800 }],
   },
   {
     id: "EXP-504",
+    expenseNo: "EXP-DEMOD",
     date: "2026-05-26",
     category: "Marketing",
     vendor: "Meta Ads",
@@ -118,9 +131,11 @@ export const expenses: Expense[] = [
     amount: 15000,
     status: "approved",
     note: "May footwear promotion campaign",
+    items: [{ id: "EXP-504-ITEM-1", name: "May footwear promotion campaign", quantity: 1, unitCost: 15000, total: 15000 }],
   },
   {
     id: "EXP-505",
+    expenseNo: "EXP-DEMOE",
     date: "2026-05-25",
     category: "Repairs",
     vendor: "TailorFix Ltd",
@@ -128,5 +143,6 @@ export const expenses: Expense[] = [
     amount: 7300,
     status: "rejected",
     note: "Duplicate alteration claim",
+    items: [{ id: "EXP-505-ITEM-1", name: "Duplicate alteration claim", quantity: 1, unitCost: 7300, total: 7300 }],
   },
 ];

@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { customerTable } from "@/db/schema/customers";
 import { invoiceTable } from "@/db/schema/invoice";
 import { orderItemTable, orderTable } from "@/db/schema/orders";
-import { paymentTable } from "@/db/schema/payments";
+import { paymentTable, transactionTable } from "@/db/schema/payments";
 import { productsTable } from "@/db/schema/products";
 import { locationTable, variantInventoryTable, variantsTable } from "@/db/schema/variants";
 import type {
@@ -41,6 +41,11 @@ type RecordOrderPaymentInput = {
     paymentMethod: "M-Pesa" | "Airtel Money" | "Bank Transfer" | "Cash" | "Card";
     reference?: string;
     note?: string;
+};
+
+type PaymentReceiptRow = {
+    payment: typeof paymentTable.$inferSelect;
+    transaction: typeof transactionTable.$inferSelect | null;
 };
 
 const INVOICE_PREFIX = "INV";
@@ -143,7 +148,7 @@ function getInvoiceValues(data: {
 
 function mapInvoiceWithReceipts(
     row: typeof invoiceTable.$inferSelect | undefined,
-    payments: (typeof paymentTable.$inferSelect)[],
+    payments: PaymentReceiptRow[],
 ): OrderInvoice | undefined {
     if (!row) return undefined;
 
@@ -159,28 +164,87 @@ function mapInvoiceWithReceipts(
         startDate: toIsoDate(row.startDate),
         dueDate: toIsoDate(row.dueDate),
         receipts: payments
-            .sort((a, b) => a.paidAt.getTime() - b.paidAt.getTime())
-            .map((payment) => ({
+            .sort((a, b) => a.payment.paidAt.getTime() - b.payment.paidAt.getTime())
+            .map(({ payment, transaction }) => ({
                 id: payment.id,
                 amount: payment.amount,
                 date: toIsoDate(payment.paidAt),
-                method: getReadablePaymentMethod(payment.paymentMethod),
-                ref: payment.reference ?? "",
-                note: payment.notes ?? "",
+                method: transaction ? getReadablePaymentMethod(transaction.paymentMethod) : "Payment",
+                ref: transaction?.reference ?? transaction?.tnxId ?? "",
+                note: payment.notes ?? transaction?.notes ?? "",
             })),
     };
 }
 
-function getReadablePaymentMethod(method: (typeof paymentTable.$inferSelect)["paymentMethod"]) {
+function getReadablePaymentMethod(method: (typeof transactionTable.$inferSelect)["paymentMethod"]) {
     if (method === "mpesa") return "M-Pesa";
+    if (method === "airtel_money") return "Airtel Money";
     if (method === "bank") return "Bank Transfer";
+    if (method === "card") return "Card";
     return "Cash";
 }
 
 function getDbPaymentMethod(method: RecordOrderPaymentInput["paymentMethod"]) {
     if (method === "Cash") return "cash" as const;
-    if (method === "Bank Transfer" || method === "Card") return "bank" as const;
+    if (method === "Bank Transfer") return "bank" as const;
+    if (method === "Card") return "card" as const;
+    if (method === "Airtel Money") return "airtel_money" as const;
     return "mpesa" as const;
+}
+
+function getRecordPaymentTransactionType(order: typeof orderTable.$inferSelect) {
+    if (order.depositPaid === 0) return "deposit" as const;
+    if (order.paymentType === "installment") return "installment" as const;
+    return "payment" as const;
+}
+
+function getPaymentMethodLetter(method: RecordOrderPaymentInput["paymentMethod"]) {
+    return method.trim().charAt(0).toUpperCase();
+}
+
+function getDigitCode(length: number) {
+    const max = 10 ** length;
+    return String(crypto.randomInt(0, max)).padStart(length, "0");
+}
+
+async function getUniqueTransactionId(
+    client: DbClient,
+    businessId: string,
+    method: RecordOrderPaymentInput["paymentMethod"],
+) {
+    const methodLetter = getPaymentMethodLetter(method);
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+        const tnxId = `TXN-${getDigitCode(4)}-${methodLetter}`;
+        const [existing] = await client
+            .select({ id: transactionTable.id })
+            .from(transactionTable)
+            .where(and(
+                eq(transactionTable.businessId, businessId),
+                eq(transactionTable.tnxId, tnxId),
+            ));
+
+        if (!existing) return tnxId;
+    }
+
+    return `TXN-${getDigitCode(4)}-${methodLetter}-${crypto.randomUUID().slice(0, 4).toUpperCase()}`;
+}
+
+async function getUniqueCashReference(client: DbClient, businessId: string) {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+        const reference = `CSH-${getDigitCode(5)}`;
+        const [existing] = await client
+            .select({ id: transactionTable.id })
+            .from(transactionTable)
+            .where(and(
+                eq(transactionTable.businessId, businessId),
+                eq(transactionTable.reference, reference),
+            ));
+
+        if (!existing) return reference;
+    }
+
+    return `CSH-${getDigitCode(5)}-${crypto.randomUUID().slice(0, 4).toUpperCase()}`;
 }
 
 function mapOrderRecord(data: {
@@ -189,7 +253,7 @@ function mapOrderRecord(data: {
     items: (typeof orderItemTable.$inferSelect)[];
     locations: (typeof locationTable.$inferSelect)[];
     invoice?: typeof invoiceTable.$inferSelect;
-    payments?: (typeof paymentTable.$inferSelect)[];
+    payments?: PaymentReceiptRow[];
 }): Order {
     const quantity = data.items.reduce((sum, item) => sum + item.quantity, 0);
     const invoice = mapInvoiceWithReceipts(data.invoice, data.payments ?? []);
@@ -220,7 +284,7 @@ function mapOrderRecord(data: {
             name: item.name,
             qty: item.quantity,
             price: item.price,
-            originalPrice: item.price,
+            originalPrice: item.originalPrice ?? item.price,
             locationName: toOrderLocationName(
                 data.locations.find((location) => location.id === item.locationId)?.name,
             ),
@@ -464,22 +528,30 @@ async function getMappedOrders(orders: (typeof orderTable.$inferSelect)[]) {
     ]);
     const invoiceIds = invoices.map((invoice) => invoice.id);
     const payments = invoiceIds.length
-        ? await db.select().from(paymentTable).where(inArray(paymentTable.invoiceId, invoiceIds))
+        ? await db
+            .select({
+                payment: paymentTable,
+                transaction: transactionTable,
+            })
+            .from(paymentTable)
+            .leftJoin(transactionTable, eq(transactionTable.paymentId, paymentTable.id))
+            .where(inArray(paymentTable.invoiceId, invoiceIds))
         : [];
 
     return orders
         .map((order) => {
             const customer = customers.find((item) => item.id === order.customerId);
             if (!customer) return null;
+            const invoice = invoices.find((invoice) => invoice.orderId === order.id);
 
             return mapOrderRecord({
                 order,
                 customer,
                 items: items.filter((item) => item.orderId === order.id),
                 locations,
-                invoice: invoices.find((invoice) => invoice.orderId === order.id),
+                invoice,
                 payments: payments.filter((payment) =>
-                    payment.invoiceId === invoices.find((invoice) => invoice.orderId === order.id)?.id
+                    payment.payment.invoiceId === invoice?.id
                 ),
             });
         })
@@ -571,10 +643,11 @@ export async function createOrderQuery(data: OrderWriteInput) {
                     name: item.name,
                     quantity: item.qty,
                     price: item.price,
+                    originalPrice: item.originalPrice,
                 })),
             );
 
-        await tx.insert(invoiceTable).values(
+        const [invoice] = await tx.insert(invoiceTable).values(
             getInvoiceValues({
                 businessId: data.businessId,
                 orderId: order.id,
@@ -584,7 +657,40 @@ export async function createOrderQuery(data: OrderWriteInput) {
                 installmentPlan: data.installmentPlan,
                 installmentStartDate,
             }),
-        );
+        ).returning();
+
+        if (amountPaid > 0) {
+            const paidAt = createdAt;
+            const transactionReference = await getUniqueCashReference(tx, data.businessId);
+            const transactionId = await getUniqueTransactionId(tx, data.businessId, "Cash");
+            const [payment] = await tx.insert(paymentTable).values({
+                businessId: data.businessId,
+                invoiceId: invoice.id,
+                amount: amountPaid,
+                paidAt,
+                notes:
+                    data.paymentType === "installment"
+                        ? "Initial deposit paid when the order was created"
+                        : "Full payment recorded when the order was created",
+            }).returning();
+
+            await tx.insert(transactionTable).values({
+                businessId: data.businessId,
+                paymentId: payment.id,
+                tnxId: transactionId,
+                amount: amountPaid,
+                tnxType: data.paymentType === "installment" ? "deposit" : "sale",
+                status: "success",
+                paymentMethod: "cash",
+                provider: "Cash",
+                reference: transactionReference,
+                transactedAt: paidAt,
+                notes:
+                    data.paymentType === "installment"
+                        ? "Initial order deposit"
+                        : "Initial full order payment",
+            });
+        }
 
         await deductInventoryRows(tx, inventoryRows);
 
@@ -677,6 +783,7 @@ export async function updateOrderQuery(data: OrderWriteInput & { id: string }) {
                     name: item.name,
                     quantity: item.qty,
                     price: item.price,
+                    originalPrice: item.originalPrice,
                 })),
             );
 
@@ -745,15 +852,36 @@ export async function recordOrderPaymentQuery(data: RecordOrderPaymentInput) {
             data.paymentMethod === "Airtel Money" || data.paymentMethod === "Card"
                 ? `${data.paymentMethod}${data.note ? ` - ${data.note}` : ""}`
                 : data.note;
+        const transactionId = await getUniqueTransactionId(
+            tx,
+            data.businessId,
+            data.paymentMethod,
+        );
+        const paymentReference =
+            data.paymentMethod === "Cash"
+                ? data.reference || await getUniqueCashReference(tx, data.businessId)
+                : data.reference || null;
 
-        await tx.insert(paymentTable).values({
+        const [payment] = await tx.insert(paymentTable).values({
             businessId: data.businessId,
             invoiceId: invoice.id,
             amount,
-            paymentMethod: getDbPaymentMethod(data.paymentMethod),
-            reference: data.reference || null,
             paidAt,
             notes: originalMethodNote || null,
+        }).returning();
+
+        await tx.insert(transactionTable).values({
+            businessId: data.businessId,
+            paymentId: payment.id,
+            tnxId: transactionId,
+            amount,
+            tnxType: getRecordPaymentTransactionType(order),
+            status: "success",
+            paymentMethod: getDbPaymentMethod(data.paymentMethod),
+            provider: data.paymentMethod,
+            reference: paymentReference,
+            transactedAt: paidAt,
+            notes: data.note || null,
         });
 
         await tx

@@ -4,6 +4,7 @@ export interface PlanProduct {
   name: string;
   quantity: number;
   unitPrice: number;
+  originalPrice?: number;
   total: number;
 }
 

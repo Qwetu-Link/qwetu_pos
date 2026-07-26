@@ -50,6 +50,55 @@
       "when": 1785007688649,
       "tag": "0006_nifty_blob",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1785100000000,
+      "tag": "0007_normalize_payments_transactions",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1785053133587,
+      "tag": "0008_familiar_mercury",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1785100000002,
+      "tag": "0009_add_order_item_original_price",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1785100000003,
+      "tag": "0010_expense_crud_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1785100000004,
+      "tag": "0011_add_expense_number",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1785100000005,
+      "tag": "0012_add_expense_items",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1785060845837,
+      "tag": "0013_wide_patch",
+      "breakpoints": true
     }
   ]
 }

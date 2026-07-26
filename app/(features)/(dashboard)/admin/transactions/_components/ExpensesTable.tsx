@@ -1,13 +1,20 @@
+import Link from "next/link";
 import {
   formatCurrency,
   formatDate,
 } from "@/data/transaction-data";
 import EmptyState from "@/components/common/EmptyState";
-import { WalletCards } from "lucide-react";
+import { Eye, Pencil, Trash2, WalletCards } from "lucide-react";
 import type { Expense } from "@/types/transactions";
 import ExpenseStatusBadge from "./ExpenseStatusBadge";
 
-export default function ExpensesTable({ expenses }: { expenses: Expense[] }) {
+export default function ExpensesTable({
+  expenses,
+  onDelete,
+}: {
+  expenses: Expense[];
+  onDelete: (expense: Expense) => void;
+}) {
   if (expenses.length === 0) {
     return (
       <EmptyState
@@ -31,6 +38,7 @@ export default function ExpensesTable({ expenses }: { expenses: Expense[] }) {
             <th className="py-3">Method</th>
             <th className="py-3 text-right">Amount</th>
             <th className="py-3 text-right">Status</th>
+            <th className="py-3 text-right">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -40,8 +48,10 @@ export default function ExpensesTable({ expenses }: { expenses: Expense[] }) {
               className="border-b border-slate-100 last:border-0"
             >
               <td className="py-4">
-                <p className="font-semibold text-slate-900">{expense.id}</p>
-                <p className="text-xs text-slate-500">{expense.note}</p>
+                <p className="font-semibold text-slate-900">{expense.expenseNo}</p>
+                <p className="text-xs text-slate-500">
+                  {expense.items.length} item{expense.items.length === 1 ? "" : "s"}
+                </p>
               </td>
               <td className="py-4 text-slate-600">
                 {formatDate(expense.date)}
@@ -54,6 +64,35 @@ export default function ExpensesTable({ expenses }: { expenses: Expense[] }) {
               </td>
               <td className="py-4 text-right">
                 <ExpenseStatusBadge status={expense.status} />
+              </td>
+              <td className="py-4 text-right">
+                <div className="inline-flex items-center gap-2">
+                  <Link
+                    href={`/admin/transactions/expenses/${expense.id}`}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                    aria-label={`View expense ${expense.expenseNo}`}
+                    title="View expense"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Link>
+                  <Link
+                    href={`/admin/transactions/expenses/${expense.id}/edit`}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+                    aria-label={`Edit expense ${expense.expenseNo}`}
+                    title="Edit expense"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(expense)}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                    aria-label={`Delete expense ${expense.id}`}
+                    title="Delete expense"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </td>
             </tr>
           ))}

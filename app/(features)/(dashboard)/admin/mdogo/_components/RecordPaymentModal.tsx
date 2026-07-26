@@ -171,7 +171,7 @@ export default function RecordPaymentModal({
               </span>
               <input
                 {...register("reference")}
-                placeholder={selectedPaymentMethod === "Cash" ? "Receipt number" : "Transaction ref"}
+                placeholder={selectedPaymentMethod === "Cash" ? "Auto: CSH-12345" : "Transaction ref"}
                 className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
               />
             </label>

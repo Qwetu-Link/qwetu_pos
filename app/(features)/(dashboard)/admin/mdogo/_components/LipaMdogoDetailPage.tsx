@@ -226,13 +226,12 @@ export default function LipaMdogoDetailPage({ planId }: { planId: string }) {
                     </div>
                   </div>
                   <div className="hidden overflow-x-auto sm:block">
-                    <table className="w-full min-w-[620px] border-collapse text-left">
+                    <table className="w-full min-w-[520px] border-collapse text-left">
                       <thead>
                         <tr className="bg-slate-50 text-[10px] font-bold uppercase text-slate-500">
                           <th className="px-4 py-3">Item</th>
                           <th className="px-4 py-3 text-right">Qty</th>
                           <th className="px-4 py-3 text-right">Unit</th>
-                          <th className="px-4 py-3 text-right">Total</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -245,25 +244,18 @@ export default function LipaMdogoDetailPage({ planId }: { planId: string }) {
                               {product.quantity}
                             </td>
                             <td className="px-4 py-3 text-right text-sm text-slate-600">
-                              {formatCurrency(product.unitPrice)}
-                            </td>
-                            <td className="px-4 py-3 text-right text-sm font-bold text-slate-900">
-                              {formatCurrency(product.total)}
+                              <PlanProductPrice product={product} />
                             </td>
                           </tr>
                         ))}
                       </tbody>
-                      <tfoot>
-                        <tr className="border-t border-slate-200 bg-slate-50">
-                          <td className="px-4 py-3 text-sm font-bold text-slate-900" colSpan={3}>
-                            Invoice Total
-                          </td>
-                          <td className="px-4 py-3 text-right text-base font-extrabold text-slate-950">
-                            {formatCurrency(plan.totalAmount)}
-                          </td>
-                        </tr>
-                      </tfoot>
                     </table>
+                    <div className="border-t border-slate-200 bg-slate-50 p-4">
+                      <div className="ml-auto grid max-w-sm gap-2 rounded-lg border border-slate-200 bg-white p-4">
+                        <SummaryAmount label="Subtotal" value={formatCurrency(plan.totalAmount)} />
+                        <SummaryAmount label="Total" value={formatCurrency(plan.totalAmount)} strong />
+                      </div>
+                    </div>
                   </div>
                   </>
                 )}
@@ -560,9 +552,50 @@ function InvoiceItemCard({ product }: { product: PlanProduct }) {
       <div className="text-sm font-bold text-slate-900">{product.name}</div>
       <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
         <MobileMetric label="Qty" value={String(product.quantity)} />
-        <MobileMetric label="Unit" value={formatCurrency(product.unitPrice)} />
+        <div className="min-w-0 rounded-md bg-slate-50 p-2">
+          <div className="text-[10px] font-bold uppercase text-slate-500">Unit</div>
+          <div className="mt-1">
+            <PlanProductPrice product={product} />
+          </div>
+        </div>
         <MobileMetric label="Total" value={formatCurrency(product.total)} strong />
       </div>
+    </div>
+  );
+}
+
+function PlanProductPrice({ product }: { product: PlanProduct }) {
+  if (product.originalPrice && product.unitPrice < product.originalPrice) {
+    return (
+      <span className="inline-flex flex-col items-end gap-0.5">
+        <span className="text-xs text-slate-400 line-through">
+          {formatCurrency(product.originalPrice)}
+        </span>
+        <span className="font-semibold text-emerald-700">
+          {formatCurrency(product.unitPrice)}
+        </span>
+      </span>
+    );
+  }
+
+  return <span>{formatCurrency(product.unitPrice)}</span>;
+}
+
+function SummaryAmount({
+  label,
+  value,
+  strong = false,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-sm font-semibold text-slate-500">{label}</span>
+      <span className={`${strong ? "text-lg font-extrabold text-slate-950" : "text-sm font-bold text-slate-800"}`}>
+        {value}
+      </span>
     </div>
   );
 }

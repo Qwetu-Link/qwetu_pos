@@ -13,12 +13,13 @@ import {
 import Pagination from "@/components/common/Pagination";
 import {
   formatCurrency,
-  transactions,
 } from "@/data/transaction-data";
+import { useGetTransactions } from "@/hooks/useTransactions";
 import TransactionStatCard from "./TransactionStatCard";
 import TransactionsTable from "./TransactionsTable";
 
 export default function TransactionsPage() {
+  const { transactions, isLoading, isError, error } = useGetTransactions();
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
@@ -30,7 +31,7 @@ export default function TransactionsPage() {
     const failed = transactions.filter((item) => item.status === "failed").length;
 
     return { income, pending, failed };
-  }, []);
+  }, [transactions]);
 
   const totalPages = Math.max(1, Math.ceil(transactions.length / perPage));
   const visiblePage = Math.min(currentPage, totalPages);
@@ -106,9 +107,19 @@ export default function TransactionsPage() {
             <CreditCard className="h-5 w-5 text-slate-400" />
           </div>
 
-          <TransactionsTable transactions={paginatedTransactions} />
+          {isError ? (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              {error?.message ?? "Could not load transactions."}
+            </div>
+          ) : isLoading ? (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
+              Loading transactions...
+            </div>
+          ) : (
+            <TransactionsTable transactions={paginatedTransactions} />
+          )}
         </section>
-        {transactions.length > 0 && (
+        {!isLoading && !isError && transactions.length > 0 && (
           <Pagination
             currentPage={visiblePage}
             totalPages={totalPages}

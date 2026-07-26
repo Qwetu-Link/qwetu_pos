@@ -35,6 +35,7 @@ export const orderItemTable = pgTable("order_items", {
     }),
     quantity: integer("quantity").notNull(),
     price: integer("price").notNull(),
+    originalPrice: integer("original_price"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
         .defaultNow()

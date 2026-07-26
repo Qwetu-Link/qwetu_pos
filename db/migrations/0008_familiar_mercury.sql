@@ -2,9 +2,14 @@ CREATE TYPE "public"."inventory_status" AS ENUM('healthy', 'low', 'critical', 'r
 CREATE TYPE "public"."risk" AS ENUM('low', 'medium', 'high');--> statement-breakpoint
 CREATE TYPE "public"."segment" AS ENUM('New', 'Regular', 'VIP');--> statement-breakpoint
 CREATE TYPE "public"."order_status" AS ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled');--> statement-breakpoint
-CREATE TYPE "public"."payment_method" AS ENUM('cash', 'mpesa', 'bank');--> statement-breakpoint
+CREATE TYPE "public"."bank_channel" AS ENUM('transfer', 'cheque', 'deposit', 'rtgs', 'eft');--> statement-breakpoint
+CREATE TYPE "public"."mpesa_channel" AS ENUM('paybill', 'till', 'send_money');--> statement-breakpoint
+CREATE TYPE "public"."payment_method" AS ENUM('cash', 'mpesa', 'airtel_money', 'bank', 'card');--> statement-breakpoint
+CREATE TYPE "public"."payment_receipt_status" AS ENUM('pending', 'completed', 'failed', 'reversed');--> statement-breakpoint
 CREATE TYPE "public"."payment_status" AS ENUM('paid', 'partial', 'unpaid');--> statement-breakpoint
 CREATE TYPE "public"."payment_type" AS ENUM('full', 'installment');--> statement-breakpoint
+CREATE TYPE "public"."tnx_type" AS ENUM('sale', 'refund', 'installment', 'payment', 'deposit', 'withdrawal', 'expense', 'purchase', 'purchase_return', 'discount', 'adjustment');--> statement-breakpoint
+CREATE TYPE "public"."transaction_status" AS ENUM('pending', 'success', 'failed', 'reversed');--> statement-breakpoint
 CREATE TYPE "public"."invoice_status" AS ENUM('draft', 'issued', 'partially_paid', 'paid', 'overdue', 'cancelled');--> statement-breakpoint
 CREATE TABLE "product_images" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
@@ -143,10 +148,40 @@ CREATE TABLE "payments" (
 	"business_id" uuid NOT NULL,
 	"invoice_id" uuid NOT NULL,
 	"amount" integer NOT NULL,
-	"payment_method" "payment_method" NOT NULL,
-	"reference" varchar(255),
+	"status" "payment_receipt_status" DEFAULT 'completed' NOT NULL,
 	"received_by" uuid,
 	"paid_at" timestamp DEFAULT now() NOT NULL,
+	"notes" varchar(500),
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "transactions" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"business_id" uuid NOT NULL,
+	"payment_id" uuid NOT NULL,
+	"tnx_id" varchar(50) NOT NULL,
+	"currency" varchar(10) DEFAULT 'KES' NOT NULL,
+	"amount" integer NOT NULL,
+	"tnx_type" "tnx_type" NOT NULL,
+	"status" "transaction_status" DEFAULT 'success' NOT NULL,
+	"payment_method" "payment_method" NOT NULL,
+	"provider" varchar(100),
+	"reference" varchar(255),
+	"mpesa_channel" "mpesa_channel",
+	"mpesa_receipt_number" varchar(20),
+	"mpesa_phone_number" varchar(15),
+	"mpesa_paybill_or_till" varchar(20),
+	"merchant_request_id" varchar(50),
+	"checkout_request_id" varchar(50),
+	"bank_channel" "bank_channel",
+	"bank_name" varchar(100),
+	"bank_account_number" varchar(50),
+	"bank_branch" varchar(100),
+	"bank_transaction_ref" varchar(50),
+	"terminal_id" varchar(50),
+	"authorization_code" varchar(50),
+	"transacted_at" timestamp DEFAULT now() NOT NULL,
 	"notes" varchar(500),
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
@@ -293,6 +328,8 @@ ALTER TABLE "orders" ADD CONSTRAINT "orders_business_id_business_id_fk" FOREIGN 
 ALTER TABLE "orders" ADD CONSTRAINT "orders_customer_id_customers_id_fk" FOREIGN KEY ("customer_id") REFERENCES "public"."customers"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payments" ADD CONSTRAINT "payments_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payments" ADD CONSTRAINT "payments_invoice_id_invoices_id_fk" FOREIGN KEY ("invoice_id") REFERENCES "public"."invoices"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "transactions" ADD CONSTRAINT "transactions_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "transactions" ADD CONSTRAINT "transactions_payment_id_payments_id_fk" FOREIGN KEY ("payment_id") REFERENCES "public"."payments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invoices" ADD CONSTRAINT "invoices_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invoices" ADD CONSTRAINT "invoices_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "role_permission" ADD CONSTRAINT "role_permission_role_id_roles_id_fk" FOREIGN KEY ("role_id") REFERENCES "public"."roles"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -310,5 +347,10 @@ CREATE UNIQUE INDEX "unique_sku" ON "variants" USING btree ("sku","business_id")
 CREATE UNIQUE INDEX "business_customer_email_idx" ON "customers" USING btree ("business_id","email");--> statement-breakpoint
 CREATE UNIQUE INDEX "unique_order_item_idx" ON "order_items" USING btree ("order_id","variant_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "unique_order_customer_idx" ON "orders" USING btree ("customer_id","id");--> statement-breakpoint
+CREATE INDEX "payments_invoice_idx" ON "payments" USING btree ("invoice_id");--> statement-breakpoint
+CREATE INDEX "payments_business_paid_at_idx" ON "payments" USING btree ("business_id","paid_at");--> statement-breakpoint
+CREATE UNIQUE INDEX "transactions_payment_unique_idx" ON "transactions" USING btree ("payment_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "transactions_business_tnx_unique_idx" ON "transactions" USING btree ("business_id","tnx_id");--> statement-breakpoint
+CREATE INDEX "transactions_reference_idx" ON "transactions" USING btree ("reference");--> statement-breakpoint
 CREATE UNIQUE INDEX "business_invoice_idx" ON "invoices" USING btree ("business_id","invoice_number");--> statement-breakpoint
 CREATE UNIQUE INDEX "unique_name_idx" ON "roles" USING btree ("business_id","name");

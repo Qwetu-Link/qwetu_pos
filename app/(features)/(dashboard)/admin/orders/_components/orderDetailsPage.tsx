@@ -303,10 +303,10 @@ export default function OrderDetailsPage() {
                       </div>
                     </div>
                     <div className="hidden overflow-x-auto sm:block">
-                      <table className="w-full min-w-[860px] border-collapse text-left text-sm">
+                      <table className="w-full min-w-[760px] border-collapse text-left text-sm">
                         <thead>
                           <tr className="bg-slate-50 text-[10px] font-bold uppercase text-slate-500">
-                            {["Item", "SKU", "Location", "Qty", "Unit Price", "Subtotal"].map((heading) => (
+                            {["Item", "SKU", "Location", "Qty", "Unit Price"].map((heading) => (
                               <th key={heading} className="px-4 py-3">
                                 {heading}
                               </th>
@@ -323,23 +323,16 @@ export default function OrderDetailsPage() {
                               <td className="px-4 py-3 text-slate-600">
                                 <PriceDisplay item={item} />
                               </td>
-                              <td className="px-4 py-3 font-bold text-emerald-700">
-                                {formatCurrency(item.qty * item.price)}
-                              </td>
                             </tr>
                           ))}
                         </tbody>
-                        <tfoot>
-                          <tr className="border-t border-slate-200 bg-slate-50">
-                            <td colSpan={5} className="px-4 py-3 text-right font-bold text-slate-900">
-                              Total
-                            </td>
-                            <td className="px-4 py-3 text-base font-extrabold text-emerald-700">
-                              {formatCurrency(order.total)}
-                            </td>
-                          </tr>
-                        </tfoot>
                       </table>
+                      <div className="border-t border-slate-200 bg-slate-50 p-4">
+                        <div className="ml-auto grid max-w-sm gap-2 rounded-lg border border-slate-200 bg-white p-4">
+                          <SummaryAmount label="Subtotal" value={formatCurrency(order.total)} />
+                          <SummaryAmount label="Total" value={formatCurrency(order.total)} strong />
+                        </div>
+                      </div>
                     </div>
                   </>
                 )}
@@ -534,7 +527,7 @@ export default function OrderDetailsPage() {
                 <input
                   type="text"
                   {...registerPayment("reference")}
-                  placeholder="Transaction ID"
+                  placeholder="Optional - cash auto-generates CSH-12345"
                   className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </label>
@@ -635,7 +628,12 @@ function OrderItemCard({ item }: { item: LineItem }) {
       <div className="mt-1 font-mono text-xs text-slate-500">{item.sku}</div>
       <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
         <MobileMetric label="Qty" value={String(item.qty)} />
-        <MobileMetric label="Unit" value={formatCurrency(item.price)} />
+        <div className="min-w-0 rounded-md bg-slate-50 p-2">
+          <div className="text-[10px] font-bold uppercase text-slate-500">Unit</div>
+          <div className="mt-1">
+            <PriceDisplay item={item} />
+          </div>
+        </div>
         <MobileMetric label="Total" value={formatCurrency(item.qty * item.price)} strong tone="text-emerald-700" />
       </div>
       <div className="mt-3 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-600">
@@ -648,8 +646,8 @@ function OrderItemCard({ item }: { item: LineItem }) {
 function PriceDisplay({ item }: { item: LineItem }) {
   if (item.price < item.originalPrice) {
     return (
-      <span>
-        <span className="mr-1 text-xs text-slate-400 line-through">
+      <span className="inline-flex flex-col items-start gap-0.5">
+        <span className="text-xs text-slate-400 line-through">
           {formatCurrency(item.originalPrice)}
         </span>
         <span className="font-semibold text-emerald-700">
@@ -660,6 +658,25 @@ function PriceDisplay({ item }: { item: LineItem }) {
   }
 
   return <span>{formatCurrency(item.price)}</span>;
+}
+
+function SummaryAmount({
+  label,
+  value,
+  strong = false,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-sm font-semibold text-slate-500">{label}</span>
+      <span className={`${strong ? "text-lg font-extrabold text-slate-950" : "text-sm font-bold text-slate-800"}`}>
+        {value}
+      </span>
+    </div>
+  );
 }
 
 function MobileMetric({

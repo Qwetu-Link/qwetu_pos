@@ -160,6 +160,7 @@ export function mapOrderToPaymentPlan(order: Order): PaymentPlan | null {
       name: item.name,
       quantity: item.qty,
       unitPrice: item.price,
+      originalPrice: item.originalPrice,
       total: item.qty * item.price,
     })),
     totalAmount: order.invoice.total,

@@ -6,6 +6,8 @@ import { variantRouter } from '@/server/variant.server';
 import { inventoryRouter } from '@/server/inventory.server';
 import { customerRouter } from '@/server/customer.server';
 import { orderRouter } from '@/server/order.server';
+import { transactionRouter } from '@/server/transaction.server';
+import { expenseRouter } from '@/server/expense.server';
 
 export const appRouter = createTRPCRouter({
   subscriptions: subscriptionRouter,
@@ -15,6 +17,8 @@ export const appRouter = createTRPCRouter({
   inventory: inventoryRouter,
   customers: customerRouter,
   orders: orderRouter,
+  transactions: transactionRouter,
+  expenses: expenseRouter,
 });
 
 export type AppRouter = typeof appRouter;
