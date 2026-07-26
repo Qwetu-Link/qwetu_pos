@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import OverviewPage from "./(features)/_home/overviewpage";
+import OverviewPage from "@/features/home/overviewpage";
 
 export const metadata: Metadata = {
   title: "QwetuLinks Clothing POS",

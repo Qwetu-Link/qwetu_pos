@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import SuperAdminSidebar from "./_components/SuperAdminSidebar";
+import SuperAdminSidebar from "@/features/superadmin/components/SuperAdminSidebar";
 
 export default function SuperAdminLayout({ children }: { children: ReactNode }) {
   return (

@@ -1,6 +1,5 @@
-import { OrdersPageSkeleton } from "@/components/skeletons";
+import { LipaMdogoPageSkeleton } from "@/components/skeletons";
 
 export default function Loading() {
-  return <OrdersPageSkeleton />;
+  return <LipaMdogoPageSkeleton />;
 }
-

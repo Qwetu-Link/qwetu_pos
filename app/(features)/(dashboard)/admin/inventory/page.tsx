@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { InventoryIntelligence } from "./_components/InventoryIntelligence";
+import { InventoryIntelligence } from "@/features/inventory/components/InventoryIntelligence";
 
 export const metadata: Metadata = {
   title: "Inventory | QwetuLinks Clothing POS",

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import OrdersPage from "./_components/ordersPage";
+import OrdersPage from "@/features/orders/components/ordersPage";
 
 export const metadata: Metadata = {
   title: "Orders | QwetuLinks Clothing POS",

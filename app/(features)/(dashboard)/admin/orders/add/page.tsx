@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ManualAddOrderPage from "../_components/manualAddOrderPage";
+import ManualAddOrderPage from "@/features/orders/components/manualAddOrderPage";
 
 export const metadata: Metadata = {
   title: "Manual Add Order | QwetuLinks Clothing POS",

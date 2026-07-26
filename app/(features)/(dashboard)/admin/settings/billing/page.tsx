@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import BillingSetupPage from "../_components/BillingSetupPage";
+import BillingSetupPage from "@/features/settings/components/BillingSetupPage";
 
 export const metadata: Metadata = {
   title: "Configure Billing | QwetuLinks Clothing POS",

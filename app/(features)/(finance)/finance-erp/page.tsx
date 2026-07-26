@@ -10,10 +10,10 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { BranchMoneyStatus, BranchMoneySummary, FinanceTask } from "@/types/finance";
-import { KPICards } from "../_components/kpi-cards";
-import { PaymentMethodChart } from "../_components/payment-method-chart";
-import { ProfitTrendsChart } from "../_components/profit-trends-chart";
-import { RevenueChart } from "../_components/revenue-chart";
+import { KPICards } from "@/features/finance/components/kpi-cards";
+import { PaymentMethodChart } from "@/features/finance/components/payment-method-chart";
+import { ProfitTrendsChart } from "@/features/finance/components/profit-trends-chart";
+import { RevenueChart } from "@/features/finance/components/revenue-chart";
 
 const branchSettlements: BranchMoneySummary[] = [
   {

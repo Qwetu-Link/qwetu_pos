@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import DashboardPageClient from "./_components/DashboardPageClient";
+import DashboardPageClient from "@/features/dashboard/components/DashboardPageClient";
 
 export const metadata: Metadata = {
   title: "Dashboard | QwetuLinks Clothing POS",

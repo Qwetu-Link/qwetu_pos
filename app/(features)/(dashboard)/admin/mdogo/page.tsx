@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import LipaMdogoPage from "./_components/LipaMdogoPage";
+import LipaMdogoPage from "@/features/mdogo/components/LipaMdogoPage";
 
 export const metadata: Metadata = {
   title: "Lipa Mdogo | QwetuLinks Clothing POS",

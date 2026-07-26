@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { TopNav } from './_components/top-nav'
-import { Sidebar } from './_components/sidebar'
+import { TopNav } from '@/features/finance/components/top-nav'
+import { Sidebar } from '@/features/finance/components/sidebar'
 
 export default function FinDashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)

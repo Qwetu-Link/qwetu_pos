@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { createTRPCContext } from "@/trpc/init";
 import { appRouter } from "@/trpc/routers/_app";
-import SubscriptionsList from "./_components/SubscriptionsList";
+import SubscriptionsList from "@/features/superadmin/subscriptions/components/SubscriptionsList";
 
 export const dynamic = "force-dynamic";
 

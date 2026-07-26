@@ -10,7 +10,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import type { SalesMethodSummary, SalesRecord, SalesStatus } from "@/types/finance";
-import { PageLayout } from "../../../_components/page-layout";
+import { PageLayout } from "@/features/finance/components/page-layout";
 
 export const metadata = {
   title: "Revenue - Qwetu POS Financial Management",

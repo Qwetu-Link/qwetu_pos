@@ -5,7 +5,7 @@ import {
   SuperAdminPageShell,
   SuperAdminPanel,
   SuperAdminStatusPill,
-} from "../_components/SuperAdminUI";
+} from "@/features/superadmin/components/SuperAdminUI";
 
 const settingsGroups = [
   {

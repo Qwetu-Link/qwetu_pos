@@ -19,8 +19,9 @@ import CategoryCard from "./CategoryCard";
 import CategoryModal from "../forms/CategoryModal";
 import EmptyState from "@/components/common/EmptyState";
 import Pagination from "@/components/common/Pagination";
-import { FolderOpen, Loader2, Plus, Search } from "lucide-react";
+import { FolderOpen, Plus, Search } from "lucide-react";
 import DeleteModal from "@/components/common/DeleteModal";
+import { CategoryCardsSkeleton } from "@/components/skeletons";
 
 const categoryToastStyles = {
   created: {
@@ -168,10 +169,7 @@ export default function ProductCategories() {
 
       {/* ---- Grid ---- */}
       {isLoading ? (
-        <div className="flex min-h-48 items-center justify-center rounded-xl border border-gray-100 bg-white text-gray-500 shadow-sm">
-          <Loader2 className="mr-2 animate-spin text-emerald-600" size={18} />
-          Loading categories...
-        </div>
+        <CategoryCardsSkeleton count={6} />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={FolderOpen}

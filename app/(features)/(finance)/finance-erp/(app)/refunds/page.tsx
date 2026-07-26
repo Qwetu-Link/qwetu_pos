@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Download, Filter, Plus, RotateCcw, ShieldCheck, XCircle } from "lucide-react";
 import type { RefundRecord, RefundStatus } from "@/types/finance";
-import { PageLayout } from "../../../_components/page-layout";
+import { PageLayout } from "@/features/finance/components/page-layout";
 
 export const metadata = {
   title: "Refunds - Qwetu POS Financial Management",

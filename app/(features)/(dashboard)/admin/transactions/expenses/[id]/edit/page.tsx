@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import EditExpensePage from "../../../_components/EditExpensePage";
+import EditExpensePage from "@/features/transactions/components/EditExpensePage";
 
 export const metadata: Metadata = {
   title: "Edit Expense | QwetuLinks Clothing POS",

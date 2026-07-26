@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import TeamRoleAssignmentsPage from "../_components/TeamRoleAssignmentsPage";
+import TeamRoleAssignmentsPage from "@/features/settings/components/TeamRoleAssignmentsPage";
 
 export const metadata: Metadata = {
   title: "Team Role Assignments | QwetuLinks Clothing POS",

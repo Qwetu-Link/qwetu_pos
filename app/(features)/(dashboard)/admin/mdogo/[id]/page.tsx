@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import LipaMdogoDetailPage from "../_components/LipaMdogoDetailPage";
+import LipaMdogoDetailPage from "@/features/mdogo/components/LipaMdogoDetailPage";
 
 type PageProps = {
   params: Promise<{

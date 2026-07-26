@@ -5,10 +5,11 @@ import { useCreateProduct } from "@/hooks/useProduct";
 import { useGetCategories } from "@/hooks/useCategory";
 import type { ProductSaveValues } from "@/types/catalog";
 import { buildVariantCreateInputs } from "@/utils/catalog-utils";
-import { ArrowLeft, Loader2, PackagePlus } from "lucide-react";
+import { ArrowLeft, PackagePlus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { FormPageSkeleton } from "@/components/skeletons";
 
 const productToastStyle = {
   background: "#dcfce7",
@@ -41,6 +42,10 @@ export default function AddProductPage() {
     }
   }
 
+  if (isLoadingCategories) {
+    return <FormPageSkeleton />;
+  }
+
   return (
     <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -67,23 +72,16 @@ export default function AddProductPage() {
         </div>
       )}
 
-      {isLoadingCategories ? (
-        <div className="flex min-h-48 items-center justify-center rounded-xl border border-gray-100 bg-white text-gray-500 shadow-sm">
-          <Loader2 className="mr-2 animate-spin text-emerald-600" size={18} />
-          Loading product categories...
-        </div>
-      ) : (
-        <ProductModal
-          mode="page"
-          product={null}
-          categories={categories}
-          isSaving={createProduct.isPending}
-          onSave={(values) => {
-            void handleSaveProduct(values);
-          }}
-          onClose={() => router.push("/admin/products")}
-        />
-      )}
+      <ProductModal
+        mode="page"
+        product={null}
+        categories={categories}
+        isSaving={createProduct.isPending}
+        onSave={(values) => {
+          void handleSaveProduct(values);
+        }}
+        onClose={() => router.push("/admin/products")}
+      />
     </div>
   );
 }

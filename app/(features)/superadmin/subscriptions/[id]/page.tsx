@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { createTRPCContext } from "@/trpc/init";
 import { appRouter } from "@/trpc/routers/_app";
-import SubscriptionDetail from "../_components/SubscriptionDetail";
+import SubscriptionDetail from "@/features/superadmin/subscriptions/components/SubscriptionDetail";
 
 export const dynamic = "force-dynamic";
 

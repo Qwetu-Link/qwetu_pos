@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ProfileDetailsPage from "../_components/ProfileDetailsPage";
+import ProfileDetailsPage from "@/features/settings/components/ProfileDetailsPage";
 
 export const metadata: Metadata = {
   title: "Business Profile | QwetuLinks Clothing POS",

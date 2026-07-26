@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Building2, Plus, Save, Trash2 } from "lucide-react";
 import type { BudgetFieldProps, BudgetLine, BudgetScope } from "@/types/finance";
-import { PageLayout } from "../../../../_components/page-layout";
+import { PageLayout } from "@/features/finance/components/page-layout";
 
 const initialLines: BudgetLine[] = [
   { id: 1, scope: "Branch", name: "Nairobi CBD", payrollBudget: 1450000, expenseBudget: 2200000, owner: "Mary Kariuki" },

@@ -1,6 +1,5 @@
-import { PaymentsPageSkeleton } from "@/components/skeletons";
+import { ComingSoonPageSkeleton } from "@/components/skeletons";
 
 export default function Loading() {
-  return <PaymentsPageSkeleton />;
+  return <ComingSoonPageSkeleton />;
 }
-

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CustomerManagement } from "./_components/CustomerManagement";
+import { CustomerManagement } from "@/features/customers/components/CustomerManagement";
 
 export const metadata: Metadata = {
   title: "Customers | QwetuLinks Clothing POS",

@@ -1,4 +1,4 @@
-import PayrollPage from "./PayrollPage";
+import PayrollPage from "@/features/finance/payroll/PayrollPage";
 
 export const metadata = {
   title: "Payroll - Qwetu POS Financial Management",

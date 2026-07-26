@@ -1,6 +1,5 @@
-import { DetailPageSkeleton } from "@/components/skeletons";
+import { Customer360Skeleton } from "@/components/skeletons";
 
 export default function Loading() {
-  return <DetailPageSkeleton />;
+  return <Customer360Skeleton />;
 }
-

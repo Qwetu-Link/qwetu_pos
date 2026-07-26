@@ -1,6 +1,5 @@
-import { SettingsPageSkeleton } from "@/components/skeletons";
+import { BillingSettingsSkeleton } from "@/components/skeletons";
 
 export default function Loading() {
-  return <SettingsPageSkeleton />;
+  return <BillingSettingsSkeleton />;
 }
-

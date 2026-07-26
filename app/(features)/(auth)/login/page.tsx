@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import LoginForm from "./_components/login_form";
+import LoginForm from "@/features/auth/login/login_form";
 
 export const metadata: Metadata = {
   title: "Login | QwetuLinks Clothing POS",

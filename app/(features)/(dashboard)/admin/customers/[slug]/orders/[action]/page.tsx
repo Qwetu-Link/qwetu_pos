@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import ManualAddOrderPage from "../../../../orders/_components/manualAddOrderPage";
+import ManualAddOrderPage from "@/features/orders/components/manualAddOrderPage";
 
 type CustomerOrderActionParams = Promise<{
   slug: string;

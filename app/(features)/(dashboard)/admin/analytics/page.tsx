@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import AnalyticsEngineDetails from "./_components/AnalyticsEngineDetails";
+import AnalyticsEngineDetails from "@/features/analytics/components/AnalyticsEngineDetails";
 
 export const metadata: Metadata = {
   title: "Analytics | QwetuLinks Clothing POS",

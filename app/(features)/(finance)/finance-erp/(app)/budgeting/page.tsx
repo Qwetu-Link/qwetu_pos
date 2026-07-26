@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { PageLayout } from "../../../_components/page-layout";
+import { PageLayout } from "@/features/finance/components/page-layout";
 import {
   AlertTriangle,
   ArrowDownRight,

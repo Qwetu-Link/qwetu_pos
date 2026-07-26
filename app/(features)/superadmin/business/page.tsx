@@ -1,4 +1,4 @@
-import RegisterBusinessWizard from "./_components/RegisterBusinessWizard";
+import RegisterBusinessWizard from "@/features/superadmin/business/components/RegisterBusinessWizard";
 
 export default function BusinessPage() {
   return <RegisterBusinessWizard />;

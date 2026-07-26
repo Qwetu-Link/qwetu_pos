@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import FinOnboardingPage from "../_home/onboarding-page";
+import FinOnboardingPage from "@/features/home/onboarding-page";
 
 export const metadata: Metadata = {
   title: "Qwetulink Finance ERP",

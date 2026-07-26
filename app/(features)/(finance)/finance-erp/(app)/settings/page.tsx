@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button'
 import { Shield, Users, Key, Bell, Database, LogOut } from 'lucide-react'
 import type { FinanceSettingsSection } from '@/types/finance'
-import { PageLayout } from '../../../_components/page-layout'
+import { PageLayout } from '@/features/finance/components/page-layout'
 
 export const metadata = {
   title: 'Settings - Qwetu POS Financial Management',

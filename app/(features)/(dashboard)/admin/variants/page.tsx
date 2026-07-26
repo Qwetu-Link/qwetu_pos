@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ProductVariantsPage from "./_components/VariantsPage";
+import ProductVariantsPage from "@/features/variants/components/VariantsPage";
 
 export const metadata: Metadata = {
   title: "Product Variants | QwetuLinks Clothing POS",

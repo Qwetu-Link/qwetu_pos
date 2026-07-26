@@ -8,7 +8,7 @@ import EmptyState from "@/components/common/EmptyState";
 import Pagination from "@/components/common/Pagination";
 import type { CatalogFilters, Product, ProductSaveValues } from "@/types/catalog";
 import { computeCatalogStats, exportProductsToCSV } from "@/utils/catalog-utils";
-import { LucideDownload, Loader2, Package, PlusIcon, Search, Tag } from "lucide-react";
+import { LucideDownload, Package, PlusIcon, Search, Tag } from "lucide-react";
 import DeleteModal from "@/components/common/DeleteModal";
 import {
   useDeleteProduct,
@@ -19,6 +19,7 @@ import {
 import { useGetCategories } from "@/hooks/useCategory";
 import { toast } from "sonner";
 import Link from "next/link";
+import { ProductCardsSkeleton } from "@/components/skeletons";
 
 const productToastStyles = {
   updated: {
@@ -203,10 +204,7 @@ export default function ProductCatalog() {
       </div>
 
       {isLoading ? (
-        <div className="flex min-h-48 items-center justify-center rounded-xl border border-gray-100 bg-white text-gray-500 shadow-sm">
-          <Loader2 className="mr-2 animate-spin text-emerald-600" size={18} />
-          Loading products...
-        </div>
+        <ProductCardsSkeleton count={6} />
       ) : paginated.length === 0 ? (
         <EmptyState
           icon={Package}

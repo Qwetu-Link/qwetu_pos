@@ -1,6 +1,5 @@
-import { TransactionsPageSkeleton } from "@/components/skeletons";
+import { ExpenseRegisterSkeleton } from "@/components/skeletons";
 
 export default function Loading() {
-  return <TransactionsPageSkeleton />;
+  return <ExpenseRegisterSkeleton />;
 }
-

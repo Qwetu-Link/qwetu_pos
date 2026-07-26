@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import SettingsDetails from "./_components/SettingsDetails";
+import SettingsDetails from "@/features/settings/components/SettingsDetails";
 
 export const metadata: Metadata = {
   title: "Settings | QwetuLinks Clothing POS",

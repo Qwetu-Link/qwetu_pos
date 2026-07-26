@@ -6,7 +6,7 @@ import {
   SuperAdminPageShell,
   SuperAdminPanel,
   SuperAdminStatusPill,
-} from "../_components/SuperAdminUI";
+} from "@/features/superadmin/components/SuperAdminUI";
 
 const metrics = [
   { title: "Platform revenue", value: "KES 4.8M", detail: "Across active tenant plans", icon: CircleDollarSign },

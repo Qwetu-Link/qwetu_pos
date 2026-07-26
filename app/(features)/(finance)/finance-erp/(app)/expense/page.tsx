@@ -11,7 +11,7 @@ import {
   WalletCards,
   XCircle,
 } from "lucide-react";
-import { PageLayout } from "../../../_components/page-layout";
+import { PageLayout } from "@/features/finance/components/page-layout";
 
 export const metadata = {
   title: "Expenses - Qwetu POS Financial Management",
