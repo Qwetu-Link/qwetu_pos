@@ -42,22 +42,22 @@ export default function CatalogStatsCards({ stats }: Props) {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
       {cards.map((card) => (
         <div
           key={card.label}
-          className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm"
+          className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm sm:p-5"
         >
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-2 flex items-center gap-2">
             <div
-              className={`text-lg ${card.bg} w-10 h-10 rounded-lg flex items-center justify-center`}
+              className={`flex h-8 w-8 items-center justify-center rounded-lg text-lg sm:h-10 sm:w-10 ${card.bg}`}
             >
-              <card.icon size={20} className={card.color} />
+              <card.icon size={18} className={card.color} />
             </div>
-            <p className={`text-sm font-bold ${card.color}`}>{card.label}</p>
+            <p className={`text-xs font-bold sm:text-sm ${card.color}`}>{card.label}</p>
           </div>
           <p
-            className={`text-2xl font-bold ${card.alert ? "text-amber-600" : "text-gray-800"}`}
+            className={`text-xl font-bold sm:text-2xl ${card.alert ? "text-amber-600" : "text-gray-800"}`}
           >
             {card.value}
           </p>

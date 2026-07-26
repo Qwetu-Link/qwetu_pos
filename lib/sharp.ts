@@ -1,5 +1,5 @@
 import sharp from "sharp";
-// import fs from "fs/promises";
+import fs from "fs";
 import path from "path";
 
 const WATERMARK_FIXED_WIDTH = 150;
@@ -34,6 +34,14 @@ export async function createWatermarked(buffer: Buffer) {
 
     try {
         const watermarkPath = path.join(process.cwd(), "public/icon1.png");
+        if (!fs.existsSync(watermarkPath)) {
+            return image
+                .webp({
+                    quality: 85,
+                })
+                .toBuffer();
+        }
+
         const baseMeta = await image.metadata();
         const baseWidth = baseMeta.width;
         const baseHeight = baseMeta.height;
@@ -76,8 +84,9 @@ export async function createWatermarked(buffer: Buffer) {
             .toBuffer();
     } catch (error) {
         const nodeError = error as NodeJS.ErrnoException;
+        const errorMessage = error instanceof Error ? error.message : "";
 
-        if (nodeError.code !== "ENOENT") {
+        if (nodeError.code !== "ENOENT" && !errorMessage.includes("Input file is missing")) {
             throw error;
         }
 

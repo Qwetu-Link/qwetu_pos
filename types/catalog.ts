@@ -28,6 +28,15 @@ export interface ProductVariant {
   inventory: VariantInventory;
 }
 
+export interface ProductImage {
+  id: string;
+  url: string;
+  variantId?: string | null;
+  alt?: string | null;
+  isPrimary?: boolean;
+  displayOrder?: number;
+}
+
 export type InventoryItem = ProductVariant & {
   productId: string;
   productName: string;
@@ -51,6 +60,7 @@ export interface Product {
   imageUrl?: string;
   imageData?: string; // base64 data URL for locally uploaded images
   images?: string[];
+  imageDetails?: ProductImage[];
   variants: ProductVariant[];
 }
 
@@ -66,6 +76,16 @@ export interface ProductFormValues {
 
 export type ProductSaveValues = ProductFormValues & {
   variants: ProductVariant[];
+  imageAttachments?: {
+    imageData: string;
+    variantId?: string | null;
+  }[];
+  imageAssignments?: {
+    imageUrl: string;
+    variantId?: string | null;
+  }[];
+  replaceImages?: boolean;
+  removedImageUrls?: string[];
 };
 
 // ---- Catalog stats ----

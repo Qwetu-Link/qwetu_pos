@@ -3,18 +3,15 @@
 import { useCallback, useMemo, useState } from "react";
 import CatalogStatsCards from "./CatalogStatsCards";
 import ProductCard from "./ProductCard";
-import ProductModal from "../forms/ProductModal";
 import EmptyState from "@/components/common/EmptyState";
 import Pagination from "@/components/common/Pagination";
-import type { CatalogFilters, Product, ProductSaveValues } from "@/types/catalog";
+import type { CatalogFilters } from "@/types/catalog";
 import { computeCatalogStats, exportProductsToCSV } from "@/utils/catalog-utils";
 import { LucideDownload, Package, PlusIcon, Search, Tag } from "lucide-react";
 import DeleteModal from "@/components/common/DeleteModal";
 import {
   useDeleteProduct,
   useGetProducts,
-  useUpdateProduct,
-  useUploadProductImage,
 } from "@/hooks/useProduct";
 import { useGetCategories } from "@/hooks/useCategory";
 import { toast } from "sonner";
@@ -37,8 +34,6 @@ const productToastStyles = {
 export default function ProductCatalog() {
   const { products, isLoading, isError, error } = useGetProducts();
   const { categories, isLoading: isLoadingCategories } = useGetCategories();
-  const updateProduct = useUpdateProduct();
-  const uploadProductImage = useUploadProductImage();
   const deleteProduct = useDeleteProduct();
   const [filters, setFilters] = useState<CatalogFilters>({
     search: "",
@@ -46,7 +41,6 @@ export default function ProductCatalog() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [editTarget, setEditTarget] = useState<Product | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const filtered = useMemo(() => {
@@ -78,45 +72,12 @@ export default function ProductCatalog() {
   }, [filtered, visiblePage, perPage]);
 
   const stats = useMemo(() => computeCatalogStats(products), [products]);
-  const isSaving = updateProduct.isPending || uploadProductImage.isPending;
   const isDeleting = deleteProduct.isPending;
 
   const handleFilterChange = useCallback((partial: Partial<CatalogFilters>) => {
     setFilters((current) => ({ ...current, ...partial }));
     setCurrentPage(1);
   }, []);
-
-  async function handleSaveProduct(values: ProductSaveValues, existingId?: string) {
-    try {
-      if (!existingId) {
-        return;
-      }
-
-      await updateProduct.mutateAsync({
-        id: existingId,
-        name: values.name,
-        categoryId: values.categoryId,
-        brand: values.brand,
-        description: values.description,
-      });
-
-      await Promise.all(
-        values.imagesData.map((imageData) =>
-          uploadProductImage.mutateAsync({
-            productId: existingId,
-            imageData,
-          }),
-        ),
-      );
-
-      toast.success("Product updated successfully.", {
-        style: productToastStyles.updated,
-      });
-      setEditTarget(null);
-    } catch {
-      // Mutation state exposes the error message in the page alert.
-    }
-  }
 
   async function handleDeleteConfirm() {
     if (!deleteTarget) return;
@@ -133,33 +94,31 @@ export default function ProductCatalog() {
   }
 
   const mutationError =
-    updateProduct.error?.message ||
-    uploadProductImage.error?.message ||
     deleteProduct.error?.message;
 
   return (
-    <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 rounded-xl bg-gray-50 p-3 sm:space-y-6 sm:p-6">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-black flex items-center gap-2">
-            <Tag size={24} className="text-emerald-600" /> Product Catalog
+          <h1 className="flex items-center gap-2 text-2xl font-extrabold text-black sm:text-3xl">
+            <Tag size={22} className="text-emerald-600 sm:h-6 sm:w-6" /> Product Catalog
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="mt-1 text-sm text-gray-500 sm:text-base">
             Manage your inventory, products, and pricing
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex">
           <Link
             href="/admin/products/add"
             aria-disabled={isLoadingCategories}
-            className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-5 py-2.5 rounded-xl hover:shadow-lg transition flex items-center gap-2 font-medium aria-disabled:pointer-events-none aria-disabled:opacity-60"
+            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2.5 text-sm font-medium text-white transition hover:shadow-lg aria-disabled:pointer-events-none aria-disabled:opacity-60 sm:px-5"
           >
             <PlusIcon size={16} /> Add Product
           </Link>
           <button
             onClick={() => exportProductsToCSV(products)}
             disabled={products.length === 0}
-            className="px-4 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition flex items-center gap-2 font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex items-center justify-center gap-2 rounded-xl border border-gray-300 px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4"
           >
             <LucideDownload size={16} /> Export CSV
           </button>
@@ -174,8 +133,8 @@ export default function ProductCatalog() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-        <div className="flex flex-col lg:flex-row gap-4">
+      <div className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm sm:p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:gap-4">
           <div className="flex-1 relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
               <Search size={16} />
@@ -185,13 +144,13 @@ export default function ProductCatalog() {
               value={filters.search}
               onChange={(event) => handleFilterChange({ search: event.target.value })}
               placeholder="Search by product name, category, or supplier..."
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-black outline-none placeholder:text-gray-500 focus:ring-2 focus:ring-emerald-500 sm:text-base"
             />
           </div>
           <select
             value={filters.category}
             onChange={(event) => handleFilterChange({ category: event.target.value })}
-            className="px-4 py-2.5 border border-gray-200 rounded-xl bg-white outline-none text-black"
+            className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-black outline-none sm:text-base"
           >
             <option value="all">All Categories</option>
             {categories.map((category) => (
@@ -231,15 +190,11 @@ export default function ProductCatalog() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
           {paginated.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
-              onEdit={(id) => {
-                const selectedProduct = products.find((item) => item.id === id) ?? null;
-                setEditTarget(selectedProduct);
-              }}
               onDelete={(id, name) => setDeleteTarget({ id, name })}
             />
           ))}
@@ -256,20 +211,6 @@ export default function ProductCatalog() {
           onPerPage={(value) => {
             setPerPage(value);
             setCurrentPage(1);
-          }}
-        />
-      )}
-
-      {editTarget !== null && (
-        <ProductModal
-          product={editTarget}
-          categories={categories}
-          isSaving={isSaving}
-          onSave={(values, existingId) => {
-            void handleSaveProduct(values, existingId);
-          }}
-          onClose={() => {
-            if (!isSaving) setEditTarget(null);
           }}
         />
       )}

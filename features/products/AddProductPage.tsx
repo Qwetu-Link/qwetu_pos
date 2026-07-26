@@ -9,7 +9,6 @@ import { ArrowLeft, PackagePlus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { FormPageSkeleton } from "@/components/skeletons";
 
 const productToastStyle = {
   background: "#dcfce7",
@@ -24,13 +23,19 @@ export default function AddProductPage() {
 
   async function handleSaveProduct(values: ProductSaveValues) {
     try {
+      const variants = buildVariantCreateInputs(values.name, values.variants).map((variant, index) => ({
+        ...variant,
+        clientId: values.variants[index]?.id,
+      }));
+
       await createProduct.mutateAsync({
         name: values.name,
         categoryId: values.categoryId,
         brand: values.brand,
         description: values.description,
         imagesData: values.imagesData,
-        variants: buildVariantCreateInputs(values.name, values.variants),
+        imageAttachments: values.imageAttachments,
+        variants,
       });
 
       toast.success("Product created successfully.", {
@@ -43,7 +48,7 @@ export default function AddProductPage() {
   }
 
   if (isLoadingCategories) {
-    return <FormPageSkeleton />;
+    return null;
   }
 
   return (

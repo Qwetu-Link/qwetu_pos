@@ -99,6 +99,13 @@
       "when": 1785060845837,
       "tag": "0013_wide_patch",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1785100000006,
+      "tag": "0014_product_image_variant_link",
+      "breakpoints": true
     }
   ]
 }

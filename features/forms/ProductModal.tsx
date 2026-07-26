@@ -38,6 +38,7 @@ type ImageDraft = {
   id: string;
   dataUrl: string;
   name: string;
+  variantId?: string | null;
 };
 
 function isRenderableImage(src: string) {
@@ -74,19 +75,39 @@ export default function ProductModal({
   const selectedCategoryName =
     categories.find((category) => category.id === categoryId)?.name ?? product?.category ?? "";
   const [imageDrafts, setImageDrafts] = useState<ImageDraft[]>([]);
+  const [replaceImages, setReplaceImages] = useState(false);
+  const [removedImageUrls, setRemovedImageUrls] = useState<string[]>([]);
   const [variants, setVariants] = useState<ProductVariant[]>(
     product ? JSON.parse(JSON.stringify(product.variants)) : [],
+  );
+  const existingImageDetails = product?.imageDetails?.length
+    ? product.imageDetails
+    : (
+        product?.images?.length
+          ? product.images
+          : product
+            ? [getProductImageSrc(product)]
+            : []
+      )
+        .filter(isRenderableImage)
+        .map((url, index) => ({
+          id: `${url}-${index}`,
+          url,
+          variantId: null,
+        }));
+  const [existingImageAssignments, setExistingImageAssignments] = useState<Record<string, string>>(
+    () =>
+      existingImageDetails.reduce<Record<string, string>>((assignments, image) => {
+        if (image.variantId) {
+          assignments[image.url] = image.variantId;
+        }
+        return assignments;
+      }, {}),
   );
   const [showAddVariant, setShowAddVariant] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const existingImages = (
-    product?.images?.length
-      ? product.images
-      : product
-        ? [getProductImageSrc(product)]
-        : []
-  ).filter(isRenderableImage);
+  const existingImages = existingImageDetails.filter((image) => isRenderableImage(image.url));
 
   useEffect(() => {
     if (mode !== "modal") return;
@@ -126,6 +147,7 @@ export default function ProductModal({
             id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
             dataUrl: result,
             name: file.name,
+            variantId: null,
           },
         ]);
       };
@@ -155,7 +177,45 @@ export default function ProductModal({
   }
 
   function handleDeleteVariant(idx: number) {
+    const removedVariant = variants[idx];
     setVariants((prev) => prev.filter((_, i) => i !== idx));
+    if (!removedVariant) return;
+
+    setImageDrafts((prev) =>
+      prev.map((image) =>
+        image.variantId === removedVariant.id ? { ...image, variantId: null } : image,
+      ),
+    );
+    setExistingImageAssignments((prev) => {
+      const next = { ...prev };
+      for (const [url, variantId] of Object.entries(next)) {
+        if (variantId === removedVariant.id) {
+          delete next[url];
+        }
+      }
+      return next;
+    });
+  }
+
+  function toggleExistingImageRemoval(image: string) {
+    setRemovedImageUrls((prev) =>
+      prev.includes(image)
+        ? prev.filter((item) => item !== image)
+        : [...prev, image],
+    );
+  }
+
+  function renderVariantOptions() {
+    return (
+      <>
+        <option value="">General product image</option>
+        {variants.map((variant) => (
+          <option key={variant.id} value={variant.id}>
+            {variant.color} / {variant.size}
+          </option>
+        ))}
+      </>
+    );
   }
 
   function handleSave() {
@@ -170,6 +230,16 @@ export default function ProductModal({
       {
         ...values,
         imagesData: imageDrafts.map((image) => image.dataUrl),
+        imageAttachments: imageDrafts.map((image) => ({
+          imageData: image.dataUrl,
+          variantId: image.variantId || null,
+        })),
+        imageAssignments: existingImages.map((image) => ({
+          imageUrl: image.url,
+          variantId: existingImageAssignments[image.url] || null,
+        })),
+        replaceImages,
+        removedImageUrls,
         variants,
       },
       product?.id,
@@ -322,6 +392,39 @@ export default function ProductModal({
                     </label>
                   </div>
 
+                  {product && imageDrafts.length > 0 ? (
+                    <label className="mb-3 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900">
+                      <input
+                        type="checkbox"
+                        checked={replaceImages}
+                        onChange={(event) => setReplaceImages(event.target.checked)}
+                        className="mt-1 h-4 w-4 rounded border-amber-300 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span>
+                        <span className="font-semibold">Replace saved product images</span>
+                        <span className="block text-xs leading-5 text-amber-700">
+                          When checked, the selected new images become the product gallery and the old saved images are removed.
+                        </span>
+                      </span>
+                    </label>
+                  ) : null}
+
+                  {product && existingImages.length > 0 ? (
+                    <div className="mb-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5">
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800">Saved images</p>
+                          <p className="text-xs text-slate-500">
+                            Select one or more saved images to remove when this product is saved.
+                          </p>
+                        </div>
+                        <p className="text-xs font-semibold text-red-600">
+                          {removedImageUrls.length} selected
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+
                   {existingImages.length === 0 && imageDrafts.length === 0 ? (
                     <div className="flex min-h-32 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white p-6 text-center">
                       <ImagePlus className="mb-2 text-gray-400" size={30} />
@@ -330,48 +433,109 @@ export default function ProductModal({
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                      {existingImages.map((image, index) => (
-                        <div
-                          key={`${image}-${index}`}
-                          className="relative aspect-square overflow-hidden rounded-xl border border-gray-200 bg-white"
-                        >
-                          <Image
-                            src={image}
-                            alt={`${product?.name ?? "Product"} image ${index + 1}`}
-                            fill
-                            className="object-cover"
-                            unoptimized
-                          />
-                          <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">
-                            Saved
-                          </span>
-                        </div>
-                      ))}
+                      {existingImages.map((image, index) => {
+                        const isSelectedForRemoval = removedImageUrls.includes(image.url);
+
+                        return (
+                          <div
+                            key={`${image.url}-${index}`}
+                            className={`overflow-hidden rounded-xl border bg-white ${
+                              replaceImages && imageDrafts.length > 0
+                                ? "border-amber-200 opacity-45"
+                                : isSelectedForRemoval
+                                  ? "border-red-400 ring-2 ring-red-100"
+                                  : "border-gray-200"
+                            }`}
+                          >
+                            <div className="relative aspect-square overflow-hidden bg-slate-100">
+                              <Image
+                                src={image.url}
+                                alt={`${product?.name ?? "Product"} image ${index + 1}`}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
+                              <button
+                                type="button"
+                                onClick={() => toggleExistingImageRemoval(image.url)}
+                                className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow ${
+                                  isSelectedForRemoval
+                                    ? "text-red-700 hover:bg-red-50"
+                                    : "text-slate-500 hover:bg-slate-50"
+                                }`}
+                                aria-pressed={isSelectedForRemoval}
+                                aria-label={`Select saved image ${index + 1} for removal`}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                              <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-xs font-medium text-white ${
+                                isSelectedForRemoval ? "bg-red-600" : "bg-black/60"
+                              }`}>
+                                {isSelectedForRemoval ? "Remove" : "Saved"}
+                              </span>
+                            </div>
+                            <div className="border-t border-gray-100 p-2">
+                              <select
+                                value={existingImageAssignments[image.url] ?? ""}
+                                onChange={(event) =>
+                                  setExistingImageAssignments((prev) => ({
+                                    ...prev,
+                                    [image.url]: event.target.value,
+                                  }))
+                                }
+                                disabled={replaceImages && imageDrafts.length > 0}
+                                className="w-full rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs font-medium text-gray-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                {renderVariantOptions()}
+                              </select>
+                            </div>
+                          </div>
+                        );
+                      })}
                       {imageDrafts.map((image) => (
                         <div
                           key={image.id}
-                          className="relative aspect-square overflow-hidden rounded-xl border border-emerald-200 bg-white"
+                          className="overflow-hidden rounded-xl border border-emerald-200 bg-white"
                         >
-                          <Image
-                            src={image.dataUrl}
-                            alt={image.name}
-                            fill
-                            className="object-cover"
-                            unoptimized
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setImageDrafts((prev) => prev.filter((item) => item.id !== image.id))
-                            }
-                            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white text-red-600 shadow hover:bg-red-50"
-                            aria-label={`Remove ${image.name}`}
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                          <span className="absolute left-2 top-2 rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-medium text-white">
-                            New
-                          </span>
+                          <div className="relative aspect-square overflow-hidden bg-slate-100">
+                            <Image
+                              src={image.dataUrl}
+                              alt={image.name}
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setImageDrafts((prev) => prev.filter((item) => item.id !== image.id))
+                              }
+                              className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white text-red-600 shadow hover:bg-red-50"
+                              aria-label={`Remove ${image.name}`}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                            <span className="absolute left-2 top-2 rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-medium text-white">
+                              New
+                            </span>
+                          </div>
+                          <div className="border-t border-emerald-100 p-2">
+                            <select
+                              value={image.variantId ?? ""}
+                              onChange={(event) =>
+                                setImageDrafts((prev) =>
+                                  prev.map((item) =>
+                                    item.id === image.id
+                                      ? { ...item, variantId: event.target.value || null }
+                                      : item,
+                                  ),
+                                )
+                              }
+                              className="w-full rounded-lg border border-emerald-100 bg-white px-2 py-1.5 text-xs font-medium text-gray-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                            >
+                              {renderVariantOptions()}
+                            </select>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -404,6 +568,74 @@ export default function ProductModal({
                     <Plus /> Add Variant
                   </button>
                 </div>
+
+                {existingImages.length > 0 || imageDrafts.length > 0 ? (
+                  <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-3">
+                    <p className="mb-3 text-sm font-semibold text-gray-800">Image variant links</p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {existingImages.map((image, index) => (
+                        <div
+                          key={`step-2-${image.url}-${index}`}
+                          className="flex items-center gap-3 rounded-xl border border-white bg-white p-2"
+                        >
+                          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                            <Image
+                              src={image.url}
+                              alt={`${product?.name ?? "Product"} image ${index + 1}`}
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
+                          </div>
+                          <select
+                            value={existingImageAssignments[image.url] ?? ""}
+                            onChange={(event) =>
+                              setExistingImageAssignments((prev) => ({
+                                ...prev,
+                                [image.url]: event.target.value,
+                              }))
+                            }
+                            disabled={replaceImages && imageDrafts.length > 0}
+                            className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2 py-2 text-xs font-medium text-gray-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {renderVariantOptions()}
+                          </select>
+                        </div>
+                      ))}
+                      {imageDrafts.map((image) => (
+                        <div
+                          key={`step-2-${image.id}`}
+                          className="flex items-center gap-3 rounded-xl border border-white bg-white p-2"
+                        >
+                          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                            <Image
+                              src={image.dataUrl}
+                              alt={image.name}
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
+                          </div>
+                          <select
+                            value={image.variantId ?? ""}
+                            onChange={(event) =>
+                              setImageDrafts((prev) =>
+                                prev.map((item) =>
+                                  item.id === image.id
+                                    ? { ...item, variantId: event.target.value || null }
+                                    : item,
+                                ),
+                              )
+                            }
+                            className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2 py-2 text-xs font-medium text-gray-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                          >
+                            {renderVariantOptions()}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
 
                 <div className="border rounded-xl bg-gray-50 p-3 max-h-96 overflow-y-auto space-y-3">
                   {variants.length === 0 ? (

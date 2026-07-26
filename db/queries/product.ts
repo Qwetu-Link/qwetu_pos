@@ -3,7 +3,6 @@ import { categoryTable } from "@/db/schema/category";
 import { createVariantInventoryRowsQuery } from "@/db/queries/inventory";
 import { productImages, productsTable } from "@/db/schema/products";
 import {
-    locationTable,
     variantInventoryTable,
     variantsTable,
 } from "@/db/schema/variants";
@@ -20,6 +19,17 @@ import {
 } from "@/utils/catalog-utils";
 import { and, asc, desc, eq } from "drizzle-orm";
 import crypto from "crypto";
+
+type ProductImageInput = ProductImageUpload & {
+    variantId?: string | null;
+    variantClientId?: string | null;
+};
+
+function isUuid(value?: string | null) {
+    return Boolean(
+        value?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
+    );
+}
 
 function getProductImageUrl(path?: string | null) {
     if (!path) return undefined;
@@ -45,7 +55,7 @@ export const getProductsQuery = async (businessId?: string) => {
             .from(productsTable)
             .orderBy(desc(productsTable.createdAt));
 
-    const [imageRows, variantRows, categoryRows, inventoryRows, locationRows] = await Promise.all([
+    const [imageRows, variantRows, categoryRows, inventoryRows] = await Promise.all([
         db
             .select()
             .from(productImages)
@@ -57,17 +67,23 @@ export const getProductsQuery = async (businessId?: string) => {
             .where(businessId ? eq(variantsTable.businessId, businessId) : undefined)
             .orderBy(desc(variantsTable.createdAt)),
         db
-            .select()
+            .select({
+                id: categoryTable.id,
+                name: categoryTable.name,
+                businessId: categoryTable.businessId,
+            })
             .from(categoryTable)
             .where(businessId ? eq(categoryTable.businessId, businessId) : undefined),
         db
-            .select()
+            .select({
+                variantId: variantInventoryTable.variantId,
+                totalStock: variantInventoryTable.totalStock,
+                reorderPoint: variantInventoryTable.reorderPoint,
+                status: variantInventoryTable.status,
+                lastRestocked: variantInventoryTable.lastRestocked,
+            })
             .from(variantInventoryTable)
             .where(businessId ? eq(variantInventoryTable.businessId, businessId) : undefined),
-        db
-            .select()
-            .from(locationTable)
-            .where(businessId ? eq(locationTable.businessId, businessId) : undefined),
     ]);
 
     return productRows.map((product) => {
@@ -75,11 +91,25 @@ export const getProductsQuery = async (businessId?: string) => {
         const productVariantRows = variantRows.filter((variant) => variant.productId === product.id);
         const category = categoryRows.find((item) => item.id === product.categoryId);
 
-        const imageUrls = productImageRows
-            .map((image) => getProductImageUrl(
-                image.thumbnailPath ?? image.optimizedPath ?? image.originalPath,
-            ))
-            .filter((image): image is string => Boolean(image));
+        const imageDetails = productImageRows
+            .map((image) => {
+                const url = getProductImageUrl(
+                    image.thumbnailPath ?? image.optimizedPath ?? image.originalPath,
+                );
+
+                if (!url) return null;
+
+                return {
+                    id: image.id,
+                    url,
+                    variantId: image.variantId,
+                    alt: image.alt,
+                    isPrimary: image.isPrimary,
+                    displayOrder: image.displayOrder,
+                };
+            })
+            .filter((image): image is NonNullable<typeof image> => Boolean(image));
+        const imageUrls = imageDetails.map((image) => image.url);
 
         return {
             id: product.id,
@@ -90,6 +120,7 @@ export const getProductsQuery = async (businessId?: string) => {
             description: product.description ?? "",
             imageUrl: imageUrls[0],
             images: imageUrls,
+            imageDetails,
             variants: productVariantRows.map((variant) => ({
                 id: variant.id,
                 sku: variant.sku,
@@ -101,26 +132,20 @@ export const getProductsQuery = async (businessId?: string) => {
                     const variantInventoryRows = inventoryRows.filter(
                         (inventory) => inventory.variantId === variant.id,
                     );
-                    const locations = DEFAULT_STOCK_LOCATIONS.map((defaultLocation) => {
-                        const location = locationRows.find(
-                            (item) =>
-                                item.businessId === product.businessId &&
-                                item.name === defaultLocation.name,
-                        );
-                        const inventory = location
-                            ? variantInventoryRows.find((item) => item.locationId === location.id)
-                            : undefined;
-
-                        return {
-                            name: defaultLocation.name,
-                            stock: inventory?.totalStock ?? defaultLocation.stock,
-                            reorderPoint: inventory?.reorderPoint ?? defaultLocation.reorderPoint,
-                        };
-                    });
+                    const stock = variantInventoryRows.reduce(
+                        (sum, inventory) => sum + inventory.totalStock,
+                        0,
+                    );
+                    const reorderPoint = variantInventoryRows[0]?.reorderPoint ?? 10;
+                    const locations = DEFAULT_STOCK_LOCATIONS.map((defaultLocation, index) => ({
+                        name: defaultLocation.name,
+                        stock: index === 0 ? stock : defaultLocation.stock,
+                        reorderPoint,
+                    }));
 
                     return computeInventoryStatus({
-                        totalStock: 0,
-                        reorderPoint: variantInventoryRows[0]?.reorderPoint ?? 10,
+                        totalStock: stock,
+                        reorderPoint,
                         status: variantInventoryRows[0]?.status ?? "reorder",
                         lastRestocked:
                             variantInventoryRows[0]?.lastRestocked?.toISOString().slice(0, 10) ??
@@ -154,6 +179,15 @@ export const getProductByIdQuery = async (data: {
         ));
 
     return product;
+};
+
+export const getProductDetailsQuery = async (data: {
+    id: string;
+    businessId: string;
+}) => {
+    const products = await getProductsQuery(data.businessId);
+
+    return products.find((product) => product.id === data.id) ?? null;
 };
 
 async function ensureCategoryBelongsToBusiness(
@@ -285,10 +319,182 @@ export const deleteProductQuery = async (data: {
     return product;
 };
 
+export const replaceProductImagesQuery = async (data: {
+    businessId: string;
+    productId: string;
+    files: ProductImageInput[];
+}) => {
+    if (data.files.length === 0) {
+        return [];
+    }
+
+    const product = await getProductByIdQuery({
+        id: data.productId,
+        businessId: data.businessId,
+    });
+
+    if (!product) {
+        throw new Error("Product not found for this business.");
+    }
+
+    const existingImages = await db
+        .select({
+            originalPath: productImages.originalPath,
+            optimizedPath: productImages.optimizedPath,
+            thumbnailPath: productImages.thumbnailPath,
+            watermarkedPath: productImages.watermarkedPath,
+        })
+        .from(productImages)
+        .where(and(
+            eq(productImages.productId, data.productId),
+            eq(productImages.businessId, data.businessId),
+        ));
+
+    const oldPaths = new Set<string>();
+    for (const image of existingImages) {
+        [
+            image.originalPath,
+            image.optimizedPath,
+            image.thumbnailPath,
+            image.watermarkedPath,
+        ].forEach((path) => {
+            if (
+                path &&
+                !path.startsWith("http") &&
+                !path.startsWith("data:image") &&
+                !path.startsWith("/")
+            ) {
+                oldPaths.add(path);
+            }
+        });
+    }
+
+    const uploaded = await uploadProductImages(
+        data.files,
+        data.productId,
+        data.businessId,
+    );
+    const uploadedPaths = getUploadedProductImagePaths(uploaded);
+
+    try {
+        const images = await db.transaction(async (tx) => {
+            await tx
+                .delete(productImages)
+                .where(and(
+                    eq(productImages.productId, data.productId),
+                    eq(productImages.businessId, data.businessId),
+                ));
+
+            return tx
+                .insert(productImages)
+                .values(
+                    uploaded.map((image, index) => ({
+                        businessId: data.businessId,
+                        productId: data.productId,
+                        originalPath: image.originalPath,
+                        optimizedPath: image.optimizedPath,
+                        thumbnailPath: image.thumbnailPath,
+                        watermarkedPath: image.watermarkPath,
+                        variantId: data.files[index]?.variantId ?? null,
+                        width: image.width,
+                        height: image.height,
+                        fileSize: image.fileSize,
+                        mimeType: image.mimeType,
+                        displayOrder: index,
+                        isPrimary: index === 0,
+                    })),
+                )
+                .returning();
+        });
+
+        await deleteImages(Array.from(oldPaths)).catch(() => undefined);
+        return images;
+    } catch (error) {
+        await deleteImages(uploadedPaths).catch(() => undefined);
+        throw error;
+    }
+};
+
+export const removeProductImagesQuery = async (data: {
+    businessId: string;
+    productId: string;
+    imageUrls: string[];
+}) => {
+    if (data.imageUrls.length === 0) {
+        return [];
+    }
+
+    const imageRows = await db
+        .select()
+        .from(productImages)
+        .where(and(
+            eq(productImages.productId, data.productId),
+            eq(productImages.businessId, data.businessId),
+        ));
+
+    const requestedUrls = new Set(data.imageUrls);
+    const rowsToDelete = imageRows.filter((image) => {
+        const urls = [
+            getProductImageUrl(image.thumbnailPath),
+            getProductImageUrl(image.optimizedPath),
+            getProductImageUrl(image.originalPath),
+            getProductImageUrl(image.watermarkedPath),
+        ].filter((url): url is string => Boolean(url));
+
+        return urls.some((url) => requestedUrls.has(url));
+    });
+
+    if (rowsToDelete.length === 0) {
+        return [];
+    }
+
+    const imageIds = new Set(rowsToDelete.map((image) => image.id));
+    const paths = new Set<string>();
+    for (const image of rowsToDelete) {
+        [
+            image.originalPath,
+            image.optimizedPath,
+            image.thumbnailPath,
+            image.watermarkedPath,
+        ].forEach((path) => {
+            if (
+                path &&
+                !path.startsWith("http") &&
+                !path.startsWith("data:image") &&
+                !path.startsWith("/")
+            ) {
+                paths.add(path);
+            }
+        });
+    }
+
+    const deleted = await db.transaction(async (tx) => {
+        const removed = [];
+
+        for (const imageId of imageIds) {
+            const [row] = await tx
+                .delete(productImages)
+                .where(and(
+                    eq(productImages.id, imageId),
+                    eq(productImages.productId, data.productId),
+                    eq(productImages.businessId, data.businessId),
+                ))
+                .returning();
+
+            if (row) removed.push(row);
+        }
+
+        return removed;
+    });
+
+    await deleteImages(Array.from(paths)).catch(() => undefined);
+    return deleted;
+};
+
 export const uploadProductImagesQuery = async (data: {
     businessId: string;
     productId: string;
-    files: ProductImageUpload[];
+    files: ProductImageInput[];
 }) => {
     if (data.files.length === 0) {
         return [];
@@ -322,6 +528,7 @@ export const uploadProductImagesQuery = async (data: {
                         optimizedPath: image.optimizedPath,
                         thumbnailPath: image.thumbnailPath,
                         watermarkedPath: image.watermarkPath,
+                        variantId: data.files[index]?.variantId ?? null,
                         width: image.width,
                         height: image.height,
                         fileSize: image.fileSize,
@@ -344,8 +551,9 @@ export const createProductWithRelationsQuery = async (data: {
     categoryId?: string | null;
     brand: string;
     description?: string | null;
-    images?: ProductImageUpload[];
+    images?: ProductImageInput[];
     variants?: {
+        clientId?: string;
         sku?: string;
         color: string;
         size: string;
@@ -383,28 +591,6 @@ export const createProductWithRelationsQuery = async (data: {
                 )
                 .returning();
 
-            const images = uploaded.length
-                ? await tx
-                    .insert(productImages)
-                    .values(
-                        uploaded.map((image, index) => ({
-                            businessId: data.businessId,
-                            productId,
-                            originalPath: image.originalPath,
-                            optimizedPath: image.optimizedPath,
-                            thumbnailPath: image.thumbnailPath,
-                            watermarkedPath: image.watermarkPath,
-                            width: image.width,
-                            height: image.height,
-                            fileSize: image.fileSize,
-                            mimeType: image.mimeType,
-                            displayOrder: index,
-                            isPrimary: index === 0,
-                        })),
-                    )
-                    .returning()
-                : [];
-
             const variantInputs = data.variants?.length
                 ? buildVariantCreateInputs(data.name, data.variants)
                 : [];
@@ -434,6 +620,40 @@ export const createProductWithRelationsQuery = async (data: {
                 });
             }
 
+            const variantIdsByClientId = new Map(
+                variants.map((variant, index) => [data.variants?.[index]?.clientId, variant.id]),
+            );
+            const images = uploaded.length
+                ? await tx
+                    .insert(productImages)
+                    .values(
+                        uploaded.map((image, index) => {
+                            const variantClientId = data.images?.[index]?.variantClientId;
+                            const directVariantId = data.images?.[index]?.variantId;
+                            const requestedVariantId =
+                                (variantClientId ? variantIdsByClientId.get(variantClientId) : undefined) ??
+                                (isUuid(directVariantId) ? directVariantId : undefined);
+
+                            return {
+                                businessId: data.businessId,
+                                productId,
+                                variantId: requestedVariantId ?? null,
+                                originalPath: image.originalPath,
+                                optimizedPath: image.optimizedPath,
+                                thumbnailPath: image.thumbnailPath,
+                                watermarkedPath: image.watermarkPath,
+                                width: image.width,
+                                height: image.height,
+                                fileSize: image.fileSize,
+                                mimeType: image.mimeType,
+                                displayOrder: index,
+                                isPrimary: index === 0,
+                            };
+                        }),
+                    )
+                    .returning()
+                : [];
+
             return {
                 ...product,
                 images,
@@ -444,4 +664,56 @@ export const createProductWithRelationsQuery = async (data: {
         await deleteImages(uploadedPaths).catch(() => undefined);
         throw error;
     }
+};
+
+export const updateProductImageAssignmentsQuery = async (data: {
+    businessId: string;
+    productId: string;
+    assignments: {
+        imageUrl: string;
+        variantId?: string | null;
+    }[];
+}) => {
+    if (data.assignments.length === 0) {
+        return [];
+    }
+
+    const imageRows = await db
+        .select()
+        .from(productImages)
+        .where(and(
+            eq(productImages.productId, data.productId),
+            eq(productImages.businessId, data.businessId),
+        ));
+
+    const updates = [];
+
+    for (const assignment of data.assignments) {
+        const image = imageRows.find((row) => {
+            const urls = [
+                getProductImageUrl(row.thumbnailPath),
+                getProductImageUrl(row.optimizedPath),
+                getProductImageUrl(row.originalPath),
+                getProductImageUrl(row.watermarkedPath),
+            ].filter((url): url is string => Boolean(url));
+
+            return urls.includes(assignment.imageUrl);
+        });
+
+        if (!image) continue;
+
+        const [updated] = await db
+            .update(productImages)
+            .set({ variantId: assignment.variantId ?? null })
+            .where(and(
+                eq(productImages.id, image.id),
+                eq(productImages.productId, data.productId),
+                eq(productImages.businessId, data.businessId),
+            ))
+            .returning();
+
+        if (updated) updates.push(updated);
+    }
+
+    return updates;
 };

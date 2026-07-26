@@ -30,6 +30,22 @@ export const useGetProduct = (id?: string) => {
     };
 };
 
+export const useGetProductDetails = (id?: string) => {
+    const trpc = useTRPC();
+
+    const query = useQuery(
+        trpc.products.getProductDetails.queryOptions(
+            { id: id ?? "" },
+            { enabled: Boolean(id) },
+        ),
+    );
+
+    return {
+        ...query,
+        product: query.data ?? null,
+    };
+};
+
 export const useCreateProduct = () => {
     const trpc = useTRPC();
     const queryClient = useQueryClient();
@@ -63,6 +79,32 @@ export const useUploadProductImage = () => {
 
     return useMutation(
         trpc.products.uploadProductImage.mutationOptions({
+            onSuccess: async () => {
+                await queryClient.invalidateQueries(trpc.products.pathFilter());
+            },
+        }),
+    );
+};
+
+export const useReplaceProductImages = () => {
+    const trpc = useTRPC();
+    const queryClient = useQueryClient();
+
+    return useMutation(
+        trpc.products.replaceProductImages.mutationOptions({
+            onSuccess: async () => {
+                await queryClient.invalidateQueries(trpc.products.pathFilter());
+            },
+        }),
+    );
+};
+
+export const useRemoveProductImages = () => {
+    const trpc = useTRPC();
+    const queryClient = useQueryClient();
+
+    return useMutation(
+        trpc.products.removeProductImages.mutationOptions({
             onSuccess: async () => {
                 await queryClient.invalidateQueries(trpc.products.pathFilter());
             },

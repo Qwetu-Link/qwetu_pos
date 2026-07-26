@@ -1,10 +1,15 @@
 import { db } from "@/db";
 import { categoryTable } from "@/db/schema/category";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 
 export const getCategoriesQuery = async (businessId: string) => {
     return db
-        .select()
+        .select({
+            id: categoryTable.id,
+            name: categoryTable.name,
+            description: categoryTable.description,
+            icon: sql<string | null>`null`,
+        })
         .from(categoryTable)
         .where(eq(categoryTable.businessId, businessId))
         .orderBy(desc(categoryTable.createdAt))
@@ -15,7 +20,12 @@ export const getCategoryByIdQuery = async (data: {
     businessId: string;
 }) => {
     const [category] = await db
-        .select()
+        .select({
+            id: categoryTable.id,
+            name: categoryTable.name,
+            description: categoryTable.description,
+            icon: sql<string | null>`null`,
+        })
         .from(categoryTable)
         .where(and(
             eq(categoryTable.id, data.id),

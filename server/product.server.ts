@@ -2,7 +2,11 @@ import {
     createProductWithRelationsQuery,
     deleteProductQuery,
     getProductByIdQuery,
+    getProductDetailsQuery,
     getProductsQuery,
+    removeProductImagesQuery,
+    replaceProductImagesQuery,
+    updateProductImageAssignmentsQuery,
     updateProductQuery,
     uploadProductImagesQuery,
 } from "@/db/queries/product";
@@ -12,6 +16,8 @@ import {
     productCreateSchema,
     productEditSchema,
     productIdSchema,
+    productImageRemoveSchema,
+    productImageReplaceSchema,
     productImageUploadSchema,
 } from "@/validators/product";
 import { TRPCError } from "@trpc/server";
@@ -48,6 +54,16 @@ function imageDataToUpload(imageData: string): ProductImageUpload {
         mimeType,
         fileSize: buffer.length,
     };
+}
+
+function imageAttachmentsToUploads(
+    attachments?: { imageData: string; variantId?: string | null }[],
+) {
+    return attachments?.map((attachment) => ({
+        ...imageDataToUpload(attachment.imageData),
+        variantId: attachment.variantId,
+        variantClientId: attachment.variantId,
+    }));
 }
 
 function ensureBusinessId(businessId: string | null) {
@@ -143,17 +159,33 @@ export const productRouter = createTRPCRouter({
             return ensureProductExists(product);
         }),
 
+    getProductDetails: baseProcedure
+        .input(productIdSchema)
+        .query(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+            const product = await getProductDetailsQuery({
+                id: input.id,
+                businessId,
+            });
+
+            return ensureProductExists(product);
+        }),
+
     addProduct: baseProcedure
         .input(productCreateSchema)
         .mutation(async ({ input, ctx }) => {
             const businessId = ensureBusinessId(ctx.businessId);
 
             try {
+                const imageUploads =
+                    imageAttachmentsToUploads(input.imageAttachments) ??
+                    (input.imagesData ?? (input.imageData ? [input.imageData] : []))
+                        .map(imageDataToUpload);
+
                 return await createProductWithRelationsQuery({
                     ...input,
                     businessId,
-                    images: (input.imagesData ?? (input.imageData ? [input.imageData] : []))
-                        .map(imageDataToUpload),
+                    images: imageUploads,
                 });
             } catch (error) {
                 console.error("RAW PRODUCT CREATE ERROR:", error);
@@ -172,6 +204,14 @@ export const productRouter = createTRPCRouter({
                     businessId,
                 });
 
+                if (input.imageAssignments?.length) {
+                    await updateProductImageAssignmentsQuery({
+                        businessId,
+                        productId: input.id,
+                        assignments: input.imageAssignments,
+                    });
+                }
+
                 return ensureProductExists(product);
             } catch (error) {
                 getFriendlyProductError(error, "update");
@@ -187,10 +227,49 @@ export const productRouter = createTRPCRouter({
                 return await uploadProductImagesQuery({
                     businessId,
                     productId: input.productId,
-                    files: [imageDataToUpload(input.imageData)],
+                    files: [{
+                        ...imageDataToUpload(input.imageData),
+                        variantId: input.variantId,
+                    }],
                 });
             } catch (error) {
                 getFriendlyProductError(error, "upload");
+            }
+        }),
+
+    replaceProductImages: baseProcedure
+        .input(productImageReplaceSchema)
+        .mutation(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+
+            try {
+                const files =
+                    imageAttachmentsToUploads(input.imageAttachments) ??
+                    input.imagesData.map(imageDataToUpload);
+
+                return await replaceProductImagesQuery({
+                    businessId,
+                    productId: input.productId,
+                    files,
+                });
+            } catch (error) {
+                getFriendlyProductError(error, "upload");
+            }
+        }),
+
+    removeProductImages: baseProcedure
+        .input(productImageRemoveSchema)
+        .mutation(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+
+            try {
+                return await removeProductImagesQuery({
+                    businessId,
+                    productId: input.productId,
+                    imageUrls: input.imageUrls,
+                });
+            } catch (error) {
+                getFriendlyProductError(error, "delete");
             }
         }),
 
