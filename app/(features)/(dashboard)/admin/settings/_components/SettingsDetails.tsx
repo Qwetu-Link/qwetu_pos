@@ -1,36 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, CreditCard, MessageCircle, Settings, ShieldCheck, UserCog, Users } from "lucide-react";
+import { ArrowRight, CreditCard, MessageCircle, Settings, ShieldCheck, UserCircle, UserCog, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
-import { businessProfile, teamUsers } from "@/utils/pos-details-data";
+import { teamUsers } from "@/utils/pos-details-data";
 import BillingSection from "./BillingSection";
-import BusinessProfileSection from "./BusinessProfileSection";
-import EditProfileModal from "./EditProfileModal";
 import WhatsAppSection from "./WhatsAppSection";
 import type { WhatsappStatus } from "./StatusBadge";
 
-type Profile = typeof businessProfile;
-
 export default function SettingsDetails() {
-  const profile = businessProfile;
   const users = teamUsers;
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const isBillingActive = false;
   const [whatsappStatus, setWhatsappStatus] =
     useState<WhatsappStatus>("checking");
   const [pairingCode, setPairingCode] = useState("");
 
-  function saveProfile(values: Profile) {
-    void values;
-    setIsProfileOpen(false);
-  }
-
   return (
-    <div>
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-        <div>
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+          <div>
           <h1 className="flex items-center gap-3 text-3xl font-extrabold text-black">
             <Settings className="h-8 w-8 text-emerald-600" />
             Settings
@@ -38,14 +27,16 @@ export default function SettingsDetails() {
           <p className="mt-1 text-slate-500">
             Manage business profile, WhatsApp, roles, and permissions
           </p>
+          </div>
+          <Link
+            href="/admin/settings/profile"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+          >
+            <UserCircle className="h-4 w-4" />
+            View Profile
+          </Link>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <SettingsSummary
-            icon={ShieldCheck}
-            label="Business profile"
-            value={profile.name}
-            tone="text-emerald-700"
-          />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <SettingsSummary
             icon={MessageCircle}
             label="WhatsApp"
@@ -66,10 +57,6 @@ export default function SettingsDetails() {
           />
         </div>
 
-        <BusinessProfileSection
-          profile={profile}
-          onEdit={() => setIsProfileOpen(true)}
-        />
         <WhatsAppSection
           pairingCode={pairingCode}
           status={whatsappStatus}
@@ -78,14 +65,6 @@ export default function SettingsDetails() {
         />
         <BillingSection isActive={isBillingActive} />
         <AccessManagementLinks teamCount={users.length} />
-      </div>
-
-      <EditProfileModal
-        isOpen={isProfileOpen}
-        onClose={() => setIsProfileOpen(false)}
-        onSave={saveProfile}
-        profile={profile}
-      />
     </div>
   );
 }

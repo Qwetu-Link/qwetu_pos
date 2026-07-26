@@ -1,16 +1,21 @@
-import { Plus, Users } from "lucide-react";
-import { businessRoles } from "@/utils/pos-details-data";
-import type { TeamUser } from "@/utils/pos-details-data";
+import { Pencil, Plus, Trash2, Users } from "lucide-react";
+import type { BusinessRole, TeamUser } from "@/types/settings";
 import SectionCard from "./SectionCard";
 
 export default function TeamAssignmentsSection({
+  roles,
   users,
   onAddUser,
+  onEditUser,
+  onDeleteUser,
 }: {
+  roles: BusinessRole[];
   users: TeamUser[];
   onAddUser: () => void;
+  onEditUser: (user: TeamUser) => void;
+  onDeleteUser: (user: TeamUser) => void;
 }) {
-  const roleLabels = new Map(businessRoles.map((role) => [role.id, role.name]));
+  const roleLabels = new Map(roles.map((role) => [role.id, role.name]));
 
   return (
     <SectionCard>
@@ -45,6 +50,7 @@ export default function TeamAssignmentsSection({
               <th className="py-3">Email</th>
               <th className="py-3">Role</th>
               <th className="py-3">Status</th>
+              <th className="py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -70,6 +76,26 @@ export default function TeamAssignmentsSection({
                   >
                     {user.status}
                   </span>
+                </td>
+                <td className="py-4 text-right">
+                  <div className="inline-flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onEditUser(user)}
+                      className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDeleteUser(user)}
+                      className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

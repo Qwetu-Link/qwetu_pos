@@ -3,17 +3,34 @@
 import Link from "next/link";
 import { ArrowLeft, UserCog } from "lucide-react";
 import { useState } from "react";
-import { teamUsers } from "@/utils/pos-details-data";
-import type { TeamUser } from "@/utils/pos-details-data";
-import AddTeamUserModal from "./AddTeamUserModal";
+import {
+  useCreateTeamUser,
+  useDeleteTeamUser,
+  useGetRoles,
+  useGetTeamUsers,
+  useUpdateTeamUser,
+} from "@/hooks/useSettingsAccess";
+import type { TeamUser } from "@/types/settings";
+import AddTeamUserModal, { type TeamUserFormValues } from "./AddTeamUserModal";
 import TeamAssignmentsSection from "./TeamAssignmentsSection";
 
 export default function TeamRoleAssignmentsPage() {
-  const users = teamUsers;
+  const { users, isLoading, isError, error } = useGetTeamUsers();
+  const { roles } = useGetRoles();
+  const createTeamUser = useCreateTeamUser();
+  const updateTeamUser = useUpdateTeamUser();
+  const deleteTeamUser = useDeleteTeamUser();
   const [isUserOpen, setIsUserOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<TeamUser | null>(null);
 
-  function addUser(user: TeamUser) {
-    void user;
+  async function addUser(user: TeamUserFormValues) {
+    if (editingUser) {
+      await updateTeamUser.mutateAsync({ id: editingUser.id, ...user });
+    } else {
+      await createTeamUser.mutateAsync(user);
+    }
+    setEditingUser(null);
+    setIsUserOpen(false);
   }
 
   return (
@@ -37,15 +54,41 @@ export default function TeamRoleAssignmentsPage() {
         </div>
       </div>
 
-      <TeamAssignmentsSection
-        users={users}
-        onAddUser={() => setIsUserOpen(true)}
-      />
+      {isError ? (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {error?.message ?? "Could not load team users."}
+        </div>
+      ) : isLoading ? (
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+          Loading team users...
+        </div>
+      ) : (
+        <TeamAssignmentsSection
+          roles={roles}
+          users={users}
+          onAddUser={() => {
+            setEditingUser(null);
+            setIsUserOpen(true);
+          }}
+          onEditUser={(user) => {
+            setEditingUser(user);
+            setIsUserOpen(true);
+          }}
+          onDeleteUser={(user) => deleteTeamUser.mutate({ id: user.id })}
+        />
+      )}
 
       <AddTeamUserModal
         isOpen={isUserOpen}
-        onClose={() => setIsUserOpen(false)}
+        onClose={() => {
+          setEditingUser(null);
+          setIsUserOpen(false);
+        }}
         onAddUser={addUser}
+        roles={roles}
+        isSaving={createTeamUser.isPending || updateTeamUser.isPending}
+        error={createTeamUser.isError ? createTeamUser.error.message : updateTeamUser.isError ? updateTeamUser.error.message : undefined}
+        user={editingUser}
       />
     </div>
   );

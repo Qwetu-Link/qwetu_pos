@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Save, X } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { businessProfile } from "@/utils/pos-details-data";
@@ -32,10 +33,17 @@ export default function EditProfileModal({
     formState: { errors },
     handleSubmit,
     register,
+    reset,
   } = useForm<Profile>({
     resolver: zodResolver(profileSchema),
     defaultValues: profile,
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      reset(profile);
+    }
+  }, [isOpen, profile, reset]);
 
   if (!isOpen) {
     return null;

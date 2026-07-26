@@ -3,11 +3,34 @@
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { useState } from "react";
-import AddRoleModal from "./AddRoleModal";
+import { useCreateRole, useDeleteRole, useGetRoles } from "@/hooks/useSettingsAccess";
+import { useUpdateRole } from "@/hooks/useSettingsAccess";
+import type { BusinessRole } from "@/types/settings";
+import AddRoleModal, { type AddRoleFormValues } from "./AddRoleModal";
 import RolesPermissionsSection from "./RolesPermissionsSection";
 
 export default function RolesPermissionsPage() {
   const [isRoleOpen, setIsRoleOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState<BusinessRole | null>(null);
+  const { roles, isLoading, isError, error } = useGetRoles();
+  const createRole = useCreateRole();
+  const updateRole = useUpdateRole();
+  const deleteRole = useDeleteRole();
+
+  async function saveRole(values: AddRoleFormValues) {
+    const payload = {
+      name: values.roleName,
+      description: values.roleDescription,
+      permissions: values.permissions,
+    };
+    if (editingRole) {
+      await updateRole.mutateAsync({ id: editingRole.id, ...payload });
+    } else {
+      await createRole.mutateAsync(payload);
+    }
+    setEditingRole(null);
+    setIsRoleOpen(false);
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
@@ -30,11 +53,39 @@ export default function RolesPermissionsPage() {
         </div>
       </div>
 
-      <RolesPermissionsSection onAddRole={() => setIsRoleOpen(true)} />
+      {isError ? (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {error?.message ?? "Could not load roles."}
+        </div>
+      ) : isLoading ? (
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+          Loading roles...
+        </div>
+      ) : (
+        <RolesPermissionsSection
+          roles={roles}
+          onAddRole={() => {
+            setEditingRole(null);
+            setIsRoleOpen(true);
+          }}
+          onEditRole={(role) => {
+            setEditingRole(role);
+            setIsRoleOpen(true);
+          }}
+          onDeleteRole={(role) => deleteRole.mutate({ id: role.id })}
+        />
+      )}
 
       <AddRoleModal
         isOpen={isRoleOpen}
-        onClose={() => setIsRoleOpen(false)}
+        onClose={() => {
+          setEditingRole(null);
+          setIsRoleOpen(false);
+        }}
+        onSave={saveRole}
+        isSaving={createRole.isPending || updateRole.isPending}
+        error={createRole.isError ? createRole.error.message : updateRole.isError ? updateRole.error.message : undefined}
+        role={editingRole}
       />
     </div>
   );

@@ -10,6 +10,7 @@ import { transactionRouter } from '@/server/transaction.server';
 import { expenseRouter } from '@/server/expense.server';
 import { dashboardRouter } from '@/server/dashboard.server';
 import { analyticsRouter } from '@/server/analytics.server';
+import { settingsAccessRouter } from '@/server/settings-access.server';
 
 export const appRouter = createTRPCRouter({
   subscriptions: subscriptionRouter,
@@ -23,6 +24,7 @@ export const appRouter = createTRPCRouter({
   expenses: expenseRouter,
   dashboard: dashboardRouter,
   analytics: analyticsRouter,
+  settingsAccess: settingsAccessRouter,
 });
 
 export type AppRouter = typeof appRouter;

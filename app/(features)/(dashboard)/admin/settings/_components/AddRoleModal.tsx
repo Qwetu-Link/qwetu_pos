@@ -2,9 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Save, X } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { rolePermissionOptions } from "@/utils/pos-details-data";
+import type { BusinessRole } from "@/types/settings";
 import FormField from "./FormField";
 
 const addRoleSchema = z.object({
@@ -13,19 +15,28 @@ const addRoleSchema = z.object({
   permissions: z.array(z.string()).min(1, "Select at least one permission"),
 });
 
-type AddRoleFormValues = z.infer<typeof addRoleSchema>;
+export type AddRoleFormValues = z.infer<typeof addRoleSchema>;
 
 export default function AddRoleModal({
   isOpen,
   onClose,
+  onSave,
+  isSaving = false,
+  error,
+  role,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  onSave: (values: AddRoleFormValues) => Promise<void> | void;
+  isSaving?: boolean;
+  error?: string;
+  role?: BusinessRole | null;
 }) {
   const {
     formState: { errors },
     handleSubmit,
     register,
+    reset,
   } = useForm<AddRoleFormValues>({
     resolver: zodResolver(addRoleSchema),
     defaultValues: {
@@ -37,12 +48,25 @@ export default function AddRoleModal({
     },
   });
 
+  useEffect(() => {
+    if (!isOpen) return;
+    reset({
+      roleName: role?.name ?? "",
+      roleDescription: role?.description ?? "",
+      permissions: role?.permissions?.length
+        ? role.permissions
+        : rolePermissionOptions
+            .filter((permission) => permission.key.includes("view"))
+            .map((permission) => permission.key),
+    });
+  }, [isOpen, reset, role]);
+
   if (!isOpen) {
     return null;
   }
 
-  function submitRole() {
-    onClose();
+  async function submitRole(values: AddRoleFormValues) {
+    await onSave(values);
   }
 
   return (
@@ -50,7 +74,9 @@ export default function AddRoleModal({
       <div className="w-full max-w-2xl rounded-xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b px-6 py-5">
           <div>
-            <h3 className="text-xl font-bold text-slate-800">Add Role</h3>
+            <h3 className="text-xl font-bold text-slate-800">
+              {role ? "Edit Role" : "Add Role"}
+            </h3>
             <p className="text-sm text-slate-500">
               Choose the permissions this role should have.
             </p>
@@ -100,6 +126,9 @@ export default function AddRoleModal({
             {errors.permissions ? (
               <p className="mt-2 text-xs text-red-500">{errors.permissions.message}</p>
             ) : null}
+            {error ? (
+              <p className="mt-2 text-xs text-red-500">{error}</p>
+            ) : null}
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button
@@ -111,10 +140,11 @@ export default function AddRoleModal({
             </button>
             <button
               type="submit"
+              disabled={isSaving}
               className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-white transition hover:bg-blue-700"
             >
               <Save className="h-4 w-4" />
-              Save Role
+              {isSaving ? "Saving..." : role ? "Update Role" : "Save Role"}
             </button>
           </div>
         </form>
