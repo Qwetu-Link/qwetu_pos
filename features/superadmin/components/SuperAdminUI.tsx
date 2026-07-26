@@ -7,7 +7,7 @@ type HeaderAction = {
 };
 
 export function SuperAdminPageShell({ children }: { children: ReactNode }) {
-  return <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">{children}</div>;
+  return <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-5 lg:gap-6">{children}</div>;
 }
 
 export function SuperAdminHeader({
@@ -24,18 +24,16 @@ export function SuperAdminHeader({
   actions?: HeaderAction[];
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 bg-slate-50 px-5 py-4 sm:px-6">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-emerald-700">
-          {eyebrow}
-        </p>
-      </div>
-      <div className="flex flex-col justify-between gap-5 p-5 sm:p-6 lg:flex-row lg:items-start">
+    <section className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm">
+      <div className="flex flex-col justify-between gap-5 border-b border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-lime-50 p-5 text-slate-950 sm:p-6 lg:flex-row lg:items-start">
         <div className="flex min-w-0 gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
             <Icon className="h-6 w-6" />
           </div>
           <div className="min-w-0">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-emerald-700">
+              {eyebrow}
+            </p>
             <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
               {title}
             </h1>
@@ -49,13 +47,13 @@ export function SuperAdminHeader({
             {actions.map((action) => (
               <div
                 key={action.label}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-3"
+                className="rounded-xl border border-emerald-200 bg-white px-4 py-3 shadow-sm"
               >
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   {action.label}
                 </p>
                 {action.value ? (
-                  <p className="mt-1 text-sm font-bold text-slate-900">{action.value}</p>
+                  <p className="mt-1 text-sm font-bold text-slate-950">{action.value}</p>
                 ) : null}
               </div>
             ))}
@@ -83,7 +81,7 @@ export function SuperAdminPanel({
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
             <Icon className="h-5 w-5" />
           </div>
           <div>
@@ -100,6 +98,75 @@ export function SuperAdminPanel({
   );
 }
 
+export function SuperAdminSurface({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={`rounded-2xl border border-slate-200 bg-white shadow-sm ${className}`}>
+      {children}
+    </section>
+  );
+}
+
+export function SuperAdminSectionTitle({
+  icon: Icon,
+  title,
+  description,
+  action,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description?: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col justify-between gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:px-6">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div>
+          <h2 className="text-base font-black text-slate-950">{title}</h2>
+          {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
+        </div>
+      </div>
+      {action}
+    </div>
+  );
+}
+
+export function SuperAdminInfoTile({
+  label,
+  value,
+  detail,
+  tone = "slate",
+}: {
+  label: string;
+  value: string;
+  detail?: string;
+  tone?: "slate" | "emerald" | "amber" | "blue" | "red";
+}) {
+  const classes = {
+    slate: "border-slate-200 bg-white text-slate-950",
+    emerald: "border-emerald-200 bg-emerald-50 text-emerald-950",
+    amber: "border-amber-200 bg-amber-50 text-amber-950",
+    blue: "border-blue-200 bg-blue-50 text-blue-950",
+    red: "border-red-200 bg-red-50 text-red-950",
+  };
+
+  return (
+    <div className={`min-w-0 rounded-xl border px-4 py-3 ${classes[tone]}`}>
+      <p className="text-xs font-bold uppercase tracking-wide opacity-60">{label}</p>
+      <p className="mt-1 truncate text-xl font-black">{value}</p>
+      {detail ? <p className="mt-1 truncate text-xs font-medium opacity-70">{detail}</p> : null}
+    </div>
+  );
+}
+
 export function SuperAdminMetricCard({
   title,
   value,
@@ -112,7 +179,7 @@ export function SuperAdminMetricCard({
   icon: LucideIcon;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-semibold text-slate-600">{title}</p>
         <div className="rounded-xl bg-emerald-50 p-2 text-emerald-700">

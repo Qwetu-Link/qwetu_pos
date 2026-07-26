@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import {
   AlertTriangle,
   ArrowRightToLine,
@@ -29,7 +28,6 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const router = useRouter();
-  const { data: session } = useSession();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,15 +61,15 @@ export default function LoginForm() {
         return;
       }
 
-      router.refresh();
+      const freshSession = await getSession();
+      const roleName = freshSession?.user?.roleName;
 
-      const roleName = session?.user?.roleName;
       if (roleName === "Super Admin") {
-        router.push("/superadmin");
+        router.replace("/superadmin");
         return;
       }
 
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } catch {
       setError("An unexpected authentication error occurred.");
       setIsSubmitting(false);

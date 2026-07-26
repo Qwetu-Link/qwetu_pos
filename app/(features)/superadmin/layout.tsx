@@ -5,10 +5,10 @@ import SuperAdminSidebar from "@/features/superadmin/components/SuperAdminSideba
 
 export default function SuperAdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#f4f7fb] text-slate-950">
+    <div className="min-h-screen bg-emerald-50/60 text-slate-950">
       <SuperAdminSidebar />
-      <div className="min-h-screen md:ml-[280px]">
-        <main className="min-h-screen px-4 pb-8 pt-24 sm:px-6 md:pt-6 lg:px-8">
+      <div className="min-h-screen md:ml-[292px]">
+        <main className="min-h-screen px-3 pb-8 pt-28 sm:px-5 md:pt-5 lg:px-8">
           {children}
         </main>
       </div>

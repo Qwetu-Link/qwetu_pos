@@ -231,13 +231,56 @@ export const deleteProductQuery = async (data: {
     id: string;
     businessId: string;
 }) => {
-    const [product] = await db
-        .delete(productsTable)
-        .where(and(
-            eq(productsTable.id, data.id),
-            eq(productsTable.businessId, data.businessId),
-        ))
-        .returning();
+    const { product, imagePaths } = await db.transaction(async (tx) => {
+        const images = await tx
+            .select({
+                originalPath: productImages.originalPath,
+                optimizedPath: productImages.optimizedPath,
+                thumbnailPath: productImages.thumbnailPath,
+                watermarkedPath: productImages.watermarkedPath,
+            })
+            .from(productImages)
+            .where(and(
+                eq(productImages.productId, data.id),
+                eq(productImages.businessId, data.businessId),
+            ));
+
+        const paths = new Set<string>();
+        for (const image of images) {
+            [
+                image.originalPath,
+                image.optimizedPath,
+                image.thumbnailPath,
+                image.watermarkedPath,
+            ].forEach((path) => {
+                if (
+                    path &&
+                    !path.startsWith("http") &&
+                    !path.startsWith("data:image") &&
+                    !path.startsWith("/")
+                ) {
+                    paths.add(path);
+                }
+            });
+        }
+
+        const [deletedProduct] = await tx
+            .delete(productsTable)
+            .where(and(
+                eq(productsTable.id, data.id),
+                eq(productsTable.businessId, data.businessId),
+            ))
+            .returning();
+
+        return {
+            product: deletedProduct,
+            imagePaths: Array.from(paths),
+        };
+    });
+
+    if (product && imagePaths.length > 0) {
+        await deleteImages(imagePaths);
+    }
 
     return product;
 };

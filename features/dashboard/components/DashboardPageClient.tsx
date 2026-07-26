@@ -9,10 +9,9 @@ import CashierDashboard from "../analytics/cashier_dashboard";
 import ManagerDashboard from "../analytics/manager_dashboard";
 import AdminDashboard from "../analytics/owner_dashboard";
 import InventoryDashboard from "../analytics/inventory_dashboard";
-import SuperAdminDashboard from "@/features/superadmin/components/SuperAdminDashboard";
 
 const DASHBOARD_MAP: Record<UserRole, () => JSX.Element> = {
-  SAdmin:()=><SuperAdminDashboard/>,
+  SAdmin: () => <AdminDashboard />,
   Owner: () => <AdminDashboard />,
   Manager: () => <ManagerDashboard />,
   Cashier: () => <CashierDashboard />,
@@ -33,9 +32,12 @@ export default function DashboardPageClient() {
     if (status === "unauthenticated") {
       router.replace("/login");
     }
-  }, [status, router]);
+    if (status === "authenticated" && roleName === "Super Admin") {
+      router.replace("/superadmin");
+    }
+  }, [status, roleName, router]);
 
-  if (status === "loading") return null;
+  if (status === "loading" || roleName === "Super Admin") return null;
 
   const DashboardComponent = DASHBOARD_MAP[user] ?? DASHBOARD_MAP.Owner;
 

@@ -1,9 +1,22 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { ChevronRight, Building2, UserCircle2, ShieldCheck } from "lucide-react";
+import {
+  Building2,
+  ChevronRight,
+  ClipboardCheck,
+  LockKeyhole,
+  ShieldCheck,
+  UserCircle2,
+} from "lucide-react";
 import { superAdminCreateBusiness } from "@/server/register-business";
-import { SuperAdminHeader, SuperAdminPageShell, SuperAdminPanel } from "@/features/superadmin/components/SuperAdminUI";
+import {
+  SuperAdminHeader,
+  SuperAdminInfoTile,
+  SuperAdminPageShell,
+  SuperAdminSectionTitle,
+  SuperAdminSurface,
+} from "@/features/superadmin/components/SuperAdminUI";
 
 interface FormState {
   businessName: string;
@@ -61,16 +74,6 @@ export default function RegisterBusinessWizard() {
     setError(null);
   };
 
-  const handleNext = () => {
-    setError(null);
-    setStep((prev) => prev + 1);
-  };
-
-  const handleBack = () => {
-    setError(null);
-    setStep((prev) => prev - 1);
-  };
-
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     setMessage(null);
@@ -93,187 +96,149 @@ export default function RegisterBusinessWizard() {
     });
   };
 
+  const steps = [
+    {
+      title: "Business workspace",
+      detail: "Legal, tax, and contact details",
+      active: step === 1,
+      done: step > 1,
+      icon: Building2,
+    },
+    {
+      title: "Owner access",
+      detail: "Primary account credentials",
+      active: step === 2,
+      done: false,
+      icon: LockKeyhole,
+    },
+  ];
+
   return (
     <SuperAdminPageShell>
       <SuperAdminHeader
         icon={Building2}
-        title="Register a new business"
-        description="Create a tenant workspace and its owner account in a guided flow."
-        actions={[{ label: "Progress", value: `Step ${step} of 2` }]}
+        title="Register business"
+        description="Create a tenant workspace, owner credentials, and platform access record from one controlled superadmin flow."
+        actions={[
+          { label: "Progress", value: `Step ${step} of 2` },
+          { label: "Workspace", value: form.businessName || "Draft" },
+        ]}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-        <SuperAdminPanel
-          title="Registration checklist"
-          description="Complete the required details below."
-          icon={Building2}
-        >
-
-          <div className="mt-6 space-y-3">
-            {[
-              { title: "Business details", active: step === 1, done: step > 1 },
-              { title: "Owner credentials", active: step === 2, done: step > 2 },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className={`rounded-2xl border px-4 py-3 ${
-                  item.active
-                    ? "border-emerald-200 bg-emerald-50"
-                    : item.done
-                      ? "border-slate-200 bg-slate-50"
-                      : "border-slate-200 bg-white"
-                }`}
-              >
-                <div className="flex items-center gap-3">
+      <div className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
+        <aside className="space-y-4">
+          <SuperAdminSurface className="overflow-hidden">
+            <SuperAdminSectionTitle
+              icon={ClipboardCheck}
+              title="Workspace checklist"
+              description="Complete both stages before creating the tenant."
+            />
+            <div className="space-y-3 p-5">
+              {steps.map((item, index) => {
+                const Icon = item.icon;
+                return (
                   <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
-                      item.active || item.done ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"
+                    key={item.title}
+                    className={`rounded-xl border px-4 py-3 ${
+                      item.active
+                        ? "border-emerald-200 bg-emerald-100 text-emerald-950"
+                        : item.done
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-950"
+                          : "border-slate-200 bg-white text-slate-950"
                     }`}
                   >
-                    {item.done ? "✓" : "•"}
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                          item.active
+                            ? "bg-emerald-600 text-white"
+                            : item.done
+                              ? "bg-emerald-600 text-white"
+                              : "bg-slate-100 text-slate-500"
+                        }`}
+                      >
+                        {item.done ? <ShieldCheck className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+                      </div>
+                      <div>
+                        <p className="text-sm font-black">{item.title}</p>
+                        <p className={`mt-0.5 text-xs ${item.active ? "text-emerald-700" : "text-slate-500"}`}>
+                          Step {index + 1} - {item.detail}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-sm font-semibold text-slate-800">{item.title}</p>
-                </div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
+          </SuperAdminSurface>
+
+          <div className="grid gap-3">
+            <SuperAdminInfoTile label="Validation" value={step === 1 ? "Business" : "Owner"} detail="Current stage" tone="blue" />
+            <SuperAdminInfoTile label="Access type" value="Owner" detail="Tenant administrator" tone="emerald" />
           </div>
-        </SuperAdminPanel>
+        </aside>
 
-        <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-          {message ? (
-            <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-              {message}
-            </div>
-          ) : null}
-
-          {error ? (
-            <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-              {error}
-            </div>
-          ) : null}
-
-          {step === 1 ? (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <Building2 className="h-4 w-4 text-emerald-600" />
-                Business details
+        <form onSubmit={handleSubmit} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 bg-slate-50 px-5 py-4 sm:px-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                {step === 1 ? <Building2 className="h-5 w-5" /> : <UserCircle2 className="h-5 w-5" />}
               </div>
+              <div>
+                <h2 className="text-base font-black text-slate-950">
+                  {step === 1 ? "Business workspace" : "Owner account"}
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  {step === 1
+                    ? "Capture tenant registration and contact details."
+                    : "Create the first privileged user for this tenant."}
+                </p>
+              </div>
+            </div>
+          </div>
 
+          <div className="p-5 sm:p-6">
+            {message ? (
+              <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                {message}
+              </div>
+            ) : null}
+
+            {error ? (
+              <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                {error}
+              </div>
+            ) : null}
+
+            {step === 1 ? (
+              <div className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Business name" value={form.businessName} onChange={(value) => handleChange("businessName", value)} placeholder="Acme Retail" />
+                  <Field label="Registration number" value={form.registrationNumber} onChange={(value) => handleChange("registrationNumber", value)} placeholder="REG-001" />
+                  <Field label="Tax PIN" value={form.taxPin} onChange={(value) => handleChange("taxPin", value)} placeholder="A000000000" />
+                  <Field label="Business email" type="email" value={form.businessEmail} onChange={(value) => handleChange("businessEmail", value)} placeholder="contact@acme.co" />
+                </div>
+                <Field label="Phone number" value={form.phone} onChange={(value) => handleChange("phone", value)} placeholder="254700000000" />
+              </div>
+            ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                <label className="text-sm font-medium text-slate-700">
-                  <span className="mb-2 block">Business name</span>
-                  <input
-                    value={form.businessName}
-                    onChange={(event) => handleChange("businessName", event.target.value)}
-                    required
-                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-emerald-500"
-                    placeholder="Acme Retail"
-                  />
-                </label>
-                <label className="text-sm font-medium text-slate-700">
-                  <span className="mb-2 block">Registration number</span>
-                  <input
-                    value={form.registrationNumber}
-                    onChange={(event) => handleChange("registrationNumber", event.target.value)}
-                    required
-                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-emerald-500"
-                    placeholder="REG-001"
-                  />
-                </label>
-                <label className="text-sm font-medium text-slate-700">
-                  <span className="mb-2 block">Tax PIN</span>
-                  <input
-                    value={form.taxPin}
-                    onChange={(event) => handleChange("taxPin", event.target.value)}
-                    required
-                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-emerald-500"
-                    placeholder="A000000000"
-                  />
-                </label>
-                <label className="text-sm font-medium text-slate-700">
-                  <span className="mb-2 block">Business email</span>
-                  <input
-                    type="email"
-                    value={form.businessEmail}
-                    onChange={(event) => handleChange("businessEmail", event.target.value)}
-                    required
-                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-emerald-500"
-                    placeholder="contact@acme.co"
-                  />
-                </label>
+                <Field label="First name" value={form.ownerFirstName} onChange={(value) => handleChange("ownerFirstName", value)} placeholder="Jane" />
+                <Field label="Last name" value={form.ownerLastName} onChange={(value) => handleChange("ownerLastName", value)} placeholder="Doe" />
+                <Field label="Owner email" type="email" value={form.ownerEmail} onChange={(value) => handleChange("ownerEmail", value)} placeholder="owner@acme.co" />
+                <Field label="Temporary password" type="password" value={form.password} onChange={(value) => handleChange("password", value)} placeholder="At least 6 characters" />
               </div>
+            )}
+          </div>
 
-              <label className="block text-sm font-medium text-slate-700">
-                <span className="mb-2 block">Phone number</span>
-                <input
-                  value={form.phone}
-                  onChange={(event) => handleChange("phone", event.target.value)}
-                  required
-                  className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-emerald-500"
-                  placeholder="254700000000"
-                />
-              </label>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <UserCircle2 className="h-4 w-4 text-emerald-600" />
-                Owner account
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="text-sm font-medium text-slate-700">
-                  <span className="mb-2 block">First name</span>
-                  <input
-                    value={form.ownerFirstName}
-                    onChange={(event) => handleChange("ownerFirstName", event.target.value)}
-                    required
-                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-emerald-500"
-                    placeholder="Jane"
-                  />
-                </label>
-                <label className="text-sm font-medium text-slate-700">
-                  <span className="mb-2 block">Last name</span>
-                  <input
-                    value={form.ownerLastName}
-                    onChange={(event) => handleChange("ownerLastName", event.target.value)}
-                    required
-                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-emerald-500"
-                    placeholder="Doe"
-                  />
-                </label>
-                <label className="text-sm font-medium text-slate-700">
-                  <span className="mb-2 block">Owner email</span>
-                  <input
-                    type="email"
-                    value={form.ownerEmail}
-                    onChange={(event) => handleChange("ownerEmail", event.target.value)}
-                    required
-                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-emerald-500"
-                    placeholder="owner@acme.co"
-                  />
-                </label>
-                <label className="text-sm font-medium text-slate-700">
-                  <span className="mb-2 block">Temporary password</span>
-                  <input
-                    type="password"
-                    value={form.password}
-                    onChange={(event) => handleChange("password", event.target.value)}
-                    required
-                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-emerald-500"
-                    placeholder="At least 6 characters"
-                  />
-                </label>
-              </div>
-            </div>
-          )}
-
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4 sm:px-6">
             <button
               type="button"
-              onClick={handleBack}
+              onClick={() => {
+                setError(null);
+                setStep((prev) => prev - 1);
+              }}
               disabled={step === 1}
-              className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Back
             </button>
@@ -281,9 +246,12 @@ export default function RegisterBusinessWizard() {
             {step === 1 ? (
               <button
                 type="button"
-                onClick={handleNext}
+                onClick={() => {
+                  setError(null);
+                  setStep(2);
+                }}
                 disabled={!isStepOneValid}
-                className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-200 transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
               >
                 Continue
                 <ChevronRight className="h-4 w-4" />
@@ -292,7 +260,7 @@ export default function RegisterBusinessWizard() {
               <button
                 type="submit"
                 disabled={!isStepTwoValid || pending}
-                className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-200 transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
               >
                 {pending ? "Registering..." : "Register business"}
                 <ShieldCheck className="h-4 w-4" />
@@ -302,5 +270,33 @@ export default function RegisterBusinessWizard() {
         </form>
       </div>
     </SuperAdminPageShell>
+  );
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  type?: string;
+}) {
+  return (
+    <label className="block text-sm font-medium text-slate-700">
+      <span className="mb-2 block">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        required
+        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none ring-0 transition focus:border-emerald-600"
+        placeholder={placeholder}
+      />
+    </label>
   );
 }

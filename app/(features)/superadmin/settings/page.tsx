@@ -1,10 +1,19 @@
-import Link from "next/link";
-import { ArrowRight, Bell, KeyRound, LockKeyhole, Settings, ShieldCheck, UserCog } from "lucide-react";
+import {
+  Bell,
+  CheckCircle2,
+  KeyRound,
+  LockKeyhole,
+  Settings,
+  ShieldCheck,
+  UserCog,
+} from "lucide-react";
 import {
   SuperAdminHeader,
+  SuperAdminInfoTile,
   SuperAdminPageShell,
-  SuperAdminPanel,
+  SuperAdminSectionTitle,
   SuperAdminStatusPill,
+  SuperAdminSurface,
 } from "@/features/superadmin/components/SuperAdminUI";
 
 const settingsGroups = [
@@ -47,12 +56,19 @@ export default function SettingsPage() {
         ]}
       />
 
-      <SuperAdminPanel
-        title="Settings groups"
-        description="Use these controls to keep the platform console secure and predictable."
-        icon={ShieldCheck}
-      >
-        <div className="grid gap-3 lg:grid-cols-2">
+      <section className="grid gap-3 md:grid-cols-3">
+        <SuperAdminInfoTile label="Sessions" value="Protected" detail="Privileged access" tone="emerald" />
+        <SuperAdminInfoTile label="Audit trail" value="Enabled" detail="Every action logged" tone="blue" />
+        <SuperAdminInfoTile label="Review queue" value="1 item" detail="API key rotation" tone="amber" />
+      </section>
+
+      <SuperAdminSurface className="overflow-hidden">
+        <SuperAdminSectionTitle
+          icon={ShieldCheck}
+          title="Settings groups"
+          description="Use these controls to keep the platform console secure and predictable."
+        />
+        <div className="grid gap-4 p-5 lg:grid-cols-2">
           {settingsGroups.map((group) => {
             const Icon = group.icon;
 
@@ -60,7 +76,7 @@ export default function SettingsPage() {
               <div key={group.title} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div>
@@ -72,18 +88,15 @@ export default function SettingsPage() {
                     {group.status}
                   </SuperAdminStatusPill>
                 </div>
-                <Link
-                  href="/superadmin/settings"
-                  className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-emerald-700"
-                >
-                  Configure
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+                <div className="mt-4 flex items-center gap-2 border-t border-slate-200 pt-4 text-sm font-bold text-slate-700">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  Console policy ready
+                </div>
               </div>
             );
           })}
         </div>
-      </SuperAdminPanel>
+      </SuperAdminSurface>
     </SuperAdminPageShell>
   );
 }
