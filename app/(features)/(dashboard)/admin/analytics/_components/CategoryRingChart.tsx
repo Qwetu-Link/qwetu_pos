@@ -1,14 +1,14 @@
 import { PieChart } from "lucide-react";
 import EmptyState from "@/components/common/EmptyState";
 import {
-  categoryData,
   formatCompactCurrency,
 } from "@/utils/pos-details-data";
+import type { CategoryMetric } from "@/types/settings";
 
-export default function CategoryRingChart() {
-  const total = categoryData.reduce((sum, item) => sum + item.value, 0);
+export default function CategoryRingChart({ data }: { data: CategoryMetric[] }) {
+  const total = data.reduce((sum, item) => sum + item.value, 0);
 
-  if (categoryData.length === 0 || total === 0) {
+  if (data.length === 0 || total === 0) {
     return (
       <EmptyState
         compact
@@ -24,7 +24,7 @@ export default function CategoryRingChart() {
       <div
         className="mx-auto h-48 w-48 rounded-full"
         style={{
-          background: `conic-gradient(${categoryData
+          background: `conic-gradient(${data
             .reduce(
               (parts, item) => {
                 const start = parts.cursor;
@@ -49,7 +49,7 @@ export default function CategoryRingChart() {
         </div>
       </div>
       <div className="space-y-2">
-        {categoryData.map((item) => {
+        {data.map((item) => {
           const percentage = total ? (item.value / total) * 100 : 0;
 
           return (

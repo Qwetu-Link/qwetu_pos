@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import {
   AlertTriangle,
   Banknote,
@@ -11,14 +14,12 @@ import {
   WalletCards,
 } from "lucide-react";
 import {
-  customerSegmentData,
   formatCompactCurrency,
   formatCurrency,
-  paymentMethodData,
-  previousRevenueData,
-  revenueData,
 } from "@/utils/pos-details-data";
 import EmptyState from "@/components/common/EmptyState";
+import { useAnalyticsSummary } from "@/hooks/useAnalytics";
+import type { AnalyticsPeriod } from "@/types/analytics";
 import CategoryRingChart from "./CategoryRingChart";
 import CollectionTrendChart from "./CollectionTrendChart";
 import InfoRow from "./InfoRow";
@@ -27,40 +28,69 @@ import PaymentMethodIcon from "./PaymentMethodIcon";
 import RevenueTrendChart from "./RevenueTrendChart";
 import SectionCard from "./SectionCard";
 
+const periodOptions: { label: string; value: AnalyticsPeriod }[] = [
+  { label: "Last 6 Months", value: "last_6_months" },
+  { label: "Last 3 Months", value: "last_3_months" },
+  { label: "Last Year", value: "last_12_months" },
+];
+
 export default function AnalyticsEngineDetails() {
-  const totalRevenue = revenueData.reduce(
-    (sum, item) => sum + item.fullPayments + item.installments,
-    0,
-  );
-  const previousRevenue = previousRevenueData.reduce(
-    (sum, item) => sum + item.fullPayments + item.installments,
-    0,
-  );
-  const totalOrders = 1826;
-  const previousOrders = 1394;
-  const activeCustomers = customerSegmentData.reduce(
-    (sum, item) => sum + item.customers,
-    0,
-  );
-  const previousCustomers = 238;
-  const avgOrderValue = totalRevenue / totalOrders;
-  const previousAvgOrderValue = previousRevenue / previousOrders;
-  const installmentRevenue = revenueData.reduce(
-    (sum, item) => sum + item.installments,
-    0,
-  );
+  const [period, setPeriod] = useState<AnalyticsPeriod>("last_6_months");
+  const { analytics, isLoading, isError, error } = useAnalyticsSummary(period);
+  const selectedPeriodLabel = periodOptions.find((option) => option.value === period)?.label ?? "Last 6 Months";
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
+        <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((item) => (
+            <div key={item} className="h-32 animate-pulse rounded-xl bg-slate-100" />
+          ))}
+        </section>
+        <div className="h-96 animate-pulse rounded-xl bg-slate-100" />
+      </div>
+    );
+  }
+
+  if (isError || !analytics) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <EmptyState
+          icon={BarChart3}
+          title="Analytics unavailable"
+          description={error?.message ?? "Could not load analytics data."}
+        />
+      </div>
+    );
+  }
+
+  const {
+    totalRevenue,
+    previousRevenue,
+    totalOrders,
+    previousOrders,
+    activeCustomers,
+    previousCustomers,
+    avgOrderValue,
+    previousAvgOrderValue,
+    installmentRevenue,
+    overduePlans,
+    defaultRate,
+    newCustomers,
+    returningCustomers,
+    retentionRate,
+    customerLtv,
+    revenueTrend,
+    categorySales,
+    customerSegments,
+    paymentMethods,
+    planDurations,
+    collectionTrend,
+  } = analytics;
   const installmentPercentage = totalRevenue
     ? (installmentRevenue / totalRevenue) * 100
     : 0;
-  const overduePlans = 11;
-  const defaultRate = 4.8;
-  const newCustomers = 96;
-  const returningCustomers = 74;
-  const retentionRate = activeCustomers
-    ? (returningCustomers / activeCustomers) * 100
-    : 0;
-  const customerLtv = activeCustomers ? totalRevenue / activeCustomers : 0;
-  // const topPaymentMethod = paymentMethodData[0];
 
   return (
     <div className="space-y-6 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -75,10 +105,16 @@ export default function AnalyticsEngineDetails() {
           </p>
         </div>
         <div className="flex gap-2">
-          <select className="rounded-xl border text-black border-slate-300 bg-white px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500">
-            <option>Last 6 Months</option>
-            <option>Last 3 Months</option>
-            <option>Last Year</option>
+          <select
+            value={period}
+            onChange={(event) => setPeriod(event.target.value as AnalyticsPeriod)}
+            className="rounded-xl border text-black border-slate-300 bg-white px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500"
+          >
+            {periodOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
           <button className="inline-flex text-black items-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm transition hover:bg-slate-50">
             <Download className="h-4 w-4" />
@@ -128,21 +164,21 @@ export default function AnalyticsEngineDetails() {
             Revenue Trends
           </h2>
           <p className="mt-0.5 text-sm text-slate-500">
-            Breakdown of full payments vs installment revenue (Dec 25 - May 26)
+            Breakdown of full payments vs installment revenue from live records
           </p>
         </div>
-        <RevenueTrendChart />
+        <RevenueTrendChart data={revenueTrend} />
       </SectionCard>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <SectionCard>
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-slate-900">
-              Sales by Category
+            Sales by Category
             </h2>
-            <p className="text-sm text-slate-500">Last 6 Months performance</p>
+            <p className="text-sm text-slate-500">{selectedPeriodLabel} performance</p>
           </div>
-          <CategoryRingChart />
+          <CategoryRingChart data={categorySales} />
         </SectionCard>
 
         <SectionCard>
@@ -152,7 +188,7 @@ export default function AnalyticsEngineDetails() {
             </h2>
             <p className="text-sm text-slate-500">Revenue by customer tier</p>
           </div>
-          {customerSegmentData.length === 0 ? (
+          {customerSegments.length === 0 ? (
             <EmptyState
               compact
               icon={Users}
@@ -161,9 +197,9 @@ export default function AnalyticsEngineDetails() {
             />
           ) : (
           <div className="space-y-4">
-            {customerSegmentData.map((segment) => {
+            {customerSegments.map((segment) => {
               const maxRevenue = Math.max(
-                ...customerSegmentData.map((item) => item.revenue),
+                ...customerSegments.map((item) => item.revenue),
               );
               const width = maxRevenue ? (segment.revenue / maxRevenue) * 100 : 0;
 
@@ -208,7 +244,7 @@ export default function AnalyticsEngineDetails() {
             Transaction volume and amounts
           </p>
         </div>
-        {paymentMethodData.length === 0 ? (
+        {paymentMethods.length === 0 ? (
           <EmptyState
             compact
             icon={CreditCard}
@@ -217,7 +253,7 @@ export default function AnalyticsEngineDetails() {
           />
         ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {paymentMethodData.map((method) => (
+          {paymentMethods.map((method) => (
             <div
               key={method.method}
               className="rounded-xl border border-slate-100 bg-gradient-to-br from-slate-50 to-white p-4 transition hover:shadow-md"
@@ -251,26 +287,31 @@ export default function AnalyticsEngineDetails() {
             Plan Duration Analysis
           </h3>
           <div className="space-y-4">
-            {[2, 3, 6, 9].map((months, index) => {
-              const percentage = [25, 16, 39, 20][index];
-
-              return (
-                <div key={months}>
+            {planDurations.length === 0 ? (
+              <EmptyState
+                compact
+                icon={CalendarClock}
+                title="No plan duration data"
+                description="Plan durations will appear once installment invoices are available."
+              />
+            ) : (
+            planDurations.map((plan) => (
+                <div key={plan.months}>
                   <div className="mb-1 flex justify-between">
-                    <span className="text-sm text-black">{months} Months</span>
+                    <span className="text-sm text-black">{plan.months} Months</span>
                     <span className="text-sm font-medium text-emerald-600">
-                      {percentage}%
+                      {plan.percentage}%
                     </span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                     <div
                       className="h-full rounded-full bg-emerald-500"
-                      style={{ width: `${percentage}%` }}
+                      style={{ width: `${plan.percentage}%` }}
                     />
                   </div>
                 </div>
-              );
-            })}
+            ))
+            )}
           </div>
           <p className="mt-4 border-t pt-4 text-sm text-slate-500">
             Based on active and historical payment plans.
@@ -343,7 +384,7 @@ export default function AnalyticsEngineDetails() {
             <span className="h-3 w-3 rounded bg-emerald-500" /> Collected
           </span>
         </div>
-        <CollectionTrendChart />
+        <CollectionTrendChart data={collectionTrend} />
       </SectionCard>
     </div>
   );

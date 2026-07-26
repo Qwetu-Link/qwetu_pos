@@ -1,9 +1,9 @@
-import { collectionData } from "@/utils/pos-details-data";
 import EmptyState from "@/components/common/EmptyState";
 import { TrendingUp } from "lucide-react";
+import type { CollectionMetric } from "@/types/settings";
 
-export default function CollectionTrendChart() {
-  if (collectionData.length === 0) {
+export default function CollectionTrendChart({ data }: { data: CollectionMetric[] }) {
+  if (data.length === 0) {
     return (
       <EmptyState
         compact
@@ -14,11 +14,11 @@ export default function CollectionTrendChart() {
     );
   }
 
-  const maxExpected = Math.max(...collectionData.map((item) => item.expected));
+  const maxExpected = Math.max(...data.map((item) => item.expected));
 
   return (
     <div className="grid gap-4">
-      {collectionData.map((item) => {
+      {data.map((item) => {
         const rate = item.expected ? (item.collected / item.expected) * 100 : 0;
         const expectedWidth = maxExpected ? (item.expected / maxExpected) * 100 : 0;
         const collectedWidth = maxExpected ? (item.collected / maxExpected) * 100 : 0;

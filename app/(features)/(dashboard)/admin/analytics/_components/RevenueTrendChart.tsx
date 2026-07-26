@@ -1,13 +1,13 @@
 import {
   formatCompactCurrency,
   formatCurrency,
-  revenueData,
 } from "@/utils/pos-details-data";
 import EmptyState from "@/components/common/EmptyState";
 import { BarChart3 } from "lucide-react";
+import type { RevenueMonth } from "@/types/settings";
 
-export default function RevenueTrendChart() {
-  if (revenueData.length === 0) {
+export default function RevenueTrendChart({ data }: { data: RevenueMonth[] }) {
+  if (data.length === 0) {
     return (
       <EmptyState
         compact
@@ -19,7 +19,7 @@ export default function RevenueTrendChart() {
   }
 
   const maxRevenue = Math.max(
-    ...revenueData.map((item) => item.fullPayments + item.installments),
+    ...data.map((item) => item.fullPayments + item.installments),
   );
   const axisTicks = [1, 0.75, 0.5, 0.25, 0];
 
@@ -38,7 +38,7 @@ export default function RevenueTrendChart() {
             ))}
           </div>
           <div className="relative flex h-80 items-end gap-4">
-            {revenueData.map((item) => {
+            {data.map((item) => {
               const total = item.fullPayments + item.installments;
               const totalHeight = maxRevenue ? Math.max(8, (total / maxRevenue) * 100) : 8;
               const installmentShare = total ? (item.installments / total) * 100 : 0;

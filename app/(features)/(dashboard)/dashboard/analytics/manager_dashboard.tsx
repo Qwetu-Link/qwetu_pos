@@ -1,6 +1,5 @@
-import { dashboardData } from "@/data/dashboard-data";
-import RoleDashboard from "../_components/RoleDashboard";
+import LiveRoleDashboard from "../_components/LiveRoleDashboard";
 
 export default function ManagerDashboard() {
-  return <RoleDashboard dashboard={dashboardData.manager} />;
+  return <LiveRoleDashboard role="manager" />;
 }
