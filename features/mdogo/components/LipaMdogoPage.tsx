@@ -28,7 +28,7 @@ import { PaymentPlanCardsSkeleton } from "@/components/skeletons";
 
 export default function LipaMdogoPage() {
   const { orders, isLoading, isError, error } = useGetOrders();
-  const [activeTab, setActiveTab] = useState<"plans" | "collections">("plans");
+  const [activeTab, setActiveTab] = useState<"plans" | "paid" | "collections">("plans");
   const [reminderPlan, setReminderPlan] = useState<PaymentPlan | null>(null);
   const [recordPlan, setRecordPlan] = useState<PaymentPlan | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -68,14 +68,23 @@ export default function LipaMdogoPage() {
     };
   }, [paymentPlans]);
 
-  const visiblePlans = paymentPlans.filter(
+  const activePlans = paymentPlans.filter(
     (plan) => getPlanStatus(plan) !== "completed",
   );
+  const paidPlans = paymentPlans.filter(
+    (plan) => getPlanStatus(plan) === "completed",
+  );
+  const visiblePlans = activeTab === "paid" ? paidPlans : activePlans;
   const totalPages = Math.max(1, Math.ceil(visiblePlans.length / perPage));
   const paginatedPlans = visiblePlans.slice(
     (currentPage - 1) * perPage,
     currentPage * perPage,
   );
+
+  function updateTab(value: "plans" | "paid" | "collections") {
+    setActiveTab(value);
+    setCurrentPage(1);
+  }
 
   function updatePerPage(value: number) {
     setPerPage(value);
@@ -135,12 +144,13 @@ export default function LipaMdogoPage() {
             <div className="flex gap-6">
               {[
                 ["plans", "Active Payment Plans"],
+                ["paid", "Fully Paid Installments"],
                 ["collections", "Collections Dashboard"],
               ].map(([value, label]) => (
                 <button
                   key={value}
                   type="button"
-                  onClick={() => setActiveTab(value as "plans" | "collections")}
+                  onClick={() => updateTab(value as "plans" | "paid" | "collections")}
                   className={`border-b-2 px-1 pb-3 text-sm font-medium transition ${
                     activeTab === value
                       ? "border-emerald-600 text-emerald-600"
@@ -153,7 +163,7 @@ export default function LipaMdogoPage() {
             </div>
           </section>
 
-          {activeTab === "plans" ? (
+          {activeTab === "plans" || activeTab === "paid" ? (
             <section className="space-y-4">
               {isError ? (
                 <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -163,14 +173,18 @@ export default function LipaMdogoPage() {
                 <PaymentPlanCardsSkeleton count={4} />
               ) : paginatedPlans.length === 0 ? (
                 <EmptyState
-                  icon={HandCoins}
+                  icon={activeTab === "paid" ? CheckCheck : HandCoins}
                   title={
-                    paymentPlans.length === 0
+                    activeTab === "paid"
+                      ? "No fully paid installments"
+                      : paymentPlans.length === 0
                       ? "No payment plans yet"
                       : "No active payment plans"
                   }
                   description={
-                    paymentPlans.length === 0
+                    activeTab === "paid"
+                      ? "Completed installment plans will appear here once customers finish paying their balances."
+                      : paymentPlans.length === 0
                       ? "Installment plans from customer orders will appear here once the backend returns them."
                       : "All available plans are completed. New active or overdue plans will appear here."
                   }
@@ -182,6 +196,7 @@ export default function LipaMdogoPage() {
                     plan={plan}
                     onRecord={setRecordPlan}
                     onRemind={setReminderPlan}
+                    showCollectionActions={activeTab !== "paid"}
                   />
                 ))
               )}

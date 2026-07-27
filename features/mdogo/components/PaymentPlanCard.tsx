@@ -41,10 +41,12 @@ export default function PaymentPlanCard({
   plan,
   onRecord,
   onRemind,
+  showCollectionActions = true,
 }: {
   plan: PaymentPlan;
   onRecord: (plan: PaymentPlan) => void;
   onRemind: (plan: PaymentPlan) => void;
+  showCollectionActions?: boolean;
 }) {
   const status = getPlanStatus(plan);
   const config = statusConfig[status];
@@ -108,36 +110,53 @@ export default function PaymentPlanCard({
         </div>
 
         <div className="space-y-3 lg:w-64">
-          <div className="rounded-lg bg-slate-50 p-4">
-            <div className="mb-2 flex items-center gap-2 text-slate-500">
-              <BarChart3 className="h-4 w-4" />
-              <span className="text-xs">Next Payment</span>
+          {showCollectionActions ? (
+            <div className="rounded-lg bg-slate-50 p-4">
+              <div className="mb-2 flex items-center gap-2 text-slate-500">
+                <BarChart3 className="h-4 w-4" />
+                <span className="text-xs">Next Payment</span>
+              </div>
+              <p className="text-lg font-semibold text-slate-800">
+                {nextDue ? formatDate(nextDue) : "Complete"}
+              </p>
+              <p className="text-xs text-slate-500">
+                {plan.frequency} - {plan.installments} installments
+              </p>
             </div>
-            <p className="text-lg font-semibold text-slate-800">
-              {nextDue ? formatDate(nextDue) : "Complete"}
-            </p>
-            <p className="text-xs text-slate-500">
-              {plan.frequency} - {plan.installments} installments
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => onRemind(plan)}
-              className="flex-1 rounded-lg bg-amber-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-amber-700"
-            >
-              <Send className="mr-1 inline h-4 w-4" />
-              Remind
-            </button>
-            <button
-              type="button"
-              onClick={() => onRecord(plan)}
-              className="flex-1 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
-            >
-              <MoneyBill className="mr-1 inline h-4 w-4" />
-              Record
-            </button>
-          </div>
+          ) : (
+            <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-4">
+              <div className="mb-2 flex items-center gap-2 text-emerald-700">
+                <CheckCheck className="h-4 w-4" />
+                <span className="text-xs font-bold uppercase">Completed</span>
+              </div>
+              <p className="text-lg font-semibold text-emerald-900">
+                Fully paid
+              </p>
+              <p className="text-xs text-emerald-700">
+                All {plan.installments} installments are complete.
+              </p>
+            </div>
+          )}
+          {showCollectionActions ? (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => onRemind(plan)}
+                className="flex-1 rounded-lg bg-amber-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-amber-700"
+              >
+                <Send className="mr-1 inline h-4 w-4" />
+                Remind
+              </button>
+              <button
+                type="button"
+                onClick={() => onRecord(plan)}
+                className="flex-1 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
+              >
+                <MoneyBill className="mr-1 inline h-4 w-4" />
+                Record
+              </button>
+            </div>
+          ) : null}
           <Link
             href={`/admin/mdogo/${plan.id}`}
             className="inline-flex w-full items-center justify-center rounded-lg bg-amber-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-amber-700"

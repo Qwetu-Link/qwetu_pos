@@ -45,6 +45,17 @@ function getFriendlyOrderError(error: unknown, action: "create" | "update" | "de
     }
 
     console.error("RAW ORDER ERROR:", error);
+    const errorMessage = error instanceof Error ? error.message : "";
+
+    if (
+        errorMessage.includes("cancelled and can no longer receive payments") ||
+        errorMessage.includes("no remaining balance")
+    ) {
+        throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: errorMessage,
+        });
+    }
 
     const fallbackMessage =
         action === "create"

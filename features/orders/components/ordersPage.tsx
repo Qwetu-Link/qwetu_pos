@@ -25,7 +25,7 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage, setPerPage] = useState(5);
+  const [perPage, setPerPage] = useState(10);
 
   const stats = useMemo(() => {
     const count = (status: OrderStatus) =>

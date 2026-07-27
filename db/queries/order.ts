@@ -14,7 +14,7 @@ import type {
     PaymentStatus,
     PaymentType,
 } from "@/types/customer";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, lte } from "drizzle-orm";
 import crypto from "crypto";
 
 type OrderLineItemInput = LineItem;
@@ -49,6 +49,8 @@ type PaymentReceiptRow = {
 };
 
 const INVOICE_PREFIX = "INV";
+const UNPAID_ORDER_AUTO_CANCEL_HOURS = 48;
+const AUTO_CANCEL_OPEN_STATUSES: OrderStatus[] = ["pending", "processing"];
 const orderLocationNames: OrderLocationName[] = ["Main Store", "Warehouse A", "Outlet"];
 function toIsoDate(value?: Date | string | null) {
     if (!value) return "";
@@ -64,7 +66,8 @@ function toOrderLocationName(value?: string | null) {
 function getInstallmentCount(paymentType: PaymentType, plan?: string) {
     if (paymentType === "full") return 1;
     const count = Number(plan?.match(/\d+/)?.[0] ?? 1);
-    return Number.isFinite(count) && count > 0 ? count : 1;
+    if (!Number.isFinite(count) || count < 1) return 1;
+    return Math.min(12, Math.floor(count));
 }
 
 function addMonths(date: Date, months: number) {
@@ -483,6 +486,63 @@ async function recomputeCustomerOrderStats(customerId: string, businessId: strin
         ));
 }
 
+function getAutoCancelCutoff() {
+    return new Date(Date.now() - UNPAID_ORDER_AUTO_CANCEL_HOURS * 60 * 60 * 1000);
+}
+
+async function autoCancelUnpaidOpenOrders(businessId: string) {
+    const expiredOrders = await db
+        .select()
+        .from(orderTable)
+        .where(and(
+            eq(orderTable.businessId, businessId),
+            inArray(orderTable.status, AUTO_CANCEL_OPEN_STATUSES),
+            eq(orderTable.paymentStatus, "unpaid"),
+            eq(orderTable.depositPaid, 0),
+            lte(orderTable.createdAt, getAutoCancelCutoff()),
+        ));
+
+    if (expiredOrders.length === 0) return;
+
+    await db.transaction(async (tx) => {
+        for (const order of expiredOrders) {
+            const items = await tx
+                .select()
+                .from(orderItemTable)
+                .where(and(
+                    eq(orderItemTable.orderId, order.id),
+                    eq(orderItemTable.businessId, businessId),
+                ));
+
+            await restoreOrderInventoryRows(tx, {
+                businessId,
+                items,
+            });
+
+            await tx
+                .update(invoiceTable)
+                .set({ status: "cancelled" })
+                .where(and(
+                    eq(invoiceTable.orderId, order.id),
+                    eq(invoiceTable.businessId, businessId),
+                ));
+
+            await tx
+                .update(orderTable)
+                .set({ status: "cancelled" })
+                .where(and(
+                    eq(orderTable.id, order.id),
+                    eq(orderTable.businessId, businessId),
+                ));
+        }
+    });
+
+    const customerIds = [...new Set(expiredOrders.map((order) => order.customerId))];
+    await Promise.all(
+        customerIds.map((customerId) => recomputeCustomerOrderStats(customerId, businessId)),
+    );
+}
+
 async function ensureInvoicesForOrders(orders: (typeof orderTable.$inferSelect)[]) {
     if (orders.length === 0) return;
 
@@ -559,6 +619,8 @@ async function getMappedOrders(orders: (typeof orderTable.$inferSelect)[]) {
 }
 
 export async function getOrdersQuery(businessId: string) {
+    await autoCancelUnpaidOpenOrders(businessId);
+
     const orders = await db
         .select()
         .from(orderTable)
@@ -572,6 +634,8 @@ export async function getOrderByIdQuery(data: {
     id: string;
     businessId: string;
 }) {
+    await autoCancelUnpaidOpenOrders(data.businessId);
+
     const [order] = await db
         .select()
         .from(orderTable)
@@ -589,10 +653,7 @@ export async function createOrderQuery(data: OrderWriteInput) {
     await ensureLineItemsBelongToBusiness(data.lineItems, data.businessId);
 
     const total = getOrderTotal(data.lineItems);
-    const amountPaid =
-        data.paymentType === "full"
-            ? total
-            : Math.min(Math.max(data.amountPaid, 0), total);
+    const amountPaid = Math.min(Math.max(data.amountPaid, 0), total);
     const paymentStatus = getPaymentStatus(total, amountPaid);
     const installmentStartDate =
         data.paymentType === "installment" && data.installmentStartDate
@@ -712,10 +773,7 @@ export async function updateOrderQuery(data: OrderWriteInput & { id: string }) {
     if (!existingOrder) return undefined;
 
     const total = getOrderTotal(data.lineItems);
-    const amountPaid =
-        data.paymentType === "full"
-            ? total
-            : Math.min(Math.max(data.amountPaid, 0), total);
+    const amountPaid = Math.min(Math.max(data.amountPaid, 0), total);
     const paymentStatus = getPaymentStatus(total, amountPaid);
     const installmentStartDate =
         data.paymentType === "installment" && data.installmentStartDate
@@ -818,6 +876,8 @@ export async function updateOrderQuery(data: OrderWriteInput & { id: string }) {
 }
 
 export async function recordOrderPaymentQuery(data: RecordOrderPaymentInput) {
+    await autoCancelUnpaidOpenOrders(data.businessId);
+
     const [updatedOrder] = await db.transaction(async (tx) => {
         const [invoice] = await tx
             .select()
@@ -838,6 +898,10 @@ export async function recordOrderPaymentQuery(data: RecordOrderPaymentInput) {
             ));
 
         if (!order) return [];
+
+        if (invoice.status === "cancelled" || order.status === "cancelled") {
+            throw new Error("This order has been cancelled and can no longer receive payments.");
+        }
 
         const amount = Math.min(data.amount, Math.max(0, invoice.balance));
         if (amount <= 0) {

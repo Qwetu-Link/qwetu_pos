@@ -68,7 +68,13 @@ const addOrderSchema = z.object({
   address: z.string().trim(),
   paymentType: z.enum(["full", "installment"]),
   amountPaid: z.number().min(0, "Amount paid cannot be negative"),
-  installmentPlan: z.string(),
+  installmentPlan: z
+    .string()
+    .trim()
+    .refine((value) => {
+      const months = Number(value);
+      return Number.isInteger(months) && months >= 1 && months <= 12;
+    }, "Installment plan must be between 1 and 12 months"),
   installmentStartDate: z.string(),
   status: z.enum(["pending", "processing", "shipped", "delivered"]),
 }).superRefine((values, ctx) => {
@@ -170,7 +176,7 @@ export default function AddOrderModal({
       address: "",
       paymentType: "full",
       amountPaid: 0,
-      installmentPlan: "3 months",
+      installmentPlan: "3",
       installmentStartDate: new Date().toISOString().slice(0, 10),
       status: "pending",
     },
@@ -271,8 +277,8 @@ export default function AddOrderModal({
           }
         : undefined,
       paymentType: values.paymentType,
-      amountPaid: values.paymentType === "full" ? totalPreview : values.amountPaid,
-      installmentPlan: values.paymentType === "installment" ? values.installmentPlan : undefined,
+      amountPaid: values.amountPaid,
+      installmentPlan: values.paymentType === "installment" ? `${values.installmentPlan} months` : undefined,
       installmentStartDate:
         values.paymentType === "installment" ? values.installmentStartDate : undefined,
       status: values.status,
@@ -396,37 +402,41 @@ export default function AddOrderModal({
               <option value="installment">Installment (Lipa Mdogo)</option>
             </select>
           </label>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-semibold text-slate-700">
+              Amount Paid
+            </span>
+            <input
+              type="number"
+              min={0}
+              max={totalPreview}
+              {...register("amountPaid", { valueAsNumber: true })}
+              placeholder={paymentType === "installment" ? "Deposit or first installment" : "Amount collected now"}
+              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-slate-400 transition outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            {errors.amountPaid ? (
+              <p className="mt-1 text-xs text-red-500">{errors.amountPaid.message}</p>
+            ) : null}
+          </label>
           {paymentType === "installment" && (
             <>
               <label className="block">
                 <span className="mb-1.5 block text-sm font-semibold text-slate-700">
-                  Amount Paid
+                  Installment Plan (Months)
                 </span>
                 <input
                   type="number"
-                  min={0}
-                  max={totalPreview}
-                  {...register("amountPaid", { valueAsNumber: true })}
-                  placeholder="Deposit or first installment"
+                  min={1}
+                  max={12}
+                  step={1}
+                  inputMode="numeric"
+                  {...register("installmentPlan")}
+                  placeholder="Enter months, max 12"
                   className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-slate-400 transition outline-none focus:ring-2 focus:ring-emerald-500"
                 />
-                {errors.amountPaid ? (
-                  <p className="mt-1 text-xs text-red-500">{errors.amountPaid.message}</p>
+                {errors.installmentPlan ? (
+                  <p className="mt-1 text-xs text-red-500">{errors.installmentPlan.message}</p>
                 ) : null}
-              </label>
-              <label className="block">
-                <span className="mb-1.5 block text-sm font-semibold text-slate-700">
-                  Installment Plan
-                </span>
-                <select
-                  {...register("installmentPlan")}
-                  className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-black placeholder:text-slate-400 transition outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="3 months">3 Months</option>
-                  <option value="6 months">6 Months</option>
-                  <option value="9 months">9 Months</option>
-                  <option value="12 months">12 Months</option>
-                </select>
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm font-semibold text-slate-700">

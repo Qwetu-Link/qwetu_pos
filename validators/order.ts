@@ -1,5 +1,15 @@
 import z from "zod";
 
+const installmentPlanSchema = z
+    .string()
+    .trim()
+    .optional()
+    .refine((value) => {
+        if (!value) return true;
+        const months = Number(value.match(/\d+/)?.[0]);
+        return Number.isInteger(months) && months >= 1 && months <= 12;
+    }, "Installment plan must be between 1 and 12 months");
+
 export const orderLineItemSchema = z.object({
     variantId: z.string().trim().uuid("Invalid variant"),
     productId: z.string().trim().uuid("Invalid product"),
@@ -15,7 +25,7 @@ export const orderCreateSchema = z.object({
     customerId: z.string().trim().uuid("Invalid customer"),
     paymentType: z.enum(["full", "installment"]),
     amountPaid: z.number().int().min(0, "Amount paid cannot be negative"),
-    installmentPlan: z.string().trim().optional(),
+    installmentPlan: installmentPlanSchema,
     installmentStartDate: z.string().trim().optional(),
     status: z.enum(["pending", "processing", "shipped", "delivered", "cancelled"]),
     shippingAddress: z.string().trim(),

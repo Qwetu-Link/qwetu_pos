@@ -35,6 +35,8 @@ const statusOptions: OrderStatus[] = [
 ];
 
 const terminalStatuses: OrderStatus[] = ["delivered", "cancelled"];
+const autoCancelMessage = "The order will be cancelled automatically after 48hrs if it remains unpaid.";
+const openOrderStatuses = new Set<OrderStatus>(["pending", "processing"]);
 
 const orderPaymentSchema = z.object({
   amount: z.number().positive("Please enter a valid payment amount"),
@@ -43,6 +45,12 @@ const orderPaymentSchema = z.object({
 });
 
 type OrderPaymentFormValues = z.infer<typeof orderPaymentSchema>;
+
+function getInstallmentMonths(plan?: string) {
+  const months = Number(plan?.match(/\d+/)?.[0] ?? 3);
+  if (!Number.isFinite(months) || months < 1) return 1;
+  return Math.min(12, Math.floor(months));
+}
 
 export default function OrderDetailsPage() {
   const params = useParams<{ id: string }>();
@@ -81,7 +89,7 @@ export default function OrderDetailsPage() {
   const installmentSummary = useMemo(() => {
     if (!order || order.paymentType !== "installment") return null;
 
-    const months = Number(order.installmentPlan?.match(/\d+/)?.[0] ?? 3);
+    const months = getInstallmentMonths(order.installmentPlan);
     const installmentAmount = Math.ceil(order.total / months);
     const paidCount = Math.floor(order.amountPaid / installmentAmount);
     const partialPaid = order.amountPaid % installmentAmount;
@@ -173,6 +181,10 @@ export default function OrderDetailsPage() {
   }
 
   const paymentProgress = order.total > 0 ? Math.min(100, (order.amountPaid / order.total) * 100) : 0;
+  const showAutoCancelMessage =
+    openOrderStatuses.has(order.status) &&
+    order.paymentStatus === "unpaid" &&
+    order.amountPaid === 0;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
@@ -201,6 +213,12 @@ export default function OrderDetailsPage() {
             </span>
           </div>
         </div>
+
+        {showAutoCancelMessage ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 shadow-sm">
+            {autoCancelMessage}
+          </div>
+        ) : null}
 
         <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 bg-slate-950 px-4 py-5 text-white sm:px-5">
