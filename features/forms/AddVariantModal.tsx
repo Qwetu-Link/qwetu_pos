@@ -1,35 +1,44 @@
 "use client";
 
+import { useState } from "react";
 import { VariantFormValues, variantSchema } from "@/validators/variant";
-import { CLOTHING_SIZES, FOOTWEAR_SIZES } from "@/utils/select";
+import { CLOTHING_SIZES } from "@/utils/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Puzzle } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 interface Props {
   productName: string;
-  category: string;
   onAdd: (values: VariantFormValues) => void;
   onClose: () => void;
 }
 
-export default function AddVariantModal({ productName, category, onAdd, onClose }: Props) {
-  const isFootwear = category === "Footwear";
-  const sizes = isFootwear ? FOOTWEAR_SIZES : CLOTHING_SIZES;
+export default function AddVariantModal({ productName, onAdd, onClose }: Props) {
+  const romanSizes = CLOTHING_SIZES;
+  const [sizeMode, setSizeMode] = useState<"roman" | "number" | null>(null);
   const {
     formState: { errors },
     handleSubmit,
     register,
+    setValue,
   } = useForm<VariantFormValues>({
     resolver: zodResolver(variantSchema),
     defaultValues: {
       color: "",
-      size: sizes[0],
+      size: "",
       buyPrice: 0,
       sellPrice: 0,
       mainStock: 0,
     },
   });
+
+  function changeSizeMode(mode: "roman" | "number") {
+    setSizeMode(mode);
+    setValue("size", mode === "roman" ? romanSizes[0] : "", {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  }
 
   function submitVariant(values: VariantFormValues) {
     onAdd(values);
@@ -70,16 +79,69 @@ export default function AddVariantModal({ productName, category, onAdd, onClose 
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Size <span className="text-red-500">*</span>
             </label>
-            <select
-              {...register("size")}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
-            >
-              {sizes.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+            <div className="mb-3 grid grid-cols-2 gap-2">
+              <label
+                className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold ${
+                  sizeMode === "roman"
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                    : "border-gray-200 bg-white text-gray-600"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="sizeMode"
+                  checked={sizeMode === "roman"}
+                  onChange={() => changeSizeMode("roman")}
+                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500"
+                />
+                Roman size
+              </label>
+              <label
+                className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold ${
+                  sizeMode === "number"
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                    : "border-gray-200 bg-white text-gray-600"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="sizeMode"
+                  checked={sizeMode === "number"}
+                  onChange={() => changeSizeMode("number")}
+                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500"
+                />
+                Number size
+              </label>
+            </div>
+            {sizeMode === null ? (
+              <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-500">
+                Choose a size type first.
+              </div>
+            ) : sizeMode === "roman" ? (
+              <select
+                {...register("size")}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
+              >
+                {romanSizes.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="number"
+                min={1}
+                step={1}
+                inputMode="numeric"
+                {...register("size")}
+                placeholder="e.g. 36, 40, 42"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-black placeholder:text-gray-500"
+              />
+            )}
+            {errors.size ? (
+              <p className="mt-1 text-xs text-red-500">{errors.size.message}</p>
+            ) : null}
           </div>
 
           {/* Prices */}

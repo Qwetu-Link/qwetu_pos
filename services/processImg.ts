@@ -12,6 +12,10 @@ const allowedMimeTypes = new Set([
     "image/png",
     "image/webp",
 ]);
+const heicMimeTypes = new Set([
+    "image/heic",
+    "image/heif",
+]);
 
 const maxFileSize = 5 * 1024 * 1024;
 const minDimension = 200;
@@ -24,8 +28,12 @@ export type ProductImageUpload = {
 };
 
 function validateImageInput({ fileSize, mimeType }: ProductImageUpload) {
+    if (heicMimeTypes.has(mimeType)) {
+        throw new Error("HEIC/HEIF images are not supported. Please upload JPG, PNG, or WEBP images.");
+    }
+
     if (!allowedMimeTypes.has(mimeType)) {
-        throw new Error("Only JPEG, PNG, and WEBP product images are allowed.");
+        throw new Error("Only JPG, PNG, and WEBP product images are supported.");
     }
 
     if (fileSize > maxFileSize) {

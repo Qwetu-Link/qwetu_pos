@@ -15,6 +15,7 @@ import {
 import {
   AlertTriangle,
   ArrowRight,
+  Camera,
   Edit,
   ImagePlus,
   Plus,
@@ -45,6 +46,34 @@ function isRenderableImage(src: string) {
   return src.startsWith("http") || src.startsWith("data:image") || src.startsWith("/");
 }
 
+const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const allowedImageExtensions = new Set(["jpg", "jpeg", "png", "webp"]);
+const heicImageTypes = new Set(["image/heic", "image/heif"]);
+const heicImageExtensions = new Set(["heic", "heif"]);
+
+function getFileExtension(file: File) {
+  return file.name.split(".").pop()?.trim().toLowerCase() ?? "";
+}
+
+function isHeicImage(file: File) {
+  const extension = getFileExtension(file);
+  return heicImageTypes.has(file.type.toLowerCase()) || heicImageExtensions.has(extension);
+}
+
+function isAllowedProductImage(file: File) {
+  const extension = getFileExtension(file);
+  return allowedImageTypes.has(file.type.toLowerCase()) || allowedImageExtensions.has(extension);
+}
+
+function createImageDraftId(file: File) {
+  const randomId =
+    typeof globalThis.crypto?.randomUUID === "function"
+      ? globalThis.crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  return `${file.name}-${file.lastModified}-${randomId}`;
+}
+
 export default function ProductModal({
   product,
   categories,
@@ -71,9 +100,6 @@ export default function ProductModal({
     },
   });
   const name = useWatch({ control, name: "name" });
-  const categoryId = useWatch({ control, name: "categoryId" });
-  const selectedCategoryName =
-    categories.find((category) => category.id === categoryId)?.name ?? product?.category ?? "";
   const [imageDrafts, setImageDrafts] = useState<ImageDraft[]>([]);
   const [replaceImages, setReplaceImages] = useState(false);
   const [removedImageUrls, setRemovedImageUrls] = useState<string[]>([]);
@@ -107,6 +133,7 @@ export default function ProductModal({
   const [showAddVariant, setShowAddVariant] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const existingImages = existingImageDetails.filter((image) => isRenderableImage(image.url));
 
   useEffect(() => {
@@ -123,15 +150,21 @@ export default function ProductModal({
     const files = Array.from(event.target.files ?? []);
     if (files.length === 0) return;
 
-    const invalidFile = files.find((file) => !file.type.startsWith("image/"));
-    if (invalidFile) {
-      setAlertMessage("Please select image files only.");
+    const heicFile = files.find(isHeicImage);
+    if (heicFile) {
+      setAlertMessage("HEIC/HEIF images are not supported. Please upload JPG, PNG, or WEBP images.");
       return;
     }
 
-    const oversizedFile = files.find((file) => file.size > 2 * 1024 * 1024);
+    const invalidFile = files.find((file) => !isAllowedProductImage(file));
+    if (invalidFile) {
+      setAlertMessage("Only JPG, PNG, and WEBP product images are supported.");
+      return;
+    }
+
+    const oversizedFile = files.find((file) => file.size > 5 * 1024 * 1024);
     if (oversizedFile) {
-      setAlertMessage("Each image must be under 2MB.");
+      setAlertMessage("Each image must be under 5MB.");
       return;
     }
 
@@ -144,7 +177,7 @@ export default function ProductModal({
         setImageDrafts((prev) => [
           ...prev,
           {
-            id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
+            id: createImageDraftId(file),
             dataUrl: result,
             name: file.name,
             variantId: null,
@@ -157,6 +190,17 @@ export default function ProductModal({
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = "";
+    }
+  }
+
+  function openImagePicker() {
+    fileInputRef.current?.click();
+  }
+
+  function openCameraPicker() {
+    cameraInputRef.current?.click();
   }
 
   function goToStep2() {
@@ -378,9 +422,23 @@ export default function ProductModal({
                         Add one image or select multiple images for the product gallery.
                       </p>
                     </div>
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700">
-                      <ImagePlus size={16} />
-                      Add Images
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={openCameraPicker}
+                        className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 sm:hidden"
+                      >
+                        <Camera size={16} />
+                        Camera
+                      </button>
+                      <button
+                        type="button"
+                        onClick={openImagePicker}
+                        className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                      >
+                        <ImagePlus size={16} />
+                        Add Images
+                      </button>
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -389,7 +447,15 @@ export default function ProductModal({
                         className="hidden"
                         onChange={handleImageChange}
                       />
-                    </label>
+                      <input
+                        ref={cameraInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/jpg,image/webp"
+                        capture="environment"
+                        className="hidden"
+                        onChange={handleImageChange}
+                      />
+                    </div>
                   </div>
 
                   {product && imageDrafts.length > 0 ? (
@@ -426,10 +492,45 @@ export default function ProductModal({
                   ) : null}
 
                   {existingImages.length === 0 && imageDrafts.length === 0 ? (
-                    <div className="flex min-h-32 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white p-6 text-center">
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={openImagePicker}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          openImagePicker();
+                        }
+                      }}
+                      className="flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white p-6 text-center transition hover:border-emerald-300 hover:bg-emerald-50/30 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    >
                       <ImagePlus className="mb-2 text-gray-400" size={30} />
                       <p className="text-sm font-medium text-gray-600">No images selected</p>
-                      <p className="mt-1 text-xs text-gray-400">JPG, PNG, WEBP up to 2MB each</p>
+                      <p className="mt-1 text-xs text-gray-400">JPG, PNG, WEBP up to 5MB each</p>
+                      <div className="mt-4 flex gap-2 sm:hidden">
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            openCameraPicker();
+                          }}
+                          className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-emerald-700"
+                        >
+                          <Camera size={14} />
+                          Camera
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            openImagePicker();
+                          }}
+                          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white"
+                        >
+                          <ImagePlus size={14} />
+                          Select
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -702,7 +803,6 @@ export default function ProductModal({
       {showAddVariant && (
         <AddVariantModal
           productName={name}
-          category={selectedCategoryName}
           onAdd={handleAddVariant}
           onClose={() => setShowAddVariant(false)}
         />

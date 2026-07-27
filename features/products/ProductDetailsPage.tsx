@@ -41,9 +41,9 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
   const sizes = getProductUniqueSizes(product);
   const selectedVariant = useMemo(
     () =>
-      product.variants.find((variant) => variant.id === selectedVariantId) ??
-      product.variants[0] ??
-      null,
+      selectedVariantId
+        ? product.variants.find((variant) => variant.id === selectedVariantId) ?? null
+        : null,
     [product.variants, selectedVariantId],
   );
   const imageDetails = useMemo(
@@ -83,6 +83,10 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
   ).length;
   const selectedImage = images[selectedImageIndex] ?? images[0];
 
+  function getImageVariant(image: { variantId?: string | null }) {
+    return product.variants.find((variant) => variant.id === image.variantId) ?? null;
+  }
+
   useEffect(() => {
     if (product.variants.length <= 3) return;
 
@@ -101,6 +105,23 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
   function selectVariant(variant: ProductVariant) {
     setSelectedVariantId(variant.id);
     setSelectedImageIndex(0);
+  }
+
+  function selectGalleryImage(image: { url: string; variantId?: string | null }) {
+    const imageVariant = getImageVariant(image);
+
+    if (imageVariant) {
+      const variantImages = imageDetails
+        .filter((item) => item.variantId === imageVariant.id)
+        .map((item) => item.url);
+
+      setSelectedVariantId(imageVariant.id);
+      setSelectedImageIndex(Math.max(0, variantImages.findIndex((url) => url === image.url)));
+      return;
+    }
+
+    setSelectedVariantId("");
+    setSelectedImageIndex(Math.max(0, productLevelImages.findIndex((url) => url === image.url)));
   }
 
   function getVariantImage(variant: ProductVariant, index: number) {
@@ -134,29 +155,45 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
       <section className="grid gap-8 bg-white lg:grid-cols-[minmax(0,52%)_minmax(360px,1fr)]">
         <div className="grid gap-4 sm:grid-cols-[72px_minmax(0,1fr)]">
           <div className="order-2 flex gap-3 overflow-x-auto sm:order-1 sm:flex-col sm:overflow-visible">
-            {product.variants.map((variant, index) => {
-              const image = getVariantImage(variant, index);
+            {imageDetails.map((image, index) => {
+              const imageVariant = getImageVariant(image);
+              const isSelectedImage =
+                image.url === selectedImage &&
+                (imageVariant?.id ?? "") === (selectedVariant?.id ?? "");
 
               return (
               <button
                 type="button"
-                onClick={() => selectVariant(variant)}
-                key={variant.id}
-                className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border bg-slate-100 shadow-sm ${variant.id === selectedVariant?.id ? "border-blue-600 ring-2 ring-blue-100" : "border-slate-200"
+                onClick={() => selectGalleryImage(image)}
+                key={image.id}
+                className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border bg-slate-100 shadow-sm ${isSelectedImage ? "border-blue-600 ring-2 ring-blue-100" : "border-slate-200"
                   }`}
-                aria-label={`View ${variant.color} ${variant.size} image`}
+                aria-label={
+                  imageVariant
+                    ? `View ${imageVariant.color} ${imageVariant.size} image ${index + 1}`
+                    : `View general product image ${index + 1}`
+                }
               >
                 <Image
-                  src={image}
-                  alt={`${product.name} ${variant.color} ${variant.size}`}
+                  src={image.url}
+                  alt={
+                    imageVariant
+                      ? `${product.name} ${imageVariant.color} ${imageVariant.size}`
+                      : `${product.name} general image ${index + 1}`
+                  }
                   fill
                   className="object-cover"
                   unoptimized
                 />
+                {!imageVariant ? (
+                  <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+                    Gen
+                  </span>
+                ) : null}
               </button>
               );
             })}
-            {product.variants.length === 0 ? (
+            {imageDetails.length === 0 ? (
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-dashed border-slate-300 text-slate-400">
                 <ImageIcon className="h-5 w-5" />
               </div>
