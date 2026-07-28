@@ -25,6 +25,19 @@ type ProductImageInput = ProductImageUpload & {
     variantClientId?: string | null;
 };
 
+type UploadedProductImageInput = {
+    originalPath: string;
+    optimizedPath: string;
+    thumbnailPath: string;
+    watermarkPath: string;
+    width: number;
+    height: number;
+    fileSize: number;
+    mimeType: string;
+    uploadedPaths: string[];
+    variantId?: string | null;
+};
+
 function isUuid(value?: string | null) {
     return Boolean(
         value?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
@@ -258,6 +271,16 @@ export const updateProductQuery = async (data: {
         ))
         .returning();
 
+    if (product) {
+        await db
+            .update(productImages)
+            .set({ alt: product.name })
+            .where(and(
+                eq(productImages.productId, id),
+                eq(productImages.businessId, businessId),
+            ));
+    }
+
     return product;
 };
 
@@ -395,6 +418,7 @@ export const replaceProductImagesQuery = async (data: {
                         optimizedPath: image.optimizedPath,
                         thumbnailPath: image.thumbnailPath,
                         watermarkedPath: image.watermarkPath,
+                        alt: product.name,
                         variantId: data.files[index]?.variantId ?? null,
                         width: image.width,
                         height: image.height,
@@ -528,6 +552,7 @@ export const uploadProductImagesQuery = async (data: {
                         optimizedPath: image.optimizedPath,
                         thumbnailPath: image.thumbnailPath,
                         watermarkedPath: image.watermarkPath,
+                        alt: product.name,
                         variantId: data.files[index]?.variantId ?? null,
                         width: image.width,
                         height: image.height,
@@ -539,6 +564,106 @@ export const uploadProductImagesQuery = async (data: {
                 )
                 .returning();
         });
+    } catch (error) {
+        await deleteImages(uploadedPaths).catch(() => undefined);
+        throw error;
+    }
+};
+
+export const saveUploadedProductImagesQuery = async (data: {
+    businessId: string;
+    productId: string;
+    mode: "append" | "replace";
+    images: UploadedProductImageInput[];
+}) => {
+    if (data.images.length === 0) {
+        return [];
+    }
+
+    const product = await getProductByIdQuery({
+        id: data.productId,
+        businessId: data.businessId,
+    });
+
+    if (!product) {
+        throw new Error("Product not found for this business.");
+    }
+
+    const uploadedPaths = data.images.flatMap((image) => image.uploadedPaths);
+    const oldPaths = new Set<string>();
+
+    if (data.mode === "replace") {
+        const existingImages = await db
+            .select({
+                originalPath: productImages.originalPath,
+                optimizedPath: productImages.optimizedPath,
+                thumbnailPath: productImages.thumbnailPath,
+                watermarkedPath: productImages.watermarkedPath,
+            })
+            .from(productImages)
+            .where(and(
+                eq(productImages.productId, data.productId),
+                eq(productImages.businessId, data.businessId),
+            ));
+
+        for (const image of existingImages) {
+            [
+                image.originalPath,
+                image.optimizedPath,
+                image.thumbnailPath,
+                image.watermarkedPath,
+            ].forEach((path) => {
+                if (
+                    path &&
+                    !path.startsWith("http") &&
+                    !path.startsWith("data:image") &&
+                    !path.startsWith("/")
+                ) {
+                    oldPaths.add(path);
+                }
+            });
+        }
+    }
+
+    try {
+        const images = await db.transaction(async (tx) => {
+            if (data.mode === "replace") {
+                await tx
+                    .delete(productImages)
+                    .where(and(
+                        eq(productImages.productId, data.productId),
+                        eq(productImages.businessId, data.businessId),
+                    ));
+            }
+
+            return tx
+                .insert(productImages)
+                .values(
+                    data.images.map((image, index) => ({
+                        businessId: data.businessId,
+                        productId: data.productId,
+                        originalPath: image.originalPath,
+                        optimizedPath: image.optimizedPath,
+                        thumbnailPath: image.thumbnailPath,
+                        watermarkedPath: image.watermarkPath,
+                        alt: product.name,
+                        variantId: image.variantId ?? null,
+                        width: image.width,
+                        height: image.height,
+                        fileSize: image.fileSize,
+                        mimeType: image.mimeType,
+                        displayOrder: index,
+                        isPrimary: index === 0,
+                    })),
+                )
+                .returning();
+        });
+
+        if (data.mode === "replace") {
+            await deleteImages(Array.from(oldPaths)).catch(() => undefined);
+        }
+
+        return images;
     } catch (error) {
         await deleteImages(uploadedPaths).catch(() => undefined);
         throw error;
@@ -642,6 +767,7 @@ export const createProductWithRelationsQuery = async (data: {
                                 optimizedPath: image.optimizedPath,
                                 thumbnailPath: image.thumbnailPath,
                                 watermarkedPath: image.watermarkPath,
+                                alt: data.name,
                                 width: image.width,
                                 height: image.height,
                                 fileSize: image.fileSize,

@@ -6,6 +6,7 @@ import {
     getProductsQuery,
     removeProductImagesQuery,
     replaceProductImagesQuery,
+    saveUploadedProductImagesQuery,
     updateProductImageAssignmentsQuery,
     updateProductQuery,
     uploadProductImagesQuery,
@@ -19,6 +20,7 @@ import {
     productImageRemoveSchema,
     productImageReplaceSchema,
     productImageUploadSchema,
+    productUploadedImagesSaveSchema,
 } from "@/validators/product";
 import { TRPCError } from "@trpc/server";
 
@@ -270,6 +272,23 @@ export const productRouter = createTRPCRouter({
                 });
             } catch (error) {
                 getFriendlyProductError(error, "delete");
+            }
+        }),
+
+    saveUploadedProductImages: baseProcedure
+        .input(productUploadedImagesSaveSchema)
+        .mutation(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+
+            try {
+                return await saveUploadedProductImagesQuery({
+                    businessId,
+                    productId: input.productId,
+                    mode: input.mode,
+                    images: input.images,
+                });
+            } catch (error) {
+                getFriendlyProductError(error, "upload");
             }
         }),
 

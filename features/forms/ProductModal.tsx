@@ -37,7 +37,8 @@ interface Props {
 
 type ImageDraft = {
   id: string;
-  dataUrl: string;
+  file: File;
+  previewUrl: string;
   name: string;
   variantId?: string | null;
 };
@@ -83,7 +84,7 @@ export default function ProductModal({
   onClose,
 }: Props) {
   const [step, setStep] = useState<1 | 2>(1);
-  const fallbackCategoryId = product?.categoryId ?? categories[0]?.id ?? "";
+  const fallbackCategoryId = product?.categoryId ?? "";
   const {
     control,
     formState: { errors },
@@ -134,6 +135,7 @@ export default function ProductModal({
   const [alertMessage, setAlertMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const previewUrlsRef = useRef<Set<string>>(new Set());
   const existingImages = existingImageDetails.filter((image) => isRenderableImage(image.url));
 
   useEffect(() => {
@@ -144,6 +146,15 @@ export default function ProductModal({
       document.body.style.overflow = "";
     };
   }, [mode]);
+
+  useEffect(() => {
+    const previewUrls = previewUrlsRef.current;
+
+    return () => {
+      previewUrls.forEach((previewUrl) => URL.revokeObjectURL(previewUrl));
+      previewUrls.clear();
+    };
+  }, []);
 
   function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
     setAlertMessage("");
@@ -168,24 +179,20 @@ export default function ProductModal({
       return;
     }
 
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const result = ev.target?.result;
-        if (typeof result !== "string") return;
+    const drafts = files.map((file) => {
+      const previewUrl = URL.createObjectURL(file);
+      previewUrlsRef.current.add(previewUrl);
 
-        setImageDrafts((prev) => [
-          ...prev,
-          {
-            id: createImageDraftId(file),
-            dataUrl: result,
-            name: file.name,
-            variantId: null,
-          },
-        ]);
+      return {
+        id: createImageDraftId(file),
+        file,
+        previewUrl,
+        name: file.name,
+        variantId: null,
       };
-      reader.readAsDataURL(file);
     });
+
+    setImageDrafts((prev) => [...prev, ...drafts]);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -273,11 +280,12 @@ export default function ProductModal({
     onSave(
       {
         ...values,
-        imagesData: imageDrafts.map((image) => image.dataUrl),
-        imageAttachments: imageDrafts.map((image) => ({
-          imageData: image.dataUrl,
+        imagesData: [],
+        imageFiles: imageDrafts.map((image) => ({
+          file: image.file,
           variantId: image.variantId || null,
         })),
+        imageAttachments: [],
         imageAssignments: existingImages.map((image) => ({
           imageUrl: image.url,
           variantId: existingImageAssignments[image.url] || null,
@@ -600,7 +608,7 @@ export default function ProductModal({
                         >
                           <div className="relative aspect-square overflow-hidden bg-slate-100">
                             <Image
-                              src={image.dataUrl}
+                              src={image.previewUrl}
                               alt={image.name}
                               fill
                               className="object-cover"
@@ -609,7 +617,11 @@ export default function ProductModal({
                             <button
                               type="button"
                               onClick={() =>
-                                setImageDrafts((prev) => prev.filter((item) => item.id !== image.id))
+                                setImageDrafts((prev) => {
+                                  URL.revokeObjectURL(image.previewUrl);
+                                  previewUrlsRef.current.delete(image.previewUrl);
+                                  return prev.filter((item) => item.id !== image.id);
+                                })
                               }
                               className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white text-red-600 shadow hover:bg-red-50"
                               aria-label={`Remove ${image.name}`}
@@ -710,7 +722,7 @@ export default function ProductModal({
                         >
                           <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-100">
                             <Image
-                              src={image.dataUrl}
+                              src={image.previewUrl}
                               alt={image.name}
                               fill
                               className="object-cover"

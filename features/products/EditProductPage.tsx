@@ -5,14 +5,15 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Tag } from "lucide-react";
 import { toast } from "sonner";
 import ProductModal from "@/features/forms/ProductModal";
+import { uploadProductImagesFromFiles } from "@/features/products/uploadProductImages";
 import type { Category } from "@/types/categories";
 import type { Product, ProductSaveValues } from "@/types/catalog";
 import {
   useRemoveProductImages,
-  useReplaceProductImages,
+  useSaveUploadedProductImages,
   useUpdateProduct,
-  useUploadProductImage,
 } from "@/hooks/useProduct";
+import { useState } from "react";
 
 const productToastStyles = {
   updated: {
@@ -31,22 +32,24 @@ export default function EditProductPage({
 }) {
   const router = useRouter();
   const updateProduct = useUpdateProduct();
-  const uploadProductImage = useUploadProductImage();
-  const replaceProductImages = useReplaceProductImages();
   const removeProductImages = useRemoveProductImages();
+  const saveUploadedProductImages = useSaveUploadedProductImages();
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const isSaving =
     updateProduct.isPending ||
-    uploadProductImage.isPending ||
-    replaceProductImages.isPending ||
-    removeProductImages.isPending;
+    saveUploadedProductImages.isPending ||
+    removeProductImages.isPending ||
+    isUploadingImages;
   const mutationError =
+    uploadError ||
+    saveUploadedProductImages.error?.message ||
     updateProduct.error?.message ||
-    uploadProductImage.error?.message ||
-    replaceProductImages.error?.message ||
     removeProductImages.error?.message;
 
   async function handleSaveProduct(values: ProductSaveValues, existingId?: string) {
     if (!existingId) return;
+    setUploadError("");
 
     try {
       await updateProduct.mutateAsync({
@@ -58,29 +61,21 @@ export default function EditProductPage({
         imageAssignments: values.imageAssignments,
       });
 
-      if (values.imagesData.length > 0) {
-        if (values.replaceImages) {
-          await replaceProductImages.mutateAsync({
-            productId: existingId,
-            imagesData: values.imagesData,
-            imageAttachments: values.imageAttachments,
-          });
-        } else {
-          const imagesToUpload: { imageData: string; variantId?: string | null }[] =
-            values.imageAttachments?.length
-              ? values.imageAttachments
-              : values.imagesData.map((imageData) => ({ imageData }));
-
-          await Promise.all(
-            imagesToUpload.map((image) =>
-              uploadProductImage.mutateAsync({
-                productId: existingId,
-                imageData: image.imageData,
-                variantId: image.variantId,
-              }),
-            ),
-          );
-        }
+      const imageFiles = values.imageFiles ?? [];
+      if (imageFiles.length > 0) {
+        setIsUploadingImages(true);
+        const uploadedImages = await uploadProductImagesFromFiles({
+          productId: existingId,
+          images: imageFiles.map((image) => ({
+            file: image.file,
+            variantId: image.variantId,
+          })),
+        });
+        await saveUploadedProductImages.mutateAsync({
+          productId: existingId,
+          mode: values.replaceImages ? "replace" : "append",
+          images: uploadedImages,
+        });
       }
 
       if (!values.replaceImages && values.removedImageUrls?.length) {
@@ -94,8 +89,12 @@ export default function EditProductPage({
         style: productToastStyles.updated,
       });
       router.push(`/admin/products/${existingId}`);
-    } catch {
-      // Mutation state exposes the error message in the page alert.
+    } catch (error) {
+      if (error instanceof Error) {
+        setUploadError(error.message);
+      }
+    } finally {
+      setIsUploadingImages(false);
     }
   }
 

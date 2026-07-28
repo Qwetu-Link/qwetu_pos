@@ -1,13 +1,15 @@
 "use client";
 
 import ProductModal from "@/features/forms/ProductModal";
-import { useCreateProduct } from "@/hooks/useProduct";
+import { uploadProductImagesFromFiles } from "@/features/products/uploadProductImages";
+import { useCreateProduct, useSaveUploadedProductImages } from "@/hooks/useProduct";
 import { useGetCategories } from "@/hooks/useCategory";
 import type { ProductSaveValues } from "@/types/catalog";
 import { buildVariantCreateInputs } from "@/utils/catalog-utils";
 import { ArrowLeft, PackagePlus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 const productToastStyle = {
@@ -20,30 +22,60 @@ export default function AddProductPage() {
   const router = useRouter();
   const { categories, isLoading: isLoadingCategories, isError, error } = useGetCategories();
   const createProduct = useCreateProduct();
+  const saveUploadedProductImages = useSaveUploadedProductImages();
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
   async function handleSaveProduct(values: ProductSaveValues) {
+    setUploadError("");
+
     try {
       const variants = buildVariantCreateInputs(values.name, values.variants).map((variant, index) => ({
         ...variant,
         clientId: values.variants[index]?.id,
       }));
 
-      await createProduct.mutateAsync({
+      const product = await createProduct.mutateAsync({
         name: values.name,
         categoryId: values.categoryId,
         brand: values.brand,
         description: values.description,
-        imagesData: values.imagesData,
-        imageAttachments: values.imageAttachments,
+        imagesData: [],
+        imageAttachments: [],
         variants,
       });
+
+      const imageFiles = values.imageFiles ?? [];
+      if (imageFiles.length > 0) {
+        const variantIdsByClientId = new Map(
+          product.variants.map((variant, index) => [values.variants[index]?.id, variant.id]),
+        );
+
+        setIsUploadingImages(true);
+        const uploadedImages = await uploadProductImagesFromFiles({
+          productId: product.id,
+          images: imageFiles.map((image) => ({
+            file: image.file,
+            variantId: image.variantId ? variantIdsByClientId.get(image.variantId) ?? null : null,
+          })),
+        });
+        await saveUploadedProductImages.mutateAsync({
+          productId: product.id,
+          mode: "append",
+          images: uploadedImages,
+        });
+      }
 
       toast.success("Product created successfully.", {
         style: productToastStyle,
       });
       router.push("/admin/products");
-    } catch {
-      // Mutation state exposes the error message below.
+    } catch (error) {
+      if (error instanceof Error) {
+        setUploadError(error.message);
+      }
+    } finally {
+      setIsUploadingImages(false);
     }
   }
 
@@ -71,9 +103,9 @@ export default function AddProductPage() {
         </div>
       </div>
 
-      {(isError || createProduct.error) && (
+      {(isError || createProduct.error || saveUploadedProductImages.error || uploadError) && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-          {createProduct.error?.message || error?.message || "Could not load product setup data."}
+          {uploadError || saveUploadedProductImages.error?.message || createProduct.error?.message || error?.message || "Could not load product setup data."}
         </div>
       )}
 
@@ -81,7 +113,7 @@ export default function AddProductPage() {
         mode="page"
         product={null}
         categories={categories}
-        isSaving={createProduct.isPending}
+        isSaving={createProduct.isPending || saveUploadedProductImages.isPending || isUploadingImages}
         onSave={(values) => {
           void handleSaveProduct(values);
         }}

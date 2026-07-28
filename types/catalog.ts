@@ -76,6 +76,10 @@ export interface ProductFormValues {
 
 export type ProductSaveValues = ProductFormValues & {
   variants: ProductVariant[];
+  imageFiles?: {
+    file: File;
+    variantId?: string | null;
+  }[];
   imageAttachments?: {
     imageData: string;
     variantId?: string | null;

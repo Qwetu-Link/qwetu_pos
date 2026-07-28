@@ -68,5 +68,24 @@ export const productImageRemoveSchema = z.object({
     imageUrls: z.array(z.string().trim().min(1)).min(1),
 });
 
+export const uploadedProductImageSchema = z.object({
+    originalPath: z.string().trim().min(1),
+    optimizedPath: z.string().trim().min(1),
+    thumbnailPath: z.string().trim().min(1),
+    watermarkPath: z.string().trim().min(1),
+    width: z.number().int().positive(),
+    height: z.number().int().positive(),
+    fileSize: z.number().int().positive(),
+    mimeType: z.string().trim().min(1),
+    uploadedPaths: z.array(z.string().trim().min(1)).min(1),
+    variantId: z.string().trim().uuid("Invalid variant").optional().nullable(),
+});
+
+export const productUploadedImagesSaveSchema = z.object({
+    productId: z.string().trim().uuid("Invalid product"),
+    mode: z.enum(["append", "replace"]).default("append"),
+    images: z.array(uploadedProductImageSchema).min(1),
+});
+
 export type ProductDetailsFormValues = z.infer<typeof productSchema>;
 export type ProductCreateValues = z.infer<typeof productCreateSchema>;

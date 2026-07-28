@@ -112,6 +112,19 @@ export const useRemoveProductImages = () => {
     );
 };
 
+export const useSaveUploadedProductImages = () => {
+    const trpc = useTRPC();
+    const queryClient = useQueryClient();
+
+    return useMutation(
+        trpc.products.saveUploadedProductImages.mutationOptions({
+            onSuccess: async () => {
+                await queryClient.invalidateQueries(trpc.products.pathFilter());
+            },
+        }),
+    );
+};
+
 export const useDeleteProduct = () => {
     const trpc = useTRPC();
     const queryClient = useQueryClient();

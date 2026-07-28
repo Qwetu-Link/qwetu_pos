@@ -10,7 +10,7 @@ import {
   Tag,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { Product, ProductVariant } from "@/types/catalog";
+import type { Product, ProductImage, ProductVariant } from "@/types/catalog";
 import {
   formatCurrency,
   getProductImageSrc,
@@ -46,7 +46,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
         : null,
     [product.variants, selectedVariantId],
   );
-  const imageDetails = useMemo(
+  const imageDetails = useMemo<ProductImage[]>(
     () =>
       product.imageDetails?.length
         ? product.imageDetails
@@ -55,6 +55,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
             id: `${url}-${index}`,
             url,
             variantId: null,
+            alt: product.name,
           }),
         ),
     [product],
@@ -82,6 +83,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
     (variant) => variant.inventory.status !== "healthy",
   ).length;
   const selectedImage = images[selectedImageIndex] ?? images[0];
+  const selectedImageDetail = imageDetails.find((image) => image.url === selectedImage);
 
   function getImageVariant(image: { variantId?: string | null }) {
     return product.variants.find((variant) => variant.id === image.variantId) ?? null;
@@ -176,11 +178,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
               >
                 <Image
                   src={image.url}
-                  alt={
-                    imageVariant
-                      ? `${product.name} ${imageVariant.color} ${imageVariant.size}`
-                      : `${product.name} general image ${index + 1}`
-                  }
+                  alt={image.alt ?? product.name}
                   fill
                   className="object-cover"
                   unoptimized
@@ -204,7 +202,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
             <div className="relative mx-auto flex w-full max-w-[520px] items-center justify-center">
               <Image
                 src={selectedImage}
-                alt={product.name}
+                alt={selectedImageDetail?.alt ?? product.name}
                 width={520}
                 height={720}
                 sizes="(min-width: 1024px) 520px, 100vw"
