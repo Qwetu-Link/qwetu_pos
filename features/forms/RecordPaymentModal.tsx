@@ -51,6 +51,8 @@ export default function RecordPaymentModal({
     setError,
   } = useForm<RecordPaymentFormValues>({
     resolver: zodResolver(recordPaymentSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
     values: {
       amount: Number(defaultAmount) || 1,
       paymentDate: today,

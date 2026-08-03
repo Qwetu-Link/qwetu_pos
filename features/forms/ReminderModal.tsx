@@ -54,6 +54,8 @@ export default function ReminderModal({
     setValue,
   } = useForm<ReminderFormValues>({
     resolver: zodResolver(reminderSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
     values: {
       channel: channel as ReminderFormValues["channel"],
       sendTo: plan ? (channel === "Email" ? plan.email : plan.phone) : "",

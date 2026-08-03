@@ -1,13 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import EmptyState from "@/components/common/EmptyState";
+import { DataTable } from "@/components/datatables";
 import { Eye, Inbox, XCircle } from "lucide-react";
 import StatusBadge from "./statusBadge";
 import { Order } from "@/types/orderTypes";
@@ -21,83 +17,110 @@ function getColumns({
   onCancel?: (order: Order) => void;
 }): ColumnDef<Order>[] {
   return [
-  {
-    accessorKey: "id",
-    header: "Order Number",
-    cell: ({ row }) => (
-      <Link
-        href={`/admin/orders/${row.original.id}`}
-        className="font-medium text-slate-800 hover:text-emerald-700"
-      >
-        {getOrderDisplayNumber(row.original)}
-      </Link>
-    ),
-  },
-  {
-    accessorKey: "customer",
-    header: "Customer",
-    cell: ({ row }) => (
-      <div>
-        <div className="font-medium text-slate-700">{row.original.customer}</div>
-        <div className="text-xs text-slate-400">{row.original.email}</div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "items",
-    header: "Items",
-    cell: ({ row }) => (
-      <span className="text-slate-500">{row.original.items}</span>
-    ),
-  },
-  {
-    accessorKey: "total",
-    header: "Total",
-    cell: ({ row }) => (
-      <span className="font-semibold text-emerald-700">
-        {formatCurrency(row.original.total)}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "paymentType",
-    header: "Payment",
-    cell: ({ row }) => <PaymentCell order={row.original} />,
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => <StatusBadge status={row.original.status} />,
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Date",
-    cell: ({ row }) => (
-      <span className="text-sm text-slate-500">
-        {formatDate(row.original.createdAt)}
-      </span>
-    ),
-  },
-  {
-    id: "action",
-    header: "Actions",
-    cell: ({ row }) => (
-      <div className="flex justify-end gap-2">
-        <ViewLink orderId={row.original.id} />
-        {onCancel && row.original.status !== "cancelled" ? (
-          <button
-            type="button"
-            onClick={() => onCancel(row.original)}
-            disabled={cancellingOrderId === row.original.id}
-            className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <XCircle className="h-4 w-4" />
-            {cancellingOrderId === row.original.id ? "Cancelling..." : "Cancel"}
-          </button>
-        ) : null}
-      </div>
-    ),
-  },
+    {
+      id: "select",
+      size: 28,
+      header: ({ table }) => (
+        <input
+          type="checkbox"
+          checked={table.getIsAllPageRowsSelected()}
+          onChange={(event) => table.toggleAllPageRowsSelected(event.target.checked)}
+          className="h-4 w-4 rounded border-slate-300"
+          aria-label="Select all visible orders"
+        />
+      ),
+      cell: ({ row }) => (
+        <input
+          type="checkbox"
+          checked={row.getIsSelected()}
+          onChange={(event) => row.toggleSelected(event.target.checked)}
+          className="h-4 w-4 rounded border-slate-300"
+          aria-label={`Select order ${getOrderDisplayNumber(row.original)}`}
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "id",
+      header: "Order Number",
+      cell: ({ row }) => (
+        <Link
+          href={`/admin/orders/${row.original.id}`}
+          className="font-medium text-slate-800 hover:text-emerald-700"
+        >
+          {getOrderDisplayNumber(row.original)}
+        </Link>
+      ),
+    },
+    {
+      accessorKey: "customer",
+      header: "Customer",
+      cell: ({ row }) => (
+        <div>
+          <div className="font-medium text-slate-700">{row.original.customer}</div>
+          <div className="text-xs text-slate-400">{row.original.email}</div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "items",
+      header: "Items",
+      cell: ({ row }) => (
+        <span className="text-slate-500">{row.original.items}</span>
+      ),
+    },
+    {
+      accessorKey: "total",
+      header: "Total",
+      cell: ({ row }) => (
+        <span className="font-semibold text-emerald-700">
+          {formatCurrency(row.original.total)}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "paymentType",
+      header: "Payment",
+      cell: ({ row }) => <PaymentCell order={row.original} />,
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => <StatusBadge status={row.original.status} />,
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Date",
+      cell: ({ row }) => (
+        <span className="text-sm text-slate-500">
+          {formatDate(row.original.createdAt)}
+        </span>
+      ),
+    },
+    {
+      id: "action",
+      header: "Actions",
+      cell: ({ row }) => (
+        <div className="flex justify-end gap-2">
+          <ViewLink orderId={row.original.id} />
+          {onCancel && row.original.status !== "cancelled" ? (
+            <button
+              type="button"
+              onClick={() => onCancel(row.original)}
+              disabled={cancellingOrderId === row.original.id}
+              className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <XCircle className="h-4 w-4" />
+              {cancellingOrderId === row.original.id ? "Cancelling..." : "Cancel"}
+            </button>
+          ) : null}
+        </div>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+      meta: { className: "text-right" },
+    },
   ];
 }
 
@@ -110,14 +133,6 @@ export default function OrdersTable({
   cancellingOrderId?: string | null;
   onCancel?: (order: Order) => void;
 }) {
-  // TanStack Table intentionally returns function-heavy instances that React Compiler cannot memoize safely.
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
-    data: orders,
-    columns: getColumns({ cancellingOrderId, onCancel }),
-    getCoreRowModel: getCoreRowModel(),
-  });
-
   if (orders.length === 0) {
     return (
       <EmptyState
@@ -130,42 +145,15 @@ export default function OrdersTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[960px]">
-          <thead className="border-b border-slate-200 bg-slate-50">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="px-5 py-3 text-left text-sm font-semibold text-slate-600"
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="transition hover:bg-slate-50">
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-5 py-3">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <DataTable
+      columns={getColumns({ cancellingOrderId, onCancel })}
+      data={orders}
+      minWidth="min-w-[1040px]"
+      pageSize={10}
+      showColumnToggle
+      showPagination
+      emptyMessage="No orders match this view."
+    />
   );
 }
 

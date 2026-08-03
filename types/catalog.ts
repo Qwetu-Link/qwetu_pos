@@ -2,7 +2,7 @@
 // QwetuLinks Product Catalog — Type Definitions
 // ============================================================
 
-export type InventoryStatus = "healthy" | "low" | "critical" | "reorder";
+export type InventoryStatus = "healthy" | "low" | "critical" | "reorder" | "incoming";
 
 export interface StockLocation {
   name: "Main Store" | "Warehouse A" | "Outlet";

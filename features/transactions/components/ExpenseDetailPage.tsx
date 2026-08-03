@@ -17,6 +17,7 @@ import { useGetExpense, useUpdateExpenseStatus } from "@/hooks/useExpenses";
 import type { Expense, ExpenseStatus } from "@/types/transactions";
 import ExpenseStatusBadge from "./ExpenseStatusBadge";
 import { ExpenseDetailSkeleton } from "@/components/skeletons";
+import { SimpleDataTable } from "@/components/datatables";
 
 const statusOptions: ExpenseStatus[] = ["pending", "approved", "rejected"];
 
@@ -202,27 +203,25 @@ export default function ExpenseDetailPage({ expenseId }: { expenseId: string }) 
 
                 {hasItems ? (
                   <>
-                    <div className="hidden overflow-x-auto md:block">
-                    <table className="w-full min-w-[620px] text-left text-sm">
-                      <thead>
-                        <tr className="border-b border-slate-200 text-xs uppercase text-slate-500">
-                          <th className="py-3">Item</th>
-                          <th className="py-3 text-right">Qty</th>
-                          <th className="py-3 text-right">Unit Cost</th>
-                          <th className="py-3 text-right">Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {expense.items.map((item) => (
-                          <tr key={item.id} className="border-b border-slate-100 last:border-0">
-                            <td className="py-3 font-semibold text-slate-900">{item.name}</td>
-                            <td className="py-3 text-right text-slate-600">{item.quantity}</td>
-                            <td className="py-3 text-right text-slate-600">{formatCurrency(item.unitCost)}</td>
-                            <td className="py-3 text-right font-bold text-slate-900">{formatCurrency(item.total)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <div className="hidden md:block">
+                    <SimpleDataTable
+                      minWidth="min-w-[620px]"
+                      headers={[
+                        "Item",
+                        { label: "Qty", className: "text-right" },
+                        { label: "Unit Cost", className: "text-right" },
+                        { label: "Total", className: "text-right" },
+                      ]}
+                      rows={expense.items.map((item) => ({
+                        id: item.id,
+                        cells: [
+                          <span key="name" className="font-semibold text-slate-900">{item.name}</span>,
+                          <span key="qty" className="block text-right">{item.quantity}</span>,
+                          <span key="unit" className="block text-right">{formatCurrency(item.unitCost)}</span>,
+                          <span key="total" className="block text-right font-bold text-slate-900">{formatCurrency(item.total)}</span>,
+                        ],
+                      }))}
+                    />
                   </div>
                     <div className="space-y-3 md:hidden">
                       {expense.items.map((item) => (

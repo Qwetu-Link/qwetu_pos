@@ -1,3 +1,4 @@
+import { SimpleDataTable } from "@/components/datatables";
 import { Button } from "@/components/ui/button";
 import {
   CreditCard,
@@ -120,42 +121,42 @@ export default function PaymentsPage() {
               <RefreshCcw className="h-4 w-4" /> Reconcile
             </Button>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[920px] text-left text-sm">
-              <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
-                <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
-                  <th className="px-5 py-3">Payment</th>
-                  <th className="px-5 py-3">Customer</th>
-                  <th className="px-5 py-3">Method</th>
-                  <th className="px-5 py-3 text-right">Amount</th>
-                  <th className="px-5 py-3 text-right">Fee</th>
-                  <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3">Reference</th>
-                </tr>
-              </thead>
-              <tbody>
-                {payments.map((payment) => (
-                  <tr key={payment.id} className="border-b border-[#42688C]/20 transition last:border-0 hover:bg-[#13203A]">
-                    <td className="px-5 py-4">
-                      <p className="font-semibold text-white">{payment.id}</p>
-                      <p className="text-xs text-[#9CB4CA]">{payment.date} / {payment.invoice}</p>
-                    </td>
-                    <td className="px-5 py-4 font-medium text-white">{payment.customer}</td>
-                    <td className="px-5 py-4">
-                      <p className="font-medium text-white">{payment.method}</p>
-                      <p className="text-xs text-[#9CB4CA]">{payment.channel}</p>
-                    </td>
-                    <td className="px-5 py-4 text-right font-semibold text-white">{formatCurrency(payment.amount)}</td>
-                    <td className="px-5 py-4 text-right text-[#9CB4CA]">{formatCurrency(payment.fee)}</td>
-                    <td className="px-5 py-4"><StatusBadge status={payment.status} /></td>
-                    <td className="px-5 py-4 text-xs font-medium text-[#9CB4CA]">{payment.reference}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <SimpleDataTable
+            dark
+            minWidth="min-w-[920px]"
+            headers={[
+              "Payment",
+              "Customer",
+              "Method",
+              { label: "Amount", className: "text-right" },
+              { label: "Fee", className: "text-right" },
+              "Status",
+              "Reference",
+            ]}
+            rows={payments.map((payment) => ({
+              id: payment.id,
+              cells: [
+                <div key="payment">
+                  <p className="font-semibold text-white">{payment.id}</p>
+                  <p className="text-xs text-[#9CB4CA]">{payment.date} / {payment.invoice}</p>
+                </div>,
+                <span key="customer" className="font-medium text-white">{payment.customer}</span>,
+                <div key="method">
+                  <p className="font-medium text-white">{payment.method}</p>
+                  <p className="text-xs text-[#9CB4CA]">{payment.channel}</p>
+                </div>,
+                <span key="amount" className="block text-right font-semibold text-white">{formatCurrency(payment.amount)}</span>,
+                <span key="fee" className="block text-right text-[#9CB4CA]">{formatCurrency(payment.fee)}</span>,
+                <StatusBadge key="status" status={payment.status} />,
+                <span key="reference" className="text-xs font-medium text-[#9CB4CA]">{payment.reference}</span>,
+              ],
+            }))}
+          />
         </section>
       </div>
     </PageLayout>
   );
 }
+
+
+

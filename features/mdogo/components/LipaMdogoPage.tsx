@@ -20,8 +20,8 @@ import {
 } from "./icons";
 import Pagination from "@/components/common/Pagination";
 import PaymentPlanCard from "./PaymentPlanCard";
-import RecordPaymentModal from "./RecordPaymentModal";
-import ReminderModal from "./ReminderModal";
+import RecordPaymentModal from "../../forms/RecordPaymentModal";
+import ReminderModal from "../../forms/ReminderModal";
 import StatCard from "./StatCard";
 import { useGetOrders } from "@/hooks/useOrders";
 import { PaymentPlanCardsSkeleton } from "@/components/skeletons";

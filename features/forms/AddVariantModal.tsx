@@ -23,6 +23,8 @@ export default function AddVariantModal({ productName, onAdd, onClose }: Props) 
     setValue,
   } = useForm<VariantFormValues>({
     resolver: zodResolver(variantSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: {
       color: "",
       size: "",
@@ -81,11 +83,10 @@ export default function AddVariantModal({ productName, onAdd, onClose }: Props) 
             </label>
             <div className="mb-3 grid grid-cols-2 gap-2">
               <label
-                className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold ${
-                  sizeMode === "roman"
+                className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold ${sizeMode === "roman"
                     ? "border-emerald-500 bg-emerald-50 text-emerald-700"
                     : "border-gray-200 bg-white text-gray-600"
-                }`}
+                  }`}
               >
                 <input
                   type="radio"
@@ -97,11 +98,10 @@ export default function AddVariantModal({ productName, onAdd, onClose }: Props) 
                 Roman size
               </label>
               <label
-                className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold ${
-                  sizeMode === "number"
+                className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold ${sizeMode === "number"
                     ? "border-emerald-500 bg-emerald-50 text-emerald-700"
                     : "border-gray-200 bg-white text-gray-600"
-                }`}
+                  }`}
               >
                 <input
                   type="radio"

@@ -5,21 +5,44 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Info, Loader2, SlidersHorizontal, X } from "lucide-react";
 import { LOCATIONS } from "@/data/inventory-locations";
-import type { InventoryItem } from "@/types/inventory";
+import type { InventoryItem, StockAdjustmentReason } from "@/types/inventory";
 
 interface AdjustModalProps {
   item: InventoryItem;
   isApplying?: boolean;
   onClose: () => void;
-  onConfirm: (variantId: string, location: string, qty: number) => Promise<void>;
+  onConfirm: (
+    variantId: string,
+    location: string,
+    qty: number,
+    reason: StockAdjustmentReason,
+    notes?: string,
+  ) => Promise<void>;
 }
 
 const adjustStockSchema = z.object({
-  qty: z.number().int().min(0, "Please enter a valid non-negative quantity."),
+  qty: z.number().int().min(1, "Quantity must be greater than zero."),
   location: z.enum(LOCATIONS),
+  reason: z.enum([
+    "restock",
+    "damaged_goods",
+    "theft_shrinkage",
+    "return",
+    "physical_count_audit",
+    "correction",
+  ]),
+  notes: z.string().trim().max(500, "Notes must be 500 characters or fewer").optional(),
 });
 
 type AdjustStockFormValues = z.infer<typeof adjustStockSchema>;
+const reasonLabels: Record<StockAdjustmentReason, string> = {
+  restock: "Restock",
+  damaged_goods: "Damaged Goods",
+  theft_shrinkage: "Theft/Shrinkage",
+  return: "Return",
+  physical_count_audit: "Physical Count Audit",
+  correction: "Correction",
+};
 
 export function AdjustModal({
   item,
@@ -33,20 +56,24 @@ export function AdjustModal({
     register,
   } = useForm<AdjustStockFormValues>({
     resolver: zodResolver(adjustStockSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: {
       qty: 0,
       location: LOCATIONS[0],
+      reason: "correction",
+      notes: "",
     },
   });
 
   async function handleConfirm(values: AdjustStockFormValues) {
-    await onConfirm(item.variantId, values.location, values.qty);
+    await onConfirm(item.variantId, values.location, values.qty, values.reason, values.notes);
     onClose();
   }
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-xl font-bold flex items-center gap-2 text-slate-800">
             <SlidersHorizontal size={18} className="text-emerald-600" />
@@ -72,17 +99,17 @@ export function AdjustModal({
 
           <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl text-sm text-amber-700 flex items-start gap-2">
             <Info size={15} className="mt-0.5 flex-shrink-0" />
-            Set a new <strong>absolute</strong> stock quantity - this overwrites
-            the current value.
+            Enter the quantity to add. This will be added on top of the current
+            stock for the selected location.
           </div>
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              New Stock Quantity
+              Quantity to Add
             </label>
             <input
               type="number"
-              min={0}
+              min={1}
               {...register("qty", { valueAsNumber: true })}
               placeholder="e.g. 24"
               className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-black placeholder:text-gray-500"
@@ -104,6 +131,40 @@ export function AdjustModal({
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Reason Code
+            </label>
+            <select
+              {...register("reason")}
+              className="w-full px-3 py-2.5 border border-slate-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-black"
+            >
+              {Object.entries(reasonLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            {errors.reason ? (
+              <p className="mt-1 text-xs text-red-500">{errors.reason.message}</p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Notes / Reference
+            </label>
+            <textarea
+              rows={3}
+              {...register("notes")}
+              placeholder="Optional details, reference, or audit note"
+              className="w-full resize-none px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-black placeholder:text-gray-500"
+            />
+            {errors.notes ? (
+              <p className="mt-1 text-xs text-red-500">{errors.notes.message}</p>
+            ) : null}
           </div>
 
           <div className="flex gap-3 pt-1">

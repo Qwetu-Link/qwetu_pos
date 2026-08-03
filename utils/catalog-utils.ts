@@ -222,9 +222,7 @@ export function getProductImageSrc(product: Product): string {
   ) {
     return imageUrl;
   }
-  return `https://via.placeholder.com/400x400?text=${encodeURIComponent(
-    product.name.charAt(0)
-  )}`;
+  return "/placeholder.png";
 }
 
 // ---- CSV Export ----

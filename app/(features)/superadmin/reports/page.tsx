@@ -1,3 +1,4 @@
+import { SimpleDataTable } from "@/components/datatables";
 import Link from "next/link";
 import {
   BarChart3,
@@ -144,50 +145,32 @@ export default async function ReportsPage() {
           title="Tenant report rows"
           description="The same normalized tenant data used in the CSV, XLS, and PDF exports."
         />
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-100 text-left text-sm">
-            <thead className="bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="px-5 py-3">Tenant</th>
-                <th className="px-5 py-3">Status</th>
-                <th className="px-5 py-3">Owners</th>
-                <th className="px-5 py-3">Revenue</th>
-                <th className="px-5 py-3">Outstanding</th>
-                <th className="px-5 py-3">Orders</th>
-                <th className="px-5 py-3">Transactions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
-              {data.tenants.length === 0 ? (
-                <tr>
-                  <td className="px-5 py-8 text-center text-sm font-medium text-slate-500" colSpan={7}>
-                    No tenant records are available yet.
-                  </td>
-                </tr>
-              ) : (
-                data.tenants.map((tenant) => (
-                  <tr key={tenant.businessId} className="hover:bg-emerald-50/50">
-                    <td className="px-5 py-4">
-                      <p className="font-black text-slate-950">{tenant.businessName}</p>
-                      <p className="mt-1 text-xs text-slate-500">{tenant.email}</p>
-                    </td>
-                    <td className="px-5 py-4">
-                      <SuperAdminStatusPill tone={tenant.status === "Active" ? "emerald" : "amber"}>
-                        {tenant.status}
-                      </SuperAdminStatusPill>
-                    </td>
-                    <td className="px-5 py-4 font-semibold text-slate-700">{tenant.owners}</td>
-                    <td className="px-5 py-4 font-semibold text-slate-700">{formatKes(tenant.revenue)}</td>
-                    <td className="px-5 py-4 font-semibold text-slate-700">{formatKes(tenant.outstanding)}</td>
-                    <td className="px-5 py-4 font-semibold text-slate-700">{tenant.orders}</td>
-                    <td className="px-5 py-4 font-semibold text-slate-700">{tenant.transactions}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <SimpleDataTable
+          minWidth="min-w-full"
+          emptyMessage="No tenant records are available yet."
+          headers={["Tenant", "Status", "Owners", "Revenue", "Outstanding", "Orders", "Transactions"]}
+          rows={data.tenants.map((tenant) => ({
+            id: tenant.businessId,
+            cells: [
+              <div key="tenant">
+                <p className="font-black text-slate-950">{tenant.businessName}</p>
+                <p className="mt-1 text-xs text-slate-500">{tenant.email}</p>
+              </div>,
+              <SuperAdminStatusPill key="status" tone={tenant.status === "Active" ? "emerald" : "amber"}>
+                {tenant.status}
+              </SuperAdminStatusPill>,
+              <span key="owners" className="font-semibold text-slate-700">{tenant.owners}</span>,
+              <span key="revenue" className="font-semibold text-slate-700">{formatKes(tenant.revenue)}</span>,
+              <span key="outstanding" className="font-semibold text-slate-700">{formatKes(tenant.outstanding)}</span>,
+              <span key="orders" className="font-semibold text-slate-700">{tenant.orders}</span>,
+              <span key="transactions" className="font-semibold text-slate-700">{tenant.transactions}</span>,
+            ],
+          }))}
+        />
       </SuperAdminSurface>
     </SuperAdminPageShell>
   );
 }
+
+
+

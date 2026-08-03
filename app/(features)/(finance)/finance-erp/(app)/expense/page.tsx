@@ -1,3 +1,4 @@
+import { SimpleDataTable } from "@/components/datatables";
 import { Button } from "@/components/ui/button";
 import { expenses, formatCurrency, formatDate } from "@/data/transaction-data";
 import type { FinanceExpenseCategoryTotals, FinanceExpenseStatus } from "@/types/finance";
@@ -100,37 +101,34 @@ export default function ExpensePage() {
               </Button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[880px] text-left text-sm">
-                <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
-                  <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
-                    <th className="px-5 py-3">Expense</th>
-                    <th className="px-5 py-3">Date</th>
-                    <th className="px-5 py-3">Category</th>
-                    <th className="px-5 py-3">Vendor</th>
-                    <th className="px-5 py-3">Method</th>
-                    <th className="px-5 py-3 text-right">Amount</th>
-                    <th className="px-5 py-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {expenses.map((expense) => (
-                    <tr key={expense.id} className="border-b border-[#42688C]/20 transition last:border-0 hover:bg-[#13203A]">
-                      <td className="px-5 py-4">
-                        <p className="font-semibold text-white">{expense.id}</p>
-                        <p className="text-xs text-[#9CB4CA]">{expense.note}</p>
-                      </td>
-                      <td className="px-5 py-4 text-[#9CB4CA]">{formatDate(expense.date)}</td>
-                      <td className="px-5 py-4 font-medium text-white">{expense.category}</td>
-                      <td className="px-5 py-4 text-[#B8CBE0]">{expense.vendor}</td>
-                      <td className="px-5 py-4 text-[#9CB4CA]">{expense.method}</td>
-                      <td className="px-5 py-4 text-right font-semibold text-white">{formatCurrency(expense.amount)}</td>
-                      <td className="px-5 py-4"><StatusBadge status={expense.status} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <SimpleDataTable
+              dark
+              minWidth="min-w-[880px]"
+              headers={[
+                "Expense",
+                "Date",
+                "Category",
+                "Vendor",
+                "Method",
+                { label: "Amount", className: "text-right" },
+                "Status",
+              ]}
+              rows={expenses.map((expense) => ({
+                id: expense.id,
+                cells: [
+                  <div key="expense">
+                    <p className="font-semibold text-white">{expense.id}</p>
+                    <p className="text-xs text-[#9CB4CA]">{expense.note}</p>
+                  </div>,
+                  <span key="date" className="text-[#9CB4CA]">{formatDate(expense.date)}</span>,
+                  <span key="category" className="font-medium text-white">{expense.category}</span>,
+                  <span key="vendor" className="text-[#B8CBE0]">{expense.vendor}</span>,
+                  <span key="method" className="text-[#9CB4CA]">{expense.method}</span>,
+                  <span key="amount" className="block text-right font-semibold text-white">{formatCurrency(expense.amount)}</span>,
+                  <StatusBadge key="status" status={expense.status} />,
+                ],
+              }))}
+            />
           </div>
 
           <div className="space-y-6">
@@ -174,3 +172,6 @@ export default function ExpensePage() {
     </PageLayout>
   );
 }
+
+
+

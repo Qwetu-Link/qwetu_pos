@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { rolePermissionOptions } from "@/utils/pos-details-data";
 import type { BusinessRole } from "@/types/settings";
-import FormField from "./FormField";
+import FormField from "../settings/components/FormField";
 
 const addRoleSchema = z.object({
   roleName: z.string().trim().min(1, "Role name is required"),
@@ -39,6 +39,8 @@ export default function AddRoleModal({
     reset,
   } = useForm<AddRoleFormValues>({
     resolver: zodResolver(addRoleSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: {
       roleName: "",
       roleDescription: "",
@@ -56,8 +58,8 @@ export default function AddRoleModal({
       permissions: role?.permissions?.length
         ? role.permissions
         : rolePermissionOptions
-            .filter((permission) => permission.key.includes("view"))
-            .map((permission) => permission.key),
+          .filter((permission) => permission.key.includes("view"))
+          .map((permission) => permission.key),
     });
   }, [isOpen, reset, role]);
 

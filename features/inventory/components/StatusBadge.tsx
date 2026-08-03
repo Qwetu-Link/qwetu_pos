@@ -33,6 +33,11 @@ const STATUS_MAP: Record<InventoryStatus, Config> = {
     cls: "bg-red-50 text-red-700 border-red-200",
     Icon: Truck,
   },
+  incoming: {
+    label: "Incoming",
+    cls: "bg-sky-50 text-sky-700 border-sky-200",
+    Icon: Truck,
+  },
 };
 
 export function StatusBadge({ status }: { status: InventoryStatus }) {

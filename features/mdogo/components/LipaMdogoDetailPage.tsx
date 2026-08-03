@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import EmptyState from "@/components/common/EmptyState";
+import { SimpleDataTable } from "@/components/datatables";
 import {
   ArrowLeft,
   Coins,
@@ -24,7 +25,7 @@ import {
 } from "@/data/lipa-mdogo-data";
 import { useGetOrders } from "@/hooks/useOrders";
 import type { PlanProduct } from "@/types/lipa-mdogo";
-import RecordPaymentModal from "./RecordPaymentModal";
+import RecordPaymentModal from "../../forms/RecordPaymentModal";
 import { LipaMdogoDetailSkeleton } from "@/components/skeletons";
 
 const statusStyles = {
@@ -220,31 +221,23 @@ export default function LipaMdogoDetailPage({ planId }: { planId: string }) {
                       </div>
                     </div>
                   </div>
-                  <div className="hidden overflow-x-auto sm:block">
-                    <table className="w-full min-w-[520px] border-collapse text-left">
-                      <thead>
-                        <tr className="bg-slate-50 text-[10px] font-bold uppercase text-slate-500">
-                          <th className="px-4 py-3">Item</th>
-                          <th className="px-4 py-3 text-right">Qty</th>
-                          <th className="px-4 py-3 text-right">Unit</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {plan.products.map((product) => (
-                          <tr key={product.name} className="border-t border-slate-100">
-                            <td className="px-4 py-3 text-sm font-semibold text-slate-900">
-                              {product.name}
-                            </td>
-                            <td className="px-4 py-3 text-right text-sm text-slate-600">
-                              {product.quantity}
-                            </td>
-                            <td className="px-4 py-3 text-right text-sm text-slate-600">
-                              <PlanProductPrice product={product} />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="hidden sm:block">
+                    <SimpleDataTable
+                      minWidth="min-w-[520px]"
+                      headers={[
+                        "Item",
+                        { label: "Qty", className: "text-right" },
+                        { label: "Unit", className: "text-right" },
+                      ]}
+                      rows={plan.products.map((product) => ({
+                        id: product.name,
+                        cells: [
+                          <span key="name" className="font-semibold text-slate-900">{product.name}</span>,
+                          <span key="qty" className="block text-right">{product.quantity}</span>,
+                          <span key="unit" className="block text-right"><PlanProductPrice product={product} /></span>,
+                        ],
+                      }))}
+                    />
                     <div className="border-t border-slate-200 bg-slate-50 p-4">
                       <div className="ml-auto grid max-w-sm gap-2 rounded-lg border border-slate-200 bg-white p-4">
                         <SummaryAmount label="Subtotal" value={formatCurrency(plan.totalAmount)} />
@@ -287,51 +280,28 @@ export default function LipaMdogoDetailPage({ planId }: { planId: string }) {
                       <ScheduleCard key={item.installmentNo} item={item} />
                     ))}
                   </div>
-                  <div className="hidden overflow-x-auto sm:block">
-                    <table className="w-full min-w-[760px] border-collapse text-left">
-                      <thead>
-                        <tr className="bg-slate-50 text-[10px] font-bold uppercase text-slate-500">
-                          {["#", "Due Date", "Amount", "Paid", "Balance", "Status", "Ref"].map(
-                            (heading) => (
-                              <th key={heading} className="px-4 py-3">
-                                {heading}
-                              </th>
-                            ),
-                          )}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {schedule.map((item) => (
-                          <tr key={item.installmentNo} className="border-t border-slate-100">
-                            <td className="px-4 py-3 text-xs font-bold text-slate-500">
-                              #{item.installmentNo}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-slate-700">
-                              {formatDate(item.dueDate)}
-                            </td>
-                            <td className="px-4 py-3 text-sm font-medium text-slate-900">
-                              {formatCurrency(item.amount)}
-                            </td>
-                            <td className="px-4 py-3 text-sm font-semibold text-emerald-700">
-                              {formatCurrency(item.paidAmount)}
-                            </td>
-                            <td
-                              className={`px-4 py-3 text-sm font-semibold ${
-                                item.balance > 0 ? "text-red-600" : "text-emerald-700"
-                              }`}
-                            >
-                              {formatCurrency(item.balance)}
-                            </td>
-                            <td className="px-4 py-3">
-                              <ScheduleStatus status={item.status} />
-                            </td>
-                            <td className="px-4 py-3 font-mono text-[11px] text-slate-500">
-                              {item.receipt?.ref || "-"}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="hidden sm:block">
+                    <SimpleDataTable
+                      minWidth="min-w-[760px]"
+                      headers={["#", "Due Date", "Amount", "Paid", "Balance", "Status", "Ref"]}
+                      rows={schedule.map((item) => ({
+                        id: String(item.installmentNo),
+                        cells: [
+                          <span key="number" className="text-xs font-bold text-slate-500">#{item.installmentNo}</span>,
+                          formatDate(item.dueDate),
+                          <span key="amount" className="font-medium text-slate-900">{formatCurrency(item.amount)}</span>,
+                          <span key="paid" className="font-semibold text-emerald-700">{formatCurrency(item.paidAmount)}</span>,
+                          <span
+                            key="balance"
+                            className={`font-semibold ${item.balance > 0 ? "text-red-600" : "text-emerald-700"}`}
+                          >
+                            {formatCurrency(item.balance)}
+                          </span>,
+                          <ScheduleStatus key="status" status={item.status} />,
+                          <span key="ref" className="font-mono text-[11px] text-slate-500">{item.receipt?.ref || "-"}</span>,
+                        ],
+                      }))}
+                    />
                   </div>
                   </>
                 )}
@@ -391,44 +361,50 @@ export default function LipaMdogoDetailPage({ planId }: { planId: string }) {
                           />
                         ))}
                   </div>
-                  <div className="hidden overflow-x-auto sm:block">
-                    <table className="w-full min-w-[760px] border-collapse">
-                      <thead>
-                        <tr>
-                          {["Payment", "Date", "Amount", "Method", "Ref", "Download"].map((heading) => (
-                            <th
-                              key={heading}
-                              className="bg-slate-50 p-3 text-left text-[10px] font-bold uppercase text-slate-500"
-                            >
-                              {heading}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {receipts.length
-                          ? receipts.map((receipt) => (
-                              <PaymentRow
-                                key={receipt.id}
-                                id={receipt.id}
-                                date={receipt.date}
-                                amount={receipt.amount}
-                                method={receipt.method}
-                                reference={receipt.ref}
-                              />
-                            ))
-                          : paymentRows.map((payment) => (
-                              <PaymentRow
-                                key={payment.installmentNo}
-                                id={`${plan.invoiceNo}-${payment.installmentNo}`}
-                                date={payment.dueDate}
-                                amount={payment.paidAmount}
-                                method={plan.paymentMethod}
-                                reference="-"
-                              />
-                            ))}
-                      </tbody>
-                    </table>
+                  <div className="hidden sm:block">
+                    <SimpleDataTable
+                      minWidth="min-w-[760px]"
+                      headers={["Payment", "Date", "Amount", "Method", "Ref", "Download"]}
+                      rows={(receipts.length
+                        ? receipts.map((receipt) => ({
+                            id: receipt.id,
+                            date: receipt.date,
+                            amount: receipt.amount,
+                            method: receipt.method,
+                            reference: receipt.ref,
+                          }))
+                        : paymentRows.map((payment) => ({
+                            id: `${plan.invoiceNo}-${payment.installmentNo}`,
+                            date: payment.dueDate,
+                            amount: payment.paidAmount,
+                            method: plan.paymentMethod,
+                            reference: "-",
+                          }))
+                      ).map((payment) => ({
+                        id: payment.id,
+                        cells: [
+                          <div key="payment" className="flex items-center gap-2">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                              <Coins className="h-3.5 w-3.5" />
+                            </span>
+                            <span className="font-mono text-xs font-bold text-slate-800">{payment.id}</span>
+                          </div>,
+                          <span key="date" className="text-xs">{formatDate(payment.date)}</span>,
+                          <span key="amount" className="text-xs font-bold text-emerald-700">{formatCurrency(payment.amount)}</span>,
+                          <span key="method" className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">{payment.method}</span>,
+                          <span key="ref" className="font-mono text-xs text-slate-500">{payment.reference}</span>,
+                          <button
+                            key="download"
+                            type="button"
+                            aria-label={`Download payment ${payment.id}`}
+                            title="Download payment"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-emerald-100 bg-white text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                          >
+                            <Download className="h-4 w-4" />
+                          </button>,
+                        ],
+                      }))}
+                    />
                   </div>
                   </>
                 ) : (
@@ -694,50 +670,5 @@ function MobileMetric({
         {value}
       </div>
     </div>
-  );
-}
-
-function PaymentRow({
-  id,
-  date,
-  amount,
-  method,
-  reference,
-}: {
-  id: string;
-  date: string;
-  amount: number;
-  method: string;
-  reference: string;
-}) {
-  return (
-    <tr className="border-b border-slate-100 transition hover:bg-emerald-50/50">
-      <td className="px-3 py-3">
-        <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-            <Coins className="h-3.5 w-3.5" />
-          </span>
-          <span className="font-mono text-xs font-bold text-slate-800">{id}</span>
-        </div>
-      </td>
-      <td className="px-3 py-3 text-xs text-slate-600">{formatDate(date)}</td>
-      <td className="px-3 py-3 text-xs font-bold text-emerald-700">
-        {formatCurrency(amount)}
-      </td>
-      <td className="px-3 py-3 text-xs">
-        <span className="rounded-full bg-slate-100 px-2 py-1 font-medium text-slate-700">{method}</span>
-      </td>
-      <td className="px-3 py-3 font-mono text-xs text-slate-500">{reference}</td>
-      <td className="px-3 py-3">
-        <button
-          type="button"
-          aria-label={`Download payment ${id}`}
-          title="Download payment"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-emerald-100 bg-white text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-        >
-          <Download className="h-4 w-4" />
-        </button>
-      </td>
-    </tr>
   );
 }

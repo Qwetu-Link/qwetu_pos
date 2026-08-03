@@ -1,10 +1,17 @@
 import {
     adjustVariantInventoryQuery,
+    createPurchaseOrderQuery,
+    getPurchaseOrdersQuery,
+    getStockAdjustmentLogsQuery,
+    receivePurchaseOrderQuery,
     transferVariantInventoryQuery,
 } from "@/db/queries/inventory";
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
 import {
     adjustInventorySchema,
+    createPurchaseOrderSchema,
+    inventoryVariantSchema,
+    purchaseOrderIdSchema,
     transferInventorySchema,
 } from "@/validators/inventory";
 import { TRPCError } from "@trpc/server";
@@ -27,6 +34,9 @@ function getInventoryError(error: unknown): never {
         message.includes("Insufficient stock") ||
         message.includes("Inventory location was not found") ||
         message.includes("Could not create default stock locations") ||
+        message.includes("Purchase order") ||
+        message.includes("already been received") ||
+        message.includes("already has a linked expense") ||
         message.includes("not found for this business")
     ) {
         throw new TRPCError({
@@ -42,6 +52,41 @@ function getInventoryError(error: unknown): never {
 }
 
 export const inventoryRouter = createTRPCRouter({
+    getPurchaseOrders: baseProcedure.query(async ({ ctx }) => {
+        const businessId = ensureBusinessId(ctx.businessId);
+
+        try {
+            return await getPurchaseOrdersQuery(businessId);
+        } catch (error) {
+            getInventoryError(error);
+        }
+    }),
+
+    getAdjustmentLogs: baseProcedure.query(async ({ ctx }) => {
+        const businessId = ensureBusinessId(ctx.businessId);
+
+        try {
+            return await getStockAdjustmentLogsQuery({ businessId });
+        } catch (error) {
+            getInventoryError(error);
+        }
+    }),
+
+    getVariantAdjustmentLogs: baseProcedure
+        .input(inventoryVariantSchema)
+        .query(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+
+            try {
+                return await getStockAdjustmentLogsQuery({
+                    businessId,
+                    variantId: input.variantId,
+                });
+            } catch (error) {
+                getInventoryError(error);
+            }
+        }),
+
     adjustStock: baseProcedure
         .input(adjustInventorySchema)
         .mutation(async ({ input, ctx }) => {
@@ -53,6 +98,44 @@ export const inventoryRouter = createTRPCRouter({
                     variantId: input.variantId,
                     locationName: input.location,
                     quantity: input.quantity,
+                    reason: input.reason,
+                    notes: input.notes,
+                    adjustedBy: ctx.userId,
+                });
+            } catch (error) {
+                getInventoryError(error);
+            }
+        }),
+
+    createPurchaseOrder: baseProcedure
+        .input(createPurchaseOrderSchema)
+        .mutation(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+
+            try {
+                return await createPurchaseOrderQuery({
+                    businessId,
+                    variantId: input.variantId,
+                    supplierName: input.supplierName,
+                    quantity: input.quantity,
+                    notes: input.notes,
+                    createdBy: ctx.userId,
+                });
+            } catch (error) {
+                getInventoryError(error);
+            }
+        }),
+
+    receivePurchaseOrder: baseProcedure
+        .input(purchaseOrderIdSchema)
+        .mutation(async ({ input, ctx }) => {
+            const businessId = ensureBusinessId(ctx.businessId);
+
+            try {
+                return await receivePurchaseOrderQuery({
+                    businessId,
+                    id: input.id,
+                    receivedBy: ctx.userId,
                 });
             } catch (error) {
                 getInventoryError(error);

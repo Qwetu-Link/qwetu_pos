@@ -1,5 +1,6 @@
 import { Download } from "lucide-react";
 import EmptyState from "@/components/common/EmptyState";
+import { SimpleDataTable } from "@/components/datatables";
 import type { GeneratedReport } from "@/types/reports";
 import ReportStatusBadge from "./ReportStatusBadge";
 
@@ -32,39 +33,30 @@ export default function GeneratedReportsTable({
           />
         </div>
       ) : (
-      <div className="min-w-0 overflow-x-auto">
-        <table className="w-full min-w-[760px] text-left text-sm">
-          <thead>
-            <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-500">
-              <th className="px-5 py-3">Report</th>
-              <th className="px-5 py-3">Period</th>
-              <th className="px-5 py-3">Created</th>
-              <th className="px-5 py-3">Size</th>
-              <th className="px-5 py-3">Status</th>
-              <th className="px-5 py-3 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reports.map((report) => (
-              <tr
-                key={report.id}
-                className="border-b border-slate-100 last:border-0"
-              >
-                <td className="px-5 py-4">
+        <SimpleDataTable
+          minWidth="min-w-[760px]"
+          headers={[
+            "Report",
+            "Period",
+            "Created",
+            "Size",
+            "Status",
+            { label: "Action", className: "text-right" },
+          ]}
+          rows={reports.map((report) => ({
+            id: report.id,
+            cells: [
+              <div key="report">
                   <p className="font-semibold text-slate-900">
                     {report.title}
                   </p>
                   <p className="text-xs text-slate-500">{report.id}</p>
-                </td>
-                <td className="px-5 py-4 text-slate-600">{report.period}</td>
-                <td className="px-5 py-4 text-slate-600">
-                  {report.createdAt}
-                </td>
-                <td className="px-5 py-4 text-slate-600">{report.size}</td>
-                <td className="px-5 py-4">
-                  <ReportStatusBadge status={report.status} />
-                </td>
-                <td className="px-5 py-4 text-right">
+              </div>,
+              report.period,
+              report.createdAt,
+              report.size,
+              <ReportStatusBadge key="status" status={report.status} />,
+              <div key="action" className="flex justify-end">
                   <button
                     type="button"
                     onClick={() => onDownload(report)}
@@ -74,12 +66,10 @@ export default function GeneratedReportsTable({
                   >
                     <Download className="h-4 w-4" />
                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              </div>,
+            ],
+          }))}
+        />
       )}
     </section>
   );

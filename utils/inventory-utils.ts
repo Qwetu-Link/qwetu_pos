@@ -10,6 +10,7 @@ export function mapProductsToInventoryItems(products: Product[]): InventoryItem[
         variantId: variant.id,
         sku: variant.sku,
         productName: product.name,
+        supplierName: product.brand,
         color: variant.color,
         size: variant.size,
         inventory: {
@@ -30,6 +31,7 @@ export function mapProductsToInventoryItems(products: Product[]): InventoryItem[
 
 export function recalcTotalStock(item: InventoryItem): InventoryItem {
   if (!item.inventory?.locations) return item;
+  if (item.inventory.status === "incoming") return item;
 
   const total = item.inventory.locations.reduce(
     (sum, loc) => sum + (loc.stock || 0),
@@ -53,6 +55,7 @@ export function computeStats(items: InventoryItem[]): InventoryStats {
     low: items.filter((i) => i.inventory.status === "low").length,
     critical: items.filter((i) => i.inventory.status === "critical").length,
     reorder: items.filter((i) => i.inventory.status === "reorder").length,
+    incoming: items.filter((i) => i.inventory.status === "incoming").length,
   };
 }
 

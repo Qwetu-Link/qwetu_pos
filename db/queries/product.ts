@@ -150,6 +150,11 @@ export const getProductsQuery = async (businessId?: string) => {
                         0,
                     );
                     const reorderPoint = variantInventoryRows[0]?.reorderPoint ?? 10;
+                    const status = variantInventoryRows.some(
+                        (inventory) => inventory.status === "incoming",
+                    )
+                        ? "incoming" as const
+                        : variantInventoryRows[0]?.status ?? "reorder";
                     const locations = DEFAULT_STOCK_LOCATIONS.map((defaultLocation, index) => ({
                         name: defaultLocation.name,
                         stock: index === 0 ? stock : defaultLocation.stock,
@@ -159,7 +164,7 @@ export const getProductsQuery = async (businessId?: string) => {
                     return computeInventoryStatus({
                         totalStock: stock,
                         reorderPoint,
-                        status: variantInventoryRows[0]?.status ?? "reorder",
+                        status,
                         lastRestocked:
                             variantInventoryRows[0]?.lastRestocked?.toISOString().slice(0, 10) ??
                             variant.updatedAt.toISOString().slice(0, 10),

@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/types/catalog";
+import ProductImage from "./ProductImage";
 import {
   getProductImageSrc,
   getProductTotalStock,
@@ -24,7 +24,7 @@ export default function ProductCard({ product, onDelete }: Props) {
   return (
     <div className="group overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
       <div className="relative h-40 overflow-hidden bg-gray-100 sm:h-48">
-        <Image
+        <ProductImage
           src={imageSrc}
           alt={product.name}
           fill

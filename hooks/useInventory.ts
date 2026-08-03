@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
-import type { InventoryItem } from "@/types/inventory";
+import type { InventoryItem, StockAdjustmentReason } from "@/types/inventory";
 import { DEMO_INVENTORY, filterItems, recalcTotalStock } from "@/utils/inventory-utils";
 
 function getInitialItems(sourceItems?: InventoryItem[]): InventoryItem[] {
@@ -48,6 +48,7 @@ export function useInventory(sourceItems?: InventoryItem[]) {
     trpc.inventory.adjustStock.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(trpc.products.pathFilter());
+        await queryClient.invalidateQueries(trpc.inventory.pathFilter());
       },
     })
   );
@@ -60,15 +61,53 @@ export function useInventory(sourceItems?: InventoryItem[]) {
     })
   );
 
+  const createPurchaseOrderMutation = useMutation(
+    trpc.inventory.createPurchaseOrder.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(trpc.products.pathFilter());
+        await queryClient.invalidateQueries(trpc.inventory.pathFilter());
+      },
+    })
+  );
+
+  const receivePurchaseOrderMutation = useMutation(
+    trpc.inventory.receivePurchaseOrder.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(trpc.products.pathFilter());
+        await queryClient.invalidateQueries(trpc.inventory.pathFilter());
+      },
+    })
+  );
+
   const adjustStock = useCallback(
-    async (variantId: string, locationName: string, newAbsoluteQty: number) => {
+    async (
+      variantId: string,
+      locationName: string,
+      quantityToAdd: number,
+      reason: StockAdjustmentReason,
+      notes?: string,
+    ) => {
       await adjustStockMutation.mutateAsync({
         variantId,
         location: locationName as "Main Store" | "Warehouse A" | "Outlet",
-        quantity: newAbsoluteQty,
+        quantity: quantityToAdd,
+        reason,
+        notes,
       });
     },
     [adjustStockMutation]
+  );
+
+  const createPurchaseOrder = useCallback(
+    async (variantId: string, supplierName: string, quantity: number, notes?: string) => {
+      await createPurchaseOrderMutation.mutateAsync({
+        variantId,
+        supplierName,
+        quantity,
+        notes,
+      });
+    },
+    [createPurchaseOrderMutation]
   );
 
   const transferStock = useCallback(
@@ -99,8 +138,36 @@ export function useInventory(sourceItems?: InventoryItem[]) {
     setPerPage,
     totalPages,
     adjustStock,
+    createPurchaseOrder,
     transferStock,
     isAdjusting: adjustStockMutation.isPending,
+    isCreatingPurchaseOrder: createPurchaseOrderMutation.isPending,
+    isReceivingPurchaseOrder: receivePurchaseOrderMutation.isPending,
+    receivePurchaseOrder: receivePurchaseOrderMutation.mutateAsync,
     isTransferring: transferStockMutation.isPending,
+  };
+}
+
+export function usePurchaseOrders() {
+  const trpc = useTRPC();
+  const query = useQuery(trpc.inventory.getPurchaseOrders.queryOptions());
+
+  return {
+    ...query,
+    purchaseOrders: query.data ?? [],
+  };
+}
+
+export function useAdjustmentLogs(variantId?: string) {
+  const trpc = useTRPC();
+  const query = useQuery(
+    variantId
+      ? trpc.inventory.getVariantAdjustmentLogs.queryOptions({ variantId })
+      : trpc.inventory.getAdjustmentLogs.queryOptions(),
+  );
+
+  return {
+    ...query,
+    logs: query.data ?? [],
   };
 }

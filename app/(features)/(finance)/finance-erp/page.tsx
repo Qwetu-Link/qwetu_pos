@@ -9,6 +9,7 @@ import {
   ReceiptText,
   ShieldCheck,
 } from "lucide-react";
+import { SimpleDataTable } from "@/components/datatables";
 import type { BranchMoneyStatus, BranchMoneySummary, FinanceTask } from "@/types/finance";
 import { KPICards } from "@/features/finance/components/kpi-cards";
 import { PaymentMethodChart } from "@/features/finance/components/payment-method-chart";
@@ -182,30 +183,27 @@ export default function FinDashboard() {
             <h2 className="text-lg font-bold text-white">Branch Money Summary</h2>
             <p className="text-sm text-[#9CB4CA]">Sales received by each branch today.</p>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
-                <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
-                  <th className="px-5 py-3">Branch</th>
-                  <th className="px-5 py-3 text-right">Sales</th>
-                  <th className="px-5 py-3 text-right">Cash</th>
-                  <th className="px-5 py-3 text-right">Mobile Money</th>
-                  <th className="px-5 py-3">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {branchSettlements.map((item) => (
-                  <tr key={item.branch} className="border-b border-[#42688C]/20 last:border-0 hover:bg-[#13203A]">
-                    <td className="px-5 py-4 font-semibold text-white">{item.branch}</td>
-                    <td className="px-5 py-4 text-right font-semibold text-white">{item.sales}</td>
-                    <td className="px-5 py-4 text-right text-[#B8CBE0]">{item.cash}</td>
-                    <td className="px-5 py-4 text-right text-[#B8CBE0]">{item.mpesa}</td>
-                    <td className="px-5 py-4"><StatusBadge status={item.status} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <SimpleDataTable
+            dark
+            minWidth="min-w-[760px]"
+            headers={[
+              "Branch",
+              { label: "Sales", className: "text-right" },
+              { label: "Cash", className: "text-right" },
+              { label: "Mobile Money", className: "text-right" },
+              "Status",
+            ]}
+            rows={branchSettlements.map((item) => ({
+              id: item.branch,
+              cells: [
+                <span key="branch" className="font-semibold text-white">{item.branch}</span>,
+                <span key="sales" className="block text-right font-semibold text-white">{item.sales}</span>,
+                <span key="cash" className="block text-right text-[#B8CBE0]">{item.cash}</span>,
+                <span key="mpesa" className="block text-right text-[#B8CBE0]">{item.mpesa}</span>,
+                <StatusBadge key="status" status={item.status} />,
+              ],
+            }))}
+          />
         </div>
 
         <aside className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">

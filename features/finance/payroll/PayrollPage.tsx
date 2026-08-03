@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { SimpleDataTable } from "@/components/datatables";
 import { PageLayout } from "@/features/finance/components/page-layout";
 import {
   Banknote,
@@ -367,82 +368,74 @@ export default function PayrollPage() {
           </div>
 
           {tab === "employees" && (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[920px] text-left text-sm">
-                <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
-                  <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
-                    <th className="px-5 py-3">Employee</th>
-                    <th className="px-5 py-3">Department</th>
-                    <th className="px-5 py-3 text-right">Base Salary</th>
-                    <th className="px-5 py-3 text-right">Advances</th>
-                    <th className="px-5 py-3 text-right">Deductions</th>
-                    <th className="px-5 py-3 text-right">Net Pay</th>
-                    <th className="px-5 py-3">Pay Date</th>
-                    <th className="px-5 py-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {employees.map((employee) => (
-                    <tr key={employee.id} className="border-b border-[#42688C]/20 transition last:border-0 hover:bg-[#13203A]">
-                      <td className="px-5 py-4">
-                        <div className="flex min-w-0 items-center gap-3">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#42688C]/20 text-xs font-bold text-[#E2F4DF]">
-                            {initials(employee.name)}
-                          </span>
-                          <div className="min-w-0">
-                            <p className="font-semibold text-white">{employee.name}</p>
-                            <p className="text-xs text-[#9CB4CA]">{employee.id} - {employee.bank}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4">
-                        <p className="font-medium text-white">{employee.role}</p>
-                        <p className="text-xs text-[#9CB4CA]">{employee.department}</p>
-                      </td>
-                      <td className="px-5 py-4 text-right font-semibold text-white">{masked(showTableFigures, employee.salary, true)}</td>
-                      <td className="px-5 py-4 text-right text-[#B8CBE0]">{employee.advances ? masked(showTableFigures, employee.advances, true) : "-"}</td>
-                      <td className="px-5 py-4 text-right text-[#B8CBE0]">{employee.deductions ? masked(showTableFigures, employee.deductions, true) : "-"}</td>
-                      <td className="px-5 py-4 text-right font-semibold text-[#E2F4DF]">{masked(showTableFigures, employee.netPay, true)}</td>
-                      <td className="px-5 py-4 text-[#9CB4CA]">{employee.payDate}</td>
-                      <td className="px-5 py-4"><StatusBadge status={employee.status} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <SimpleDataTable
+              dark
+              minWidth="min-w-[920px]"
+              headers={[
+                "Employee",
+                "Department",
+                { label: "Base Salary", className: "text-right" },
+                { label: "Advances", className: "text-right" },
+                { label: "Deductions", className: "text-right" },
+                { label: "Net Pay", className: "text-right" },
+                "Pay Date",
+                "Status",
+              ]}
+              rows={employees.map((employee) => ({
+                id: employee.id,
+                cells: [
+                  <div key="employee" className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#42688C]/20 text-xs font-bold text-[#E2F4DF]">
+                      {initials(employee.name)}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-white">{employee.name}</p>
+                      <p className="text-xs text-[#9CB4CA]">{employee.id} - {employee.bank}</p>
+                    </div>
+                  </div>,
+                  <div key="department">
+                    <p className="font-medium text-white">{employee.role}</p>
+                    <p className="text-xs text-[#9CB4CA]">{employee.department}</p>
+                  </div>,
+                  <span key="salary" className="block text-right font-semibold text-white">{masked(showTableFigures, employee.salary, true)}</span>,
+                  <span key="advances" className="block text-right text-[#B8CBE0]">{employee.advances ? masked(showTableFigures, employee.advances, true) : "-"}</span>,
+                  <span key="deductions" className="block text-right text-[#B8CBE0]">{employee.deductions ? masked(showTableFigures, employee.deductions, true) : "-"}</span>,
+                  <span key="net" className="block text-right font-semibold text-[#E2F4DF]">{masked(showTableFigures, employee.netPay, true)}</span>,
+                  <span key="date" className="text-[#9CB4CA]">{employee.payDate}</span>,
+                  <StatusBadge key="status" status={employee.status} />,
+                ],
+              }))}
+            />
           )}
 
           {tab === "history" && (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[820px] text-left text-sm">
-                <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
-                  <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
-                    <th className="px-5 py-3">Pay Run</th>
-                    <th className="px-5 py-3">Period</th>
-                    <th className="px-5 py-3 text-right">Employees</th>
-                    <th className="px-5 py-3 text-right">Gross</th>
-                    <th className="px-5 py-3 text-right">Deductions</th>
-                    <th className="px-5 py-3 text-right">Net Released</th>
-                    <th className="px-5 py-3">Status</th>
-                    <th className="px-5 py-3">Settlement</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {payRuns.map((run) => (
-                    <tr key={run.id} className="border-b border-[#42688C]/20 transition last:border-0 hover:bg-[#13203A]">
-                      <td className="px-5 py-4 font-semibold text-white">{run.id}</td>
-                      <td className="px-5 py-4 text-[#B8CBE0]">{run.period}</td>
-                      <td className="px-5 py-4 text-right text-[#B8CBE0]">{run.employees}</td>
-                      <td className="px-5 py-4 text-right font-semibold text-white">{formatCurrency(run.gross)}</td>
-                      <td className="px-5 py-4 text-right text-red-200">{formatCurrency(run.deductions)}</td>
-                      <td className="px-5 py-4 text-right font-semibold text-[#E2F4DF]">{formatCurrency(run.net)}</td>
-                      <td className="px-5 py-4"><StatusBadge status={run.status} /></td>
-                      <td className="px-5 py-4 text-[#9CB4CA]">{run.date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <SimpleDataTable
+              dark
+              minWidth="min-w-[820px]"
+              headers={[
+                "Pay Run",
+                "Period",
+                { label: "Employees", className: "text-right" },
+                { label: "Gross", className: "text-right" },
+                { label: "Deductions", className: "text-right" },
+                { label: "Net Released", className: "text-right" },
+                "Status",
+                "Settlement",
+              ]}
+              rows={payRuns.map((run) => ({
+                id: run.id,
+                cells: [
+                  <span key="id" className="font-semibold text-white">{run.id}</span>,
+                  <span key="period" className="text-[#B8CBE0]">{run.period}</span>,
+                  <span key="employees" className="block text-right text-[#B8CBE0]">{run.employees}</span>,
+                  <span key="gross" className="block text-right font-semibold text-white">{formatCurrency(run.gross)}</span>,
+                  <span key="deductions" className="block text-right text-red-200">{formatCurrency(run.deductions)}</span>,
+                  <span key="net" className="block text-right font-semibold text-[#E2F4DF]">{formatCurrency(run.net)}</span>,
+                  <StatusBadge key="status" status={run.status} />,
+                  <span key="date" className="text-[#9CB4CA]">{run.date}</span>,
+                ],
+              }))}
+            />
           )}
 
           {tab === "schedule" && (
@@ -508,3 +501,6 @@ export default function PayrollPage() {
     </PageLayout>
   );
 }
+
+
+

@@ -1,3 +1,4 @@
+import { SimpleDataTable } from "@/components/datatables";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Download, Filter, Plus, RotateCcw, ShieldCheck, XCircle } from "lucide-react";
 import type { RefundRecord, RefundStatus } from "@/types/finance";
@@ -94,37 +95,34 @@ export default function RefundsPage() {
               <h2 className="text-lg font-semibold text-white">Refund Ledger</h2>
               <p className="text-sm text-[#9CB4CA]">Requests by customer, invoice, refund method, and approval owner</p>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[920px] text-left text-sm">
-                <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
-                  <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
-                    <th className="px-5 py-3">Refund</th>
-                    <th className="px-5 py-3">Customer</th>
-                    <th className="px-5 py-3">Reason</th>
-                    <th className="px-5 py-3">Method</th>
-                    <th className="px-5 py-3 text-right">Amount</th>
-                    <th className="px-5 py-3">Status</th>
-                    <th className="px-5 py-3">Owner</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {refunds.map((refund) => (
-                    <tr key={refund.id} className="border-b border-[#42688C]/20 transition last:border-0 hover:bg-[#13203A]">
-                      <td className="px-5 py-4">
-                        <p className="font-semibold text-white">{refund.id}</p>
-                        <p className="text-xs text-[#9CB4CA]">{refund.date} / {refund.invoice}</p>
-                      </td>
-                      <td className="px-5 py-4 font-medium text-white">{refund.customer}</td>
-                      <td className="px-5 py-4 text-[#9CB4CA]">{refund.reason}</td>
-                      <td className="px-5 py-4 text-white">{refund.method}</td>
-                      <td className="px-5 py-4 text-right font-semibold text-white">{formatCurrency(refund.amount)}</td>
-                      <td className="px-5 py-4"><StatusBadge status={refund.status} /></td>
-                      <td className="px-5 py-4 text-[#9CB4CA]">{refund.owner}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <SimpleDataTable
+              dark
+              minWidth="min-w-[920px]"
+              headers={[
+                "Refund",
+                "Customer",
+                "Reason",
+                "Method",
+                { label: "Amount", className: "text-right" },
+                "Status",
+                "Owner",
+              ]}
+              rows={refunds.map((refund) => ({
+                id: refund.id,
+                cells: [
+                  <div key="refund">
+                    <p className="font-semibold text-white">{refund.id}</p>
+                    <p className="text-xs text-[#9CB4CA]">{refund.date} / {refund.invoice}</p>
+                  </div>,
+                  <span key="customer" className="font-medium text-white">{refund.customer}</span>,
+                  <span key="reason" className="text-[#9CB4CA]">{refund.reason}</span>,
+                  <span key="method" className="text-white">{refund.method}</span>,
+                  <span key="amount" className="block text-right font-semibold text-white">{formatCurrency(refund.amount)}</span>,
+                  <StatusBadge key="status" status={refund.status} />,
+                  <span key="owner" className="text-[#9CB4CA]">{refund.owner}</span>,
+                ],
+              }))}
+            />
           </div>
 
           <aside className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
@@ -154,3 +152,6 @@ export default function RefundsPage() {
     </PageLayout>
   );
 }
+
+
+

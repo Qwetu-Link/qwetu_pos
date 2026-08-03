@@ -10,7 +10,6 @@ import {
     varchar,
 } from "drizzle-orm/pg-core";
 import { businessTable } from "./business";
-import { invoiceTable } from "./invoice";
 
 export const paymentTypeEnum = pgEnum("payment_type", ["full", "installment"]);
 export const paymentStatusEnum = pgEnum("payment_status", ["paid", "partial", "unpaid"]);
@@ -93,11 +92,7 @@ export const paymentTable = pgTable("payments", {
         .references(() => businessTable.id, {
             onDelete: "cascade",
         }),
-    invoiceId: uuid("invoice_id")
-        .notNull()
-        .references(() => invoiceTable.id, {
-            onDelete: "cascade",
-        }),
+    invoiceId: uuid("invoice_id").notNull(),
     amount: integer("amount").notNull(),
     status: paymentReceiptStatusEnum("status")
         .default("completed")

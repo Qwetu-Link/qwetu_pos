@@ -43,6 +43,8 @@ export default function EditModal({
     register,
   } = useForm<EditVariantValues>({
     resolver: zodResolver(editVariantSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: {
       color: variant.color,
       size: variant.size,
@@ -157,30 +159,30 @@ export default function EditModal({
             ) : null}
           </div>
 
-        <div className="flex gap-3 mt-6">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSaving}
-            className="flex-1 border border-slate-300 py-2.5 rounded-xl font-medium hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 transition-colors text-black"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400 text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save Changes"
-            )}
-          </button>
-        </div>
+          <div className="flex gap-3 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSaving}
+              className="flex-1 border border-slate-300 py-2.5 rounded-xl font-medium hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 transition-colors text-black"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400 text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </button>
+          </div>
         </form>
       </div>
     </div>

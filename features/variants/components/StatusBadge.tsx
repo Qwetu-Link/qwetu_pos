@@ -27,6 +27,11 @@ const STATUS_CONFIG = {
     cls: "bg-rose-50 text-rose-700 border-rose-200",
     Icon: PackageOpen,
   },
+  incoming: {
+    label: "Incoming",
+    cls: "bg-sky-50 text-sky-700 border-sky-200",
+    Icon: Package,
+  },
 };
 
 export default function StatusBadge({

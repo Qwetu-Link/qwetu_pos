@@ -1,3 +1,4 @@
+import { SimpleDataTable } from "@/components/datatables";
 import { Button } from "@/components/ui/button";
 import { Download, Eye, Plus, ReceiptText, ShieldCheck, Wallet, WalletCards } from "lucide-react";
 import type { CustomerWallet, CustomerWalletActivity, CustomerWalletStatus, CustomerWalletTotals } from "@/types/finance";
@@ -96,41 +97,36 @@ export default function CustomerWalletsPage() {
               <h2 className="text-lg font-semibold text-white">Wallet Balances</h2>
               <p className="text-sm text-[#9CB4CA]">Customer wallet split by deposit, store credit, and refund credit.</p>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[920px] text-left text-sm">
-                <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
-                  <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
-                    <th className="px-5 py-3">Customer</th>
-                    <th className="px-5 py-3 text-right">Savings</th>
-                    <th className="px-5 py-3 text-right">Store Credit</th>
-                    <th className="px-5 py-3 text-right">Refund Credit</th>
-                    <th className="px-5 py-3 text-right">Total Balance</th>
-                    <th className="px-5 py-3">Status</th>
-                    <th className="px-5 py-3">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {wallets.map((wallet) => (
-                    <tr key={wallet.id} className="border-b border-[#42688C]/20 transition last:border-0 hover:bg-[#13203A]">
-                      <td className="px-5 py-4">
-                        <p className="font-semibold text-white">{wallet.customer}</p>
-                        <p className="text-xs text-[#9CB4CA]">{wallet.id} / Last activity {wallet.lastTransaction}</p>
-                      </td>
-                      <td className="px-5 py-4 text-right font-semibold text-white">{formatCurrency(wallet.savings)}</td>
-                      <td className="px-5 py-4 text-right font-semibold text-[#E2F4DF]">{formatCurrency(wallet.storeCredit)}</td>
-                      <td className="px-5 py-4 text-right font-semibold text-amber-200">{formatCurrency(wallet.refundCredit)}</td>
-                      <td className="px-5 py-4 text-right font-bold text-white">{formatCurrency(wallet.total)}</td>
-                      <td className="px-5 py-4"><StatusBadge status={wallet.status} /></td>
-                      <td className="px-5 py-4">
-                        <button className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E2F4DF] transition hover:text-white">
-                          <Eye className="h-4 w-4" /> View
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <SimpleDataTable
+              dark
+              minWidth="min-w-[920px]"
+              headers={[
+                "Customer",
+                { label: "Savings", className: "text-right" },
+                { label: "Store Credit", className: "text-right" },
+                { label: "Refund Credit", className: "text-right" },
+                { label: "Total Balance", className: "text-right" },
+                "Status",
+                "Action",
+              ]}
+              rows={wallets.map((wallet) => ({
+                id: wallet.id,
+                cells: [
+                  <div key="customer">
+                    <p className="font-semibold text-white">{wallet.customer}</p>
+                    <p className="text-xs text-[#9CB4CA]">{wallet.id} / Last activity {wallet.lastTransaction}</p>
+                  </div>,
+                  <span key="savings" className="block text-right font-semibold text-white">{formatCurrency(wallet.savings)}</span>,
+                  <span key="storeCredit" className="block text-right font-semibold text-[#E2F4DF]">{formatCurrency(wallet.storeCredit)}</span>,
+                  <span key="refundCredit" className="block text-right font-semibold text-amber-200">{formatCurrency(wallet.refundCredit)}</span>,
+                  <span key="total" className="block text-right font-bold text-white">{formatCurrency(wallet.total)}</span>,
+                  <StatusBadge key="status" status={wallet.status} />,
+                  <button key="action" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E2F4DF] transition hover:text-white">
+                    <Eye className="h-4 w-4" /> View
+                  </button>,
+                ],
+              }))}
+            />
           </div>
 
           <aside className="space-y-6">
@@ -176,3 +172,6 @@ export default function CustomerWalletsPage() {
     </PageLayout>
   );
 }
+
+
+

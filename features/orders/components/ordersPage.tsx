@@ -9,7 +9,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 import OrderFilters from "./orderFilters";
-import Pagination from "@/components/common/Pagination";
 import OrderStatsCards from "./orderStatsCards";
 import { OrderStatus } from "@/data/order-options";
 import OrdersTable from "./ordersTable";
@@ -24,8 +23,6 @@ export default function OrdersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
 
   const stats = useMemo(() => {
     const count = (status: OrderStatus) =>
@@ -66,28 +63,6 @@ export default function OrdersPage() {
     });
   }, [orders, searchTerm, statusFilter]);
 
-  const totalPages = Math.ceil(filteredOrders.length / perPage) || 1;
-  const safeCurrentPage = Math.min(currentPage, totalPages);
-  const paginatedOrders = filteredOrders.slice(
-    (safeCurrentPage - 1) * perPage,
-    safeCurrentPage * perPage,
-  );
-
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
-  };
-
-  const handleStatusChange = (value: OrderStatus | "all") => {
-    setStatusFilter(value);
-    setCurrentPage(1);
-  };
-
-  const handlePerPageChange = (value: number) => {
-    setPerPage(value);
-    setCurrentPage(1);
-  };
-
   const handleCancelOrder = async (order: Order) => {
     setCancellingOrderId(order.id);
 
@@ -127,7 +102,6 @@ export default function OrdersPage() {
               onClick={async () => {
                 setSearchTerm("");
                 setStatusFilter("all");
-                setCurrentPage(1);
                 await refetch();
               }}
               className="inline-flex text-black items-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 transition hover:bg-white"
@@ -149,8 +123,8 @@ export default function OrdersPage() {
         <OrderFilters
           searchTerm={searchTerm}
           statusFilter={statusFilter}
-          onSearchChange={handleSearchChange}
-          onStatusChange={handleStatusChange}
+          onSearchChange={setSearchTerm}
+          onStatusChange={setStatusFilter}
         />
         {isError ? (
           <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -158,21 +132,12 @@ export default function OrdersPage() {
           </div>
         ) : null}
         {isLoading ? (
-          <TableSkeleton rows={8} columns={7} />
+          <TableSkeleton rows={8} columns={9} />
         ) : (
           <OrdersTable
-            orders={paginatedOrders}
+            orders={filteredOrders}
             cancellingOrderId={updateOrderStatus.isPending ? cancellingOrderId : null}
             onCancel={handleCancelOrder}
-          />
-        )}
-        {filteredOrders.length > 0 && (
-          <Pagination
-            currentPage={safeCurrentPage}
-            totalItems={filteredOrders.length}
-            perPage={perPage}
-            onPageChange={setCurrentPage}
-            onPerPageChange={handlePerPageChange}
           />
         )}
       </div>

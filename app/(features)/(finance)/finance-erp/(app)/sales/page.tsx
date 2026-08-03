@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { SimpleDataTable } from "@/components/datatables";
 import {
   Banknote,
   Download,
@@ -117,37 +118,34 @@ export default function SalesPage() {
               <h2 className="text-lg font-semibold text-white">Revenue Ledger</h2>
               <p className="text-sm text-[#9CB4CA]">Sales invoices by customer, method, amount, and collection status.</p>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[920px] text-left text-sm">
-                <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
-                  <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
-                    <th className="px-5 py-3">Invoice</th>
-                    <th className="px-5 py-3">Customer</th>
-                    <th className="px-5 py-3">Products</th>
-                    <th className="px-5 py-3">Method</th>
-                    <th className="px-5 py-3 text-right">Amount</th>
-                    <th className="px-5 py-3">Status</th>
-                    <th className="px-5 py-3">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sales.map((sale) => (
-                    <tr key={sale.invoice} className="border-b border-[#42688C]/20 transition-colors last:border-0 hover:bg-[#13203A]">
-                      <td className="px-5 py-4 font-semibold text-white">{sale.invoice}</td>
-                      <td className="px-5 py-4 font-medium text-white">{sale.customer}</td>
-                      <td className="px-5 py-4 text-[#B8CBE0]">{sale.products}</td>
-                      <td className="px-5 py-4">
-                        <p className="font-medium text-white">{sale.method}</p>
-                        <p className="text-xs text-[#9CB4CA]">{sale.channel}</p>
-                      </td>
-                      <td className="px-5 py-4 text-right font-semibold text-white">{formatCurrency(sale.amount)}</td>
-                      <td className="px-5 py-4"><StatusBadge status={sale.status} /></td>
-                      <td className="px-5 py-4 text-[#9CB4CA]">{sale.date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <SimpleDataTable
+              dark
+              minWidth="min-w-[920px]"
+              headers={[
+                "Invoice",
+                "Customer",
+                "Products",
+                "Method",
+                { label: "Amount", className: "text-right" },
+                "Status",
+                "Date",
+              ]}
+              rows={sales.map((sale) => ({
+                id: sale.invoice,
+                cells: [
+                  <span key="invoice" className="font-semibold text-white">{sale.invoice}</span>,
+                  <span key="customer" className="font-medium text-white">{sale.customer}</span>,
+                  <span key="products" className="text-[#B8CBE0]">{sale.products}</span>,
+                  <div key="method">
+                    <p className="font-medium text-white">{sale.method}</p>
+                    <p className="text-xs text-[#9CB4CA]">{sale.channel}</p>
+                  </div>,
+                  <span key="amount" className="block text-right font-semibold text-white">{formatCurrency(sale.amount)}</span>,
+                  <StatusBadge key="status" status={sale.status} />,
+                  <span key="date" className="text-[#9CB4CA]">{sale.date}</span>,
+                ],
+              }))}
+            />
           </div>
 
           <aside className="space-y-6">

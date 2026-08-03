@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -11,6 +10,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { Product, ProductImage, ProductVariant } from "@/types/catalog";
+import ProductImageWithFallback from "./ProductImage";
 import {
   formatCurrency,
   getProductImageSrc,
@@ -176,7 +176,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
                     : `View general product image ${index + 1}`
                 }
               >
-                <Image
+                <ProductImageWithFallback
                   src={image.url}
                   alt={image.alt ?? product.name}
                   fill
@@ -200,7 +200,7 @@ export default function ProductDetailsPage({ product }: { product: Product }) {
 
           <div className="order-1 flex items-center justify-center overflow-visible bg-slate-50 p-4 sm:order-2">
             <div className="relative mx-auto flex w-full max-w-[520px] items-center justify-center">
-              <Image
+              <ProductImageWithFallback
                 src={selectedImage}
                 alt={selectedImageDetail?.alt ?? product.name}
                 width={520}
@@ -394,7 +394,7 @@ function VariantOptionCard({
       aria-label={`Select ${variant.color} ${variant.size}`}
     >
       <div className={`relative mx-auto overflow-hidden rounded-lg bg-slate-100 ${wide ? "h-20 w-20" : "h-16 w-16"}`}>
-        <Image
+        <ProductImageWithFallback
           src={image}
           alt={variant.sku}
           fill

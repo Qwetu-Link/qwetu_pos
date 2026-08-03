@@ -39,6 +39,8 @@ export function TransferModal({
     setError,
   } = useForm<TransferStockFormValues>({
     resolver: zodResolver(transferStockSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: {
       from: LOCATIONS[0],
       to: LOCATIONS[1],
@@ -120,7 +122,7 @@ export function TransferModal({
                   {loc}
                 </option>
               ))}
-              </select>
+            </select>
             {errors.to ? (
               <p className="text-red-500 text-xs mt-1">{errors.to.message}</p>
             ) : null}

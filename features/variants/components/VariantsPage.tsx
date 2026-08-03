@@ -18,7 +18,7 @@ import { useDeleteVariant, useUpdateVariant } from "@/hooks/useVariant";
 import StatCard from "./StatCard";
 import VariantCard from "./VariantCard";
 import Pagination from "@/components/common/Pagination";
-import EditModal from "./EditModal";
+import EditModal from "../../forms/EditModal";
 import DeleteModal from "./DeleteModal";
 
 

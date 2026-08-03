@@ -31,10 +31,17 @@ export function StatsRow({ stats }: { stats: InventoryStats }) {
       color: "text-red-600",
       bg: "bg-red-50",
     },
+    {
+      label: "Incoming",
+      value: stats.incoming,
+      Icon: Truck,
+      color: "text-sky-600",
+      bg: "bg-sky-50",
+    },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
       {cards.map(({ label, value, Icon, color, bg }) => (
         <div
           key={label}

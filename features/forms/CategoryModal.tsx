@@ -74,6 +74,8 @@ export default function CategoryModal({
     setValue,
   } = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: {
       name: category?.name ?? "",
       description: category?.description ?? "",
@@ -180,11 +182,10 @@ export default function CategoryModal({
                   type="button"
                   onClick={() => setValue("icon", value, { shouldValidate: true })}
                   title={label}
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center transition border ${
-                    icon === value
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center transition border ${icon === value
                       ? "bg-emerald-100 border-emerald-400 text-emerald-600"
                       : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-emerald-50 hover:border-emerald-300"
-                  }`}
+                    }`}
                 >
                   <Icon size={16} />
                 </button>

@@ -72,33 +72,35 @@ export default function AddExpenseModal({
     reset,
   } = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
     values: expense
       ? {
-          date: new Date(expense.date).toISOString().slice(0, 10),
-          category: normalizeExpenseCategory(expense.category),
-          vendor: expense.vendor,
-          amount: expense.amount,
-          method: expense.method as ExpenseFormValues["method"],
-          status: expense.status,
-          note: expense.note,
-          items: expense.items.length
-            ? expense.items.map((item) => ({
-                name: item.name,
-                quantity: item.quantity,
-                unitCost: item.unitCost,
-              }))
-            : [{ name: expense.note || expense.category, quantity: 1, unitCost: expense.amount }],
-        }
+        date: new Date(expense.date).toISOString().slice(0, 10),
+        category: normalizeExpenseCategory(expense.category),
+        vendor: expense.vendor,
+        amount: expense.amount,
+        method: expense.method as ExpenseFormValues["method"],
+        status: expense.status,
+        note: expense.note,
+        items: expense.items.length
+          ? expense.items.map((item) => ({
+            name: item.name,
+            quantity: item.quantity,
+            unitCost: item.unitCost,
+          }))
+          : [{ name: expense.note || expense.category, quantity: 1, unitCost: expense.amount }],
+      }
       : {
-          date: new Date().toISOString().slice(0, 10),
-          category: "other",
-          vendor: "",
-          amount: 0,
-          method: "M-Pesa",
-          status: "pending",
-          note: "",
-          items: [{ name: "", quantity: 1, unitCost: 0 }],
-        },
+        date: new Date().toISOString().slice(0, 10),
+        category: "other",
+        vendor: "",
+        amount: 0,
+        method: "M-Pesa",
+        status: "pending",
+        note: "",
+        items: [{ name: "", quantity: 1, unitCost: 0 }],
+      },
   });
   const { append, fields, remove } = useFieldArray({ control, name: "items" });
   const selectedCategory = useWatch({ control, name: "category" });
@@ -210,62 +212,62 @@ export default function AddExpenseModal({
             />
           </label>
           {showExpenseItems ? (
-          <div className="space-y-3 md:col-span-2">
-            <div className="flex items-center justify-between gap-3">
-              <h4 className="font-semibold text-slate-800">Expense Items</h4>
-              <button
-                type="button"
-                onClick={() => append({ name: "", quantity: 1, unitCost: 0 })}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                Add Item
-              </button>
-            </div>
-            {fields.map((field, index) => (
-              <div key={field.id} className="grid gap-3 rounded-lg border border-slate-200 p-3 md:grid-cols-[1fr_100px_140px_40px]">
-                <ExpenseField
-                  label="Item"
-                  placeholder="e.g. Delivery fuel"
-                  error={errors.items?.[index]?.name?.message}
-                  {...register(`items.${index}.name`)}
-                />
-                <ExpenseField
-                  label="Qty"
-                  type="number"
-                  error={errors.items?.[index]?.quantity?.message}
-                  {...register(`items.${index}.quantity`, { valueAsNumber: true })}
-                />
-                <ExpenseField
-                  label="Unit Cost"
-                  type="number"
-                  error={errors.items?.[index]?.unitCost?.message}
-                  {...register(`items.${index}.unitCost`, { valueAsNumber: true })}
-                />
+            <div className="space-y-3 md:col-span-2">
+              <div className="flex items-center justify-between gap-3">
+                <h4 className="font-semibold text-slate-800">Expense Items</h4>
                 <button
                   type="button"
-                  onClick={() => fields.length > 1 && remove(index)}
-                  disabled={fields.length === 1}
-                  className="mt-7 h-10 rounded-lg border border-slate-200 text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
-                  aria-label="Remove expense item"
+                  onClick={() => append({ name: "", quantity: 1, unitCost: 0 })}
+                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
-                  X
+                  Add Item
                 </button>
               </div>
-            ))}
-            <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3">
+              {fields.map((field, index) => (
+                <div key={field.id} className="grid gap-3 rounded-lg border border-slate-200 p-3 md:grid-cols-[1fr_100px_140px_40px]">
+                  <ExpenseField
+                    label="Item"
+                    placeholder="e.g. Delivery fuel"
+                    error={errors.items?.[index]?.name?.message}
+                    {...register(`items.${index}.name`)}
+                  />
+                  <ExpenseField
+                    label="Qty"
+                    type="number"
+                    error={errors.items?.[index]?.quantity?.message}
+                    {...register(`items.${index}.quantity`, { valueAsNumber: true })}
+                  />
+                  <ExpenseField
+                    label="Unit Cost"
+                    type="number"
+                    error={errors.items?.[index]?.unitCost?.message}
+                    {...register(`items.${index}.unitCost`, { valueAsNumber: true })}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fields.length > 1 && remove(index)}
+                    disabled={fields.length === 1}
+                    className="mt-7 h-10 rounded-lg border border-slate-200 text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label="Remove expense item"
+                  >
+                    X
+                  </button>
+                </div>
+              ))}
+              <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3">
+                <span className="text-sm font-bold text-slate-600">Expense Total</span>
+                <span className="text-lg font-extrabold text-slate-950">
+                  Ksh {total.toLocaleString()}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 md:col-span-2">
               <span className="text-sm font-bold text-slate-600">Expense Total</span>
               <span className="text-lg font-extrabold text-slate-950">
                 Ksh {total.toLocaleString()}
               </span>
             </div>
-          </div>
-          ) : (
-          <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 md:col-span-2">
-            <span className="text-sm font-bold text-slate-600">Expense Total</span>
-            <span className="text-lg font-extrabold text-slate-950">
-              Ksh {total.toLocaleString()}
-            </span>
-          </div>
           )}
           <div className="flex flex-wrap items-center justify-end gap-3 pt-2 md:col-span-2">
             <button

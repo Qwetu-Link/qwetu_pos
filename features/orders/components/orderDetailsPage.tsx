@@ -9,12 +9,17 @@ import { z } from "zod";
 import {
   ArrowLeft,
   CalendarDays,
+  CheckCircle2,
+  CircleDashed,
   CreditCard,
   HandCoins,
   MapPin,
   PackageOpen,
+  Route,
+  ShieldCheck,
   PenLine,
   Receipt,
+  Sparkles,
   Truck,
   User,
   X,
@@ -23,6 +28,7 @@ import { formatCurrency, formatDate, getOrderDisplayNumber } from "@/utils/order
 import type { LineItem, Order, OrderStatus } from "@/types/customer";
 import { ORDER_STATUS_CONFIG } from "@/data/customer-config";
 import { useGetOrder, useRecordOrderPayment, useUpdateOrderStatus } from "@/hooks/useOrders";
+import { SimpleDataTable } from "@/components/datatables";
 import StatusBadge from "./statusBadge";
 import { OrderDetailSkeleton } from "@/components/skeletons";
 
@@ -37,6 +43,7 @@ const statusOptions: OrderStatus[] = [
 const terminalStatuses: OrderStatus[] = ["delivered", "cancelled"];
 const autoCancelMessage = "The order will be cancelled automatically after 48hrs if it remains unpaid.";
 const openOrderStatuses = new Set<OrderStatus>(["pending", "processing"]);
+const trackingStatuses: OrderStatus[] = ["pending", "processing", "shipped", "delivered"];
 
 const orderPaymentSchema = z.object({
   amount: z.number().positive("Please enter a valid payment amount"),
@@ -185,6 +192,7 @@ export default function OrderDetailsPage() {
     openOrderStatuses.has(order.status) &&
     order.paymentStatus === "unpaid" &&
     order.amountPaid === 0;
+  const trackingSummary = getTrackingSummary(order);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
@@ -264,6 +272,8 @@ export default function OrderDetailsPage() {
                 <SummaryTile label="Status" value={ORDER_STATUS_CONFIG[order.status].label} />
               </div>
 
+              <PremiumTrackingPanel order={order} tracking={trackingSummary} />
+
               <div className="grid gap-4 lg:grid-cols-2">
                 <InfoCard icon={User} title="Customer">
                   <DetailRow label="Name" value={order.customer} />
@@ -315,31 +325,21 @@ export default function OrderDetailsPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="hidden overflow-x-auto sm:block">
-                      <table className="w-full min-w-[760px] border-collapse text-left text-sm">
-                        <thead>
-                          <tr className="bg-slate-50 text-[10px] font-bold uppercase text-slate-500">
-                            {["Item", "SKU", "Location", "Qty", "Unit Price"].map((heading) => (
-                              <th key={heading} className="px-4 py-3">
-                                {heading}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {order.lineItems.map((item) => (
-                            <tr key={`${item.sku}-${item.name}`} className="border-t border-slate-100">
-                              <td className="px-4 py-3 font-semibold text-slate-900">{item.name}</td>
-                              <td className="px-4 py-3 font-mono text-xs text-slate-500">{item.sku}</td>
-                              <td className="px-4 py-3 text-slate-600">{item.locationName ?? "Not recorded"}</td>
-                              <td className="px-4 py-3 text-slate-600">{item.qty}</td>
-                              <td className="px-4 py-3 text-slate-600">
-                                <PriceDisplay item={item} />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="hidden sm:block">
+                      <SimpleDataTable
+                        minWidth="min-w-[760px]"
+                        headers={["Item", "SKU", "Location", "Qty", "Unit Price"]}
+                        rows={order.lineItems.map((item) => ({
+                          id: `${item.sku}-${item.name}`,
+                          cells: [
+                            <span key="name" className="font-semibold text-slate-900">{item.name}</span>,
+                            <span key="sku" className="font-mono text-xs text-slate-500">{item.sku}</span>,
+                            item.locationName ?? "Not recorded",
+                            item.qty,
+                            <PriceDisplay key="price" item={item} />,
+                          ],
+                        }))}
+                      />
                       <div className="border-t border-slate-200 bg-slate-50 p-4">
                         <div className="ml-auto grid max-w-sm gap-2 rounded-lg border border-slate-200 bg-white p-4">
                           <SummaryAmount label="Subtotal" value={formatCurrency(order.total)} />
@@ -605,6 +605,152 @@ function SummaryTile({
   );
 }
 
+type TrackingSummary = {
+  currentIndex: number;
+  progress: number;
+  headline: string;
+  detail: string;
+  etaLabel: string;
+  etaValue: string;
+  isCancelled: boolean;
+};
+
+function PremiumTrackingPanel({
+  order,
+  tracking,
+}: {
+  order: Order;
+  tracking: TrackingSummary;
+}) {
+  return (
+    <section className="overflow-hidden rounded-lg border border-slate-200 bg-slate-950 text-white shadow-sm">
+      <div className="grid gap-5 p-4 sm:p-5 xl:grid-cols-[1fr_290px]">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1 text-[11px] font-bold uppercase text-emerald-200">
+                <Sparkles className="h-3.5 w-3.5" />
+                Premium Tracking
+              </div>
+              <h3 className="mt-3 text-xl font-extrabold text-white sm:text-2xl">
+                {tracking.headline}
+              </h3>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-300">
+                {tracking.detail}
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm">
+              <p className="text-xs font-semibold uppercase text-slate-400">{tracking.etaLabel}</p>
+              <p className="mt-1 font-bold text-white">{tracking.etaValue}</p>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <div className="h-2 overflow-hidden rounded-full bg-white/10">
+              <div
+                className={`h-full rounded-full transition-all ${tracking.isCancelled ? "bg-red-400" : "bg-emerald-400"}`}
+                style={{ width: `${tracking.progress}%` }}
+              />
+            </div>
+            <div className="mt-5 grid gap-3 md:grid-cols-4">
+              {trackingStatuses.map((status, index) => (
+                <TrackingStep
+                  key={status}
+                  label={ORDER_STATUS_CONFIG[status].label}
+                  date={getTrackingStepDate(order, status)}
+                  state={getTrackingStepState(tracking, index)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid content-start gap-3">
+          <TrackingMetric
+            icon={ShieldCheck}
+            label="Order assurance"
+            value={order.paymentStatus === "paid" ? "Payment cleared" : `${formatCurrency(order.remainingAmount)} balance`}
+            tone={order.paymentStatus === "paid" ? "text-emerald-200" : "text-amber-200"}
+          />
+          <TrackingMetric
+            icon={Route}
+            label="Fulfillment lane"
+            value={order.shippingAddress ? "Address confirmed" : "Awaiting address"}
+            tone={order.shippingAddress ? "text-sky-200" : "text-slate-300"}
+          />
+          <TrackingMetric
+            icon={Truck}
+            label="Delivery mode"
+            value={order.status === "shipped" ? "Courier active" : "Store dispatch"}
+            tone="text-indigo-200"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TrackingStep({
+  label,
+  date,
+  state,
+}: {
+  label: string;
+  date: string;
+  state: "complete" | "active" | "upcoming" | "cancelled";
+}) {
+  const isComplete = state === "complete";
+  const isActive = state === "active";
+  const isCancelled = state === "cancelled";
+  const Icon = isComplete ? CheckCircle2 : CircleDashed;
+
+  return (
+    <div className={`rounded-lg border p-3 ${isActive ? "border-emerald-300/50 bg-emerald-300/10" : "border-white/10 bg-white/5"}`}>
+      <div className="flex items-center gap-2">
+        <span
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+            isCancelled
+              ? "bg-red-400/15 text-red-200"
+              : isComplete
+                ? "bg-emerald-400/15 text-emerald-200"
+                : isActive
+                  ? "bg-amber-300/15 text-amber-200"
+                  : "bg-white/10 text-slate-400"
+          }`}
+        >
+          <Icon className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold text-white">{label}</p>
+          <p className="text-xs text-slate-400">{date}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TrackingMetric({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: typeof User;
+  label: string;
+  value: string;
+  tone: string;
+}) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase text-slate-400">
+        <Icon className="h-4 w-4" />
+        {label}
+      </div>
+      <p className={`mt-2 text-sm font-bold ${tone}`}>{value}</p>
+    </div>
+  );
+}
+
 function InfoCard({
   icon: Icon,
   title,
@@ -734,6 +880,96 @@ function TimelineRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function getTrackingSummary(order: Order): TrackingSummary {
+  if (order.status === "cancelled") {
+    return {
+      currentIndex: 0,
+      progress: 100,
+      headline: "Order cancelled",
+      detail: "This order is closed and no longer moving through fulfillment.",
+      etaLabel: "Resolution",
+      etaValue: "Cancelled",
+      isCancelled: true,
+    };
+  }
+
+  const currentIndex = Math.max(0, trackingStatuses.indexOf(order.status));
+  const progress = Math.round((currentIndex / (trackingStatuses.length - 1)) * 100);
+  const etaDate = getTrackingEta(order);
+
+  const copy: Record<OrderStatus, { headline: string; detail: string; etaLabel: string }> = {
+    pending: {
+      headline: "Order received",
+      detail: "Payment and stock checks are queued before the order moves into packing.",
+      etaLabel: "Processing target",
+    },
+    processing: {
+      headline: "Being prepared",
+      detail: "Items are being picked, verified, and packed for dispatch.",
+      etaLabel: "Dispatch target",
+    },
+    shipped: {
+      headline: "Out for delivery",
+      detail: "The order has left fulfillment and is moving toward the customer.",
+      etaLabel: "Delivery target",
+    },
+    delivered: {
+      headline: "Delivered successfully",
+      detail: "Fulfillment is complete and the order is ready for after-sale follow-up.",
+      etaLabel: "Completed",
+    },
+    cancelled: {
+      headline: "Order cancelled",
+      detail: "This order is closed and no longer moving through fulfillment.",
+      etaLabel: "Resolution",
+    },
+  };
+
+  return {
+    currentIndex,
+    progress,
+    ...copy[order.status],
+    etaValue: order.status === "delivered" ? formatDate(order.createdAt) : formatDate(etaDate),
+    isCancelled: false,
+  };
+}
+
+function getTrackingStepState(
+  tracking: TrackingSummary,
+  index: number,
+): "complete" | "active" | "upcoming" | "cancelled" {
+  if (tracking.isCancelled) return "cancelled";
+  if (index < tracking.currentIndex) return "complete";
+  if (index === tracking.currentIndex) return "active";
+  return "upcoming";
+}
+
+function getTrackingStepDate(order: Order, status: OrderStatus) {
+  const offsets: Record<OrderStatus, number> = {
+    pending: 0,
+    processing: 1,
+    shipped: 2,
+    delivered: 4,
+    cancelled: 0,
+  };
+
+  if (order.status === "cancelled") return "Stopped";
+  if (!trackingStatuses.includes(status)) return "-";
+  return formatDate(addDays(order.createdAt, offsets[status]));
+}
+
+function getTrackingEta(order: Order) {
+  const offsets: Record<OrderStatus, number> = {
+    pending: 1,
+    processing: 2,
+    shipped: 4,
+    delivered: 0,
+    cancelled: 0,
+  };
+
+  return addDays(order.createdAt, offsets[order.status]);
+}
+
 function ModalHeader({ title, onClose }: { title: string; onClose: () => void }) {
   return (
     <div className="flex items-center justify-between gap-4">
@@ -750,6 +986,12 @@ function ModalHeader({ title, onClose }: { title: string; onClose: () => void })
       </button>
     </div>
   );
+}
+
+function addDays(date: string, days: number) {
+  const nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + days);
+  return nextDate.toISOString();
 }
 
 function addMonths(date: string, months: number) {

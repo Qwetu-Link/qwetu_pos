@@ -2,7 +2,6 @@ import { pgTable, varchar, timestamp, uuid, integer, boolean } from "drizzle-orm
 import { categoryTable } from "./category";
 import { relations } from "drizzle-orm";
 import { businessTable } from "./business";
-import { variantsTable } from "./variants";
 
 
 export const productImages = pgTable("product_images", {
@@ -17,9 +16,7 @@ export const productImages = pgTable("product_images", {
         .references(() => productsTable.id, {
             onDelete: "cascade",
         }),
-    variantId: uuid("variant_id").references(() => variantsTable.id, {
-        onDelete: "set null",
-    }),
+    variantId: uuid("variant_id"),
 
     // Storage paths
     originalPath: varchar("original_path", {
@@ -68,10 +65,6 @@ export const productImageRelations = relations(
         product: one(productsTable, {
             fields: [productImages.productId],
             references: [productsTable.id],
-        }),
-        variant: one(variantsTable, {
-            fields: [productImages.variantId],
-            references: [variantsTable.id],
         }),
     })
 );

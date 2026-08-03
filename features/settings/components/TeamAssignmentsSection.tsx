@@ -1,5 +1,6 @@
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import type { BusinessRole, TeamUser } from "@/types/settings";
+import { SimpleDataTable } from "@/components/datatables";
 import SectionCard from "./SectionCard";
 
 export default function TeamAssignmentsSection({
@@ -42,66 +43,54 @@ export default function TeamAssignmentsSection({
           Add User
         </button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[680px] text-left text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
-              <th className="py-3">User</th>
-              <th className="py-3">Email</th>
-              <th className="py-3">Role</th>
-              <th className="py-3">Status</th>
-              <th className="py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr
-                key={user.id}
-                className="border-b border-slate-100 last:border-0"
+      <SimpleDataTable
+        minWidth="min-w-[680px]"
+        headers={[
+          "User",
+          "Email",
+          "Role",
+          "Status",
+          { label: "Actions", className: "text-right" },
+        ]}
+        rows={users.map((user) => ({
+          id: user.id,
+          cells: [
+            <span key="name" className="font-medium text-slate-900">{user.name}</span>,
+            user.email,
+            <span key="role" className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+              {roleLabels.get(user.role) ?? user.role}
+            </span>,
+            <span
+              key="status"
+              className={`rounded-full px-3 py-1 text-xs font-medium ${
+                user.status === "Active"
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "bg-amber-50 text-amber-700"
+              }`}
+            >
+              {user.status}
+            </span>,
+            <div key="actions" className="inline-flex w-full items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => onEditUser(user)}
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
               >
-                <td className="py-4 font-medium text-slate-900">{user.name}</td>
-                <td className="py-4 text-slate-500">{user.email}</td>
-                <td className="py-4">
-                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-                    {roleLabels.get(user.role) ?? user.role}
-                  </span>
-                </td>
-                <td className="py-4">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      user.status === "Active"
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-amber-50 text-amber-700"
-                    }`}
-                  >
-                    {user.status}
-                  </span>
-                </td>
-                <td className="py-4 text-right">
-                  <div className="inline-flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onEditUser(user)}
-                      className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDeleteUser(user)}
-                      className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                <Pencil className="h-3.5 w-3.5" />
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={() => onDeleteUser(user)}
+                className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Delete
+              </button>
+            </div>,
+          ],
+        }))}
+      />
     </SectionCard>
   );
 }

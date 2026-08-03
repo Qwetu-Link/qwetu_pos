@@ -1,5 +1,6 @@
 import Link from "next/link";
 import EmptyState from "@/components/common/EmptyState";
+import { SimpleDataTable } from "@/components/datatables";
 import { CreditCard, Eye, Package, ReceiptText, ShoppingBag } from "lucide-react";
 import type { Order } from "@/types/customer";
 import StatusBadge from "@/features/orders/components/statusBadge";
@@ -22,69 +23,50 @@ export function OrdersTable({ orders }: OrdersTableProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px] text-sm">
-          <thead className="border-b border-slate-200 bg-slate-50">
-            <tr>
-              <th className="px-5 py-3 text-left font-semibold text-slate-600">Order</th>
-              <th className="px-5 py-3 text-left font-semibold text-slate-600">Date</th>
-              <th className="px-5 py-3 text-left font-semibold text-slate-600">Items</th>
-              <th className="px-5 py-3 text-left font-semibold text-slate-600">Total</th>
-              <th className="px-5 py-3 text-left font-semibold text-slate-600">Payment</th>
-              <th className="px-5 py-3 text-left font-semibold text-slate-600">Balance</th>
-              <th className="px-5 py-3 text-left font-semibold text-slate-600">Status</th>
-              <th className="px-5 py-3 text-right font-semibold text-slate-600">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {orders.map((order) => (
-              <tr key={order.id} className="transition hover:bg-slate-50">
-                <td className="px-5 py-3">
-                  <Link
-                    href={`/admin/orders/${order.id}`}
-                    className="inline-flex items-center gap-2 font-medium text-slate-800 hover:text-emerald-700"
-                  >
-                    <ReceiptText className="h-4 w-4 text-emerald-600" />
-                    <span className="font-mono text-xs">{getOrderDisplayNumber(order)}</span>
-                  </Link>
-                </td>
-                <td className="px-5 py-3 whitespace-nowrap text-slate-500">
-                  {formatDate(order.createdAt)}
-                </td>
-                <td className="px-5 py-3">
-                  <span className="inline-flex items-center gap-1.5 text-slate-600">
-                    <Package className="h-4 w-4 text-slate-400" />
-                    {order.items}
-                  </span>
-                </td>
-                <td className="px-5 py-3 font-semibold text-emerald-700">
-                  {formatCurrency(order.total)}
-                </td>
-                <td className="px-5 py-3">
-                  <PaymentCell order={order} />
-                </td>
-                <td className="px-5 py-3">
-                  <BalanceCell order={order} />
-                </td>
-                <td className="px-5 py-3">
-                  <StatusBadge status={order.status} />
-                </td>
-                <td className="px-5 py-3 text-right">
-                  <Link
-                    href={`/admin/orders/${order.id}`}
-                    className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-black transition hover:bg-emerald-50"
-                  >
-                    <Eye className="h-4 w-4" />
-                    View
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <SimpleDataTable
+      minWidth="min-w-[980px]"
+      headers={[
+        "Order",
+        "Date",
+        "Items",
+        "Total",
+        "Payment",
+        "Balance",
+        "Status",
+        { label: "Action", className: "text-right" },
+      ]}
+      rows={orders.map((order) => ({
+        id: order.id,
+        cells: [
+          <Link
+            key="order"
+            href={`/admin/orders/${order.id}`}
+            className="inline-flex items-center gap-2 font-medium text-slate-800 hover:text-emerald-700"
+          >
+            <ReceiptText className="h-4 w-4 text-emerald-600" />
+            <span className="font-mono text-xs">{getOrderDisplayNumber(order)}</span>
+          </Link>,
+          <span key="date" className="whitespace-nowrap">{formatDate(order.createdAt)}</span>,
+          <span key="items" className="inline-flex items-center gap-1.5 text-slate-600">
+            <Package className="h-4 w-4 text-slate-400" />
+            {order.items}
+          </span>,
+          <span key="total" className="font-semibold text-emerald-700">{formatCurrency(order.total)}</span>,
+          <PaymentCell key="payment" order={order} />,
+          <BalanceCell key="balance" order={order} />,
+          <StatusBadge key="status" status={order.status} />,
+          <div key="action" className="flex justify-end">
+            <Link
+              href={`/admin/orders/${order.id}`}
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-black transition hover:bg-emerald-50"
+            >
+              <Eye className="h-4 w-4" />
+              View
+            </Link>
+          </div>,
+        ],
+      }))}
+    />
   );
 }
 

@@ -1,4 +1,4 @@
-import { MapPin, Package, ArrowLeftRight, SlidersHorizontal } from "lucide-react";
+import { MapPin, Package, ArrowLeftRight, SlidersHorizontal, ShoppingCart } from "lucide-react";
 import type { InventoryItem } from "@/types/inventory";
 import { StatusBadge } from "./StatusBadge";
 
@@ -6,12 +6,15 @@ interface InventoryCardProps {
   item: InventoryItem;
   onAdjust: (item: InventoryItem) => void;
   onTransfer: (item: InventoryItem) => void;
+  onGeneratePO: (item: InventoryItem) => void;
 }
 
-export function InventoryCard({ item, onAdjust, onTransfer }: InventoryCardProps) {
+export function InventoryCard({ item, onAdjust, onTransfer, onGeneratePO }: InventoryCardProps) {
   const lastRestocked = item.inventory.lastRestocked
     ? new Date(item.inventory.lastRestocked).toLocaleDateString()
     : "N/A";
+  const canGeneratePo = ["low", "critical", "reorder"].includes(item.inventory.status);
+  const hasIncomingStock = item.inventory.status === "incoming";
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all">
@@ -93,6 +96,21 @@ export function InventoryCard({ item, onAdjust, onTransfer }: InventoryCardProps
           <div className="text-xs text-slate-400 text-center bg-slate-50 py-1.5 rounded-lg">
             Last restocked: {lastRestocked}
           </div>
+
+          {hasIncomingStock ? (
+            <div className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-center text-xs font-semibold text-sky-700">
+              Pending incoming stock
+            </div>
+          ) : null}
+
+          {canGeneratePo ? (
+            <button
+              onClick={() => onGeneratePO(item)}
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-amber-500 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
+            >
+              <ShoppingCart size={14} /> Generate PO
+            </button>
+          ) : null}
 
           <div className="flex gap-2">
             <button

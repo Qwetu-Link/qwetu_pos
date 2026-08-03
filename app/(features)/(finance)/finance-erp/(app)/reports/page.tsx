@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { SimpleDataTable } from "@/components/datatables";
 import { PageLayout } from "@/features/finance/components/page-layout";
 import {
   ArrowLeftRight,
@@ -145,53 +146,42 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[920px] text-left text-sm">
-              <thead className="border-b border-[#42688C]/30 bg-[#13203A]">
-                <tr className="text-xs uppercase tracking-wide text-[#9CB4CA]">
-                  <th className="px-5 py-3">Report ID</th>
-                  <th className="px-5 py-3">Name</th>
-                  <th className="px-5 py-3">Type</th>
-                  <th className="px-5 py-3">Generated</th>
-                  <th className="px-5 py-3">Size</th>
-                  <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLibrary.map((report) => (
-                  <tr key={report.id} className="border-b border-[#42688C]/20 transition-colors last:border-0 hover:bg-[#13203A]">
-                    <td className="px-5 py-4 text-xs font-medium text-[#9CB4CA]">{report.id}</td>
-                    <td className="px-5 py-4 font-semibold text-white">{report.name}</td>
-                    <td className="px-5 py-4 text-[#B8CBE0]">{report.type}</td>
-                    <td className="px-5 py-4 text-[#9CB4CA]">{report.generated}</td>
-                    <td className="px-5 py-4 text-[#9CB4CA]">{report.size}</td>
-                    <td className="px-5 py-4"><StatusBadge status={report.status} /></td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center justify-center gap-3">
-                        <button title="View Preview" className="text-[#9CB4CA] transition-colors hover:text-[#E2F4DF]">
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button title="Download Package" className="text-[#9CB4CA] transition-colors hover:text-[#E2F4DF]">
-                          <Download className="h-4 w-4" />
-                        </button>
-                        <button title="Print Physical Copy" className="text-[#9CB4CA] transition-colors hover:text-[#E2F4DF]">
-                          <Printer className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {filteredLibrary.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-5 py-8 text-center text-sm text-[#9CB4CA]">
-                      No report logs found matching the selected type filter.
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
+          <SimpleDataTable
+            dark
+            minWidth="min-w-[920px]"
+            emptyMessage="No report logs found matching the selected type filter."
+            headers={[
+              "Report ID",
+              "Name",
+              "Type",
+              "Generated",
+              "Size",
+              "Status",
+              { label: "Actions", className: "text-center" },
+            ]}
+            rows={filteredLibrary.map((report) => ({
+              id: report.id,
+              cells: [
+                <span key="id" className="text-xs font-medium text-[#9CB4CA]">{report.id}</span>,
+                <span key="name" className="font-semibold text-white">{report.name}</span>,
+                <span key="type" className="text-[#B8CBE0]">{report.type}</span>,
+                <span key="generated" className="text-[#9CB4CA]">{report.generated}</span>,
+                <span key="size" className="text-[#9CB4CA]">{report.size}</span>,
+                <StatusBadge key="status" status={report.status} />,
+                <div key="actions" className="flex items-center justify-center gap-3">
+                  <button title="View Preview" className="text-[#9CB4CA] transition-colors hover:text-[#E2F4DF]">
+                    <Eye className="h-4 w-4" />
+                  </button>
+                  <button title="Download Package" className="text-[#9CB4CA] transition-colors hover:text-[#E2F4DF]">
+                    <Download className="h-4 w-4" />
+                  </button>
+                  <button title="Print Physical Copy" className="text-[#9CB4CA] transition-colors hover:text-[#E2F4DF]">
+                    <Printer className="h-4 w-4" />
+                  </button>
+                </div>,
+              ],
+            }))}
+          />
 
           <div className="flex items-center justify-between border-t border-[#42688C]/30 bg-[#1A2846]/70 px-5 py-3 text-xs text-[#9CB4CA]">
             <span>Updated from Qwetu POS sales, expenses, payroll, and branch records</span>
@@ -202,3 +192,6 @@ export default function ReportsPage() {
     </PageLayout>
   );
 }
+
+
+

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useCreateRole, useDeleteRole, useGetRoles } from "@/hooks/useSettingsAccess";
 import { useUpdateRole } from "@/hooks/useSettingsAccess";
 import type { BusinessRole } from "@/types/settings";
-import AddRoleModal, { type AddRoleFormValues } from "./AddRoleModal";
+import AddRoleModal, { type AddRoleFormValues } from "../../forms/AddRoleModal";
 import RolesPermissionsSection from "./RolesPermissionsSection";
 import { AccessManagementSkeleton } from "@/components/skeletons";
 
