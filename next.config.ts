@@ -1,4 +1,21 @@
 import type { NextConfig } from "next";
+import withSerwistInit from "@serwist/next";
+import { spawnSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
+
+const revision =
+  spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout.trim() ||
+  randomUUID();
+
+const withSerwist = withSerwistInit({
+  swSrc: "app/sw.ts",
+  swDest: "public/sw.js",
+  additionalPrecacheEntries: [{ url: "/~offline", revision }],
+  cacheOnNavigation: true,
+  reloadOnOnline: true,
+  disable: process.env.NODE_ENV === "development", // disable pwa on development environment
+  globPublicPatterns: ["favicon.ico", "pwa/*.{png,svg}"],
+});
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -14,7 +31,47 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  allowedDevOrigins: ['192.168.18.3'],
+  allowedDevOrigins: ['192.168.18.3', '192.168.0.39'],
+  // # service worker extra security headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+        ],
+      },
+      {
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self'",
+          },
+        ],
+      },
+    ]
+  },
+  reactStrictMode: true,
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);
