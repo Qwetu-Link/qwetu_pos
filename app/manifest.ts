@@ -6,9 +6,11 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "QwetuLinks",
     description:
       "Manage apparel inventory, orders, customers, and Lipa Mdogo collections for QwetuLinks.",
+    id: "/",
     start_url: "/",
     scope: "/",
     display: "standalone",
+    display_override: ["standalone", "minimal-ui"],
     background_color: "#ffffff",
     theme_color: "#ffffff",
     orientation: "portrait-primary",

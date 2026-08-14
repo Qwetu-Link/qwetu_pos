@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "sonner";
 import RegisterSW from "@/components/pwa/register-sw";
 import OfflineSyncProvider from "@/components/pwa/offline-sync-provider";
+import AndroidInstallPrompt from "@/components/pwa/android-install-prompt";
 
 const defaultUrl = "https://qwetu-links.vercel.app";
 
@@ -246,6 +247,7 @@ export default function RootLayout({
             <SessionProvider>
               <RegisterSW />
               <OfflineSyncProvider />
+              <AndroidInstallPrompt />
               {children}</SessionProvider>
             <Toaster position="top-right" richColors closeButton />
           </ThemeProvider>
@@ -255,6 +257,5 @@ export default function RootLayout({
     </html>
   );
 }
-
 
 
