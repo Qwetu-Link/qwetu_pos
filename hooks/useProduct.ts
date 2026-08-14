@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
+import { useOfflineMutation } from "./useOfflineMutation";
 
 export const useGetProducts = () => {
     const trpc = useTRPC();
@@ -50,13 +51,14 @@ export const useCreateProduct = () => {
     const trpc = useTRPC();
     const queryClient = useQueryClient();
 
-    return useMutation(
+    return useOfflineMutation(
         trpc.products.addProduct.mutationOptions({
             onSuccess: async () => {
                 await queryClient.invalidateQueries(trpc.products.pathFilter());
                 await queryClient.invalidateQueries(trpc.variants.pathFilter());
             },
         }),
+        { procedure: "products.addProduct", label: "Create product" },
     );
 };
 
@@ -64,12 +66,13 @@ export const useUpdateProduct = () => {
     const trpc = useTRPC();
     const queryClient = useQueryClient();
 
-    return useMutation(
+    return useOfflineMutation(
         trpc.products.editProduct.mutationOptions({
             onSuccess: async () => {
                 await queryClient.invalidateQueries(trpc.products.pathFilter());
             },
         }),
+        { procedure: "products.editProduct", label: "Update product" },
     );
 };
 
@@ -129,12 +132,13 @@ export const useDeleteProduct = () => {
     const trpc = useTRPC();
     const queryClient = useQueryClient();
 
-    return useMutation(
+    return useOfflineMutation(
         trpc.products.removeProduct.mutationOptions({
             onSuccess: async () => {
                 await queryClient.invalidateQueries(trpc.products.pathFilter());
                 await queryClient.invalidateQueries(trpc.variants.pathFilter());
             },
         }),
+        { procedure: "products.removeProduct", label: "Delete product" },
     );
 };

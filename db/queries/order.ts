@@ -5,6 +5,7 @@ import { orderItemTable, orderTable } from "@/db/schema/orders";
 import { paymentTable, transactionTable } from "@/db/schema/payments";
 import { productsTable } from "@/db/schema/products";
 import { locationTable, variantInventoryTable, variantsTable } from "@/db/schema/variants";
+import { sendBusinessNotification } from "@/lib/notifications/send-business-notification";
 import type {
     LineItem,
     Order,
@@ -394,6 +395,12 @@ async function deductInventoryRows(
     client: DbClient,
     inventoryRows: Awaited<ReturnType<typeof getOrderItemInventoryRows>>,
 ) {
+    const alerts: Array<{
+        productName: string;
+        variantName: string;
+        stock: number;
+    }> = [];
+
     for (const { item, row } of inventoryRows) {
         const nextStock = row.totalStock - item.qty;
 
@@ -404,7 +411,17 @@ async function deductInventoryRows(
                 status: getInventoryStatus(nextStock, row.reorderPoint),
             })
             .where(eq(variantInventoryTable.id, row.inventoryId));
+
+        if (nextStock <= row.reorderPoint && nextStock < row.totalStock) {
+            alerts.push({
+                productName: item.name,
+                variantName: item.sku,
+                stock: nextStock,
+            });
+        }
     }
+
+    return alerts;
 }
 
 async function restoreOrderInventoryRows(
@@ -649,7 +666,7 @@ export async function getOrderByIdQuery(data: {
 }
 
 export async function createOrderQuery(data: OrderWriteInput) {
-    await ensureCustomerBelongsToBusiness(data.customerId, data.businessId);
+    const customer = await ensureCustomerBelongsToBusiness(data.customerId, data.businessId);
     await ensureLineItemsBelongToBusiness(data.lineItems, data.businessId);
 
     const total = getOrderTotal(data.lineItems);
@@ -662,7 +679,7 @@ export async function createOrderQuery(data: OrderWriteInput) {
     const orderId = crypto.randomUUID();
     const createdAt = new Date();
 
-    const [createdOrder] = await db.transaction(async (tx) => {
+    const createdOrder = await db.transaction(async (tx) => {
         const inventoryRows = await getOrderItemInventoryRows(
             tx,
             data.lineItems,
@@ -753,13 +770,26 @@ export async function createOrderQuery(data: OrderWriteInput) {
             });
         }
 
-        await deductInventoryRows(tx, inventoryRows);
+        const lowStockAlerts = await deductInventoryRows(tx, inventoryRows);
 
-        return [order];
+        return [order, lowStockAlerts] as const;
     });
 
+    const [createdOrderRecord, lowStockAlerts] = createdOrder;
+
     await recomputeCustomerOrderStats(data.customerId, data.businessId);
-    return getOrderByIdQuery({ id: createdOrder.id, businessId: data.businessId });
+
+    await sendBusinessNotification("order_created", {
+        orderNo: createdOrderRecord.orderNo ?? undefined,
+        customerName: customer.name,
+        amount: createdOrderRecord.total,
+    });
+
+    for (const alert of lowStockAlerts) {
+        await sendBusinessNotification("low_stock_alert", alert);
+    }
+
+    return getOrderByIdQuery({ id: createdOrderRecord.id, businessId: data.businessId });
 }
 
 export async function updateOrderQuery(data: OrderWriteInput & { id: string }) {
@@ -878,6 +908,8 @@ export async function updateOrderQuery(data: OrderWriteInput & { id: string }) {
 export async function recordOrderPaymentQuery(data: RecordOrderPaymentInput) {
     await autoCancelUnpaidOpenOrders(data.businessId);
 
+    let paymentAmount = 0;
+
     const [updatedOrder] = await db.transaction(async (tx) => {
         const [invoice] = await tx
             .select()
@@ -907,6 +939,8 @@ export async function recordOrderPaymentQuery(data: RecordOrderPaymentInput) {
         if (amount <= 0) {
             throw new Error("This invoice has no remaining balance.");
         }
+
+        paymentAmount = amount;
 
         const nextPaid = Math.min(order.total, order.depositPaid + amount);
         const nextBalance = Math.max(0, invoice.total - nextPaid);
@@ -975,6 +1009,12 @@ export async function recordOrderPaymentQuery(data: RecordOrderPaymentInput) {
     if (!updatedOrder) return undefined;
 
     await recomputeCustomerOrderStats(updatedOrder.customerId, data.businessId);
+
+    await sendBusinessNotification("order_paid", {
+        orderNo: updatedOrder.orderNo ?? undefined,
+        amount: paymentAmount,
+    });
+
     return getOrderByIdQuery({ id: updatedOrder.id, businessId: data.businessId });
 }
 
@@ -1023,7 +1063,16 @@ export async function updateOrderStatusQuery(data: {
             .returning();
     });
 
-    return order ? getOrderByIdQuery({ id: order.id, businessId: data.businessId }) : undefined;
+    const updatedOrder = order ? await getOrderByIdQuery({ id: order.id, businessId: data.businessId }) : undefined;
+
+    if (updatedOrder) {
+        await sendBusinessNotification("order_status_updated", {
+            orderNo: updatedOrder.orderNumber,
+            status: updatedOrder.status,
+        });
+    }
+
+    return updatedOrder;
 }
 
 export async function deleteOrderQuery(data: {

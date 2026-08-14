@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
+import { useOfflineMutation } from "./useOfflineMutation";
 import type { Customer, CustomerFormData, Order, OrderFormData, LineItem } from "../types/customer";
 import {
   filterCustomers, computeOrderTotal,
@@ -44,28 +45,31 @@ export function useCustomers() {
     setCurrentPage(Math.min(Math.max(1, page), totalPages));
   }, [totalPages]);
 
-  const createCustomerMutation = useMutation(
+  const createCustomerMutation = useOfflineMutation(
     trpc.customers.addCustomer.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(trpc.customers.pathFilter());
       },
-    })
+    }),
+    { procedure: "customers.addCustomer", label: "Create customer" },
   );
 
-  const updateCustomerMutation = useMutation(
+  const updateCustomerMutation = useOfflineMutation(
     trpc.customers.editCustomer.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(trpc.customers.pathFilter());
       },
-    })
+    }),
+    { procedure: "customers.editCustomer", label: "Update customer" },
   );
 
-  const deleteCustomerMutation = useMutation(
+  const deleteCustomerMutation = useOfflineMutation(
     trpc.customers.removeCustomer.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(trpc.customers.pathFilter());
       },
-    })
+    }),
+    { procedure: "customers.removeCustomer", label: "Delete customer" },
   );
 
   const addCustomer = useCallback(async (data: CustomerFormData) => {

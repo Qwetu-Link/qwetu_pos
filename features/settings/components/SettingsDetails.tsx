@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, CreditCard, Settings, ShieldCheck, UserCircle, UserCog, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { teamUsers } from "@/utils/pos-details-data";
+import { PushNotificationManager } from "@/hooks/usePushNotifications";
 import BillingSection from "./BillingSection";
 
 export default function SettingsDetails() {
@@ -46,6 +47,7 @@ export default function SettingsDetails() {
         </div>
 
         <BillingSection isActive={isBillingActive} />
+        <PushNotificationManager />
         <AccessManagementLinks teamCount={users.length} />
     </div>
   );

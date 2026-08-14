@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import type { InventoryItem, StockAdjustmentReason } from "@/types/inventory";
 import { DEMO_INVENTORY, filterItems, recalcTotalStock } from "@/utils/inventory-utils";
+import { useOfflineMutation } from "./useOfflineMutation";
 
 function getInitialItems(sourceItems?: InventoryItem[]): InventoryItem[] {
   const items = sourceItems ?? DEMO_INVENTORY;
@@ -44,39 +45,43 @@ export function useInventory(sourceItems?: InventoryItem[]) {
     setCurrentPage(1);
   }, []);
 
-  const adjustStockMutation = useMutation(
+  const adjustStockMutation = useOfflineMutation(
     trpc.inventory.adjustStock.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(trpc.products.pathFilter());
         await queryClient.invalidateQueries(trpc.inventory.pathFilter());
       },
-    })
+    }),
+    { procedure: "inventory.adjustStock", label: "Adjust stock" },
   );
 
-  const transferStockMutation = useMutation(
+  const transferStockMutation = useOfflineMutation(
     trpc.inventory.transferStock.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(trpc.products.pathFilter());
       },
-    })
+    }),
+    { procedure: "inventory.transferStock", label: "Transfer stock" },
   );
 
-  const createPurchaseOrderMutation = useMutation(
+  const createPurchaseOrderMutation = useOfflineMutation(
     trpc.inventory.createPurchaseOrder.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(trpc.products.pathFilter());
         await queryClient.invalidateQueries(trpc.inventory.pathFilter());
       },
-    })
+    }),
+    { procedure: "inventory.createPurchaseOrder", label: "Create purchase order" },
   );
 
-  const receivePurchaseOrderMutation = useMutation(
+  const receivePurchaseOrderMutation = useOfflineMutation(
     trpc.inventory.receivePurchaseOrder.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(trpc.products.pathFilter());
         await queryClient.invalidateQueries(trpc.inventory.pathFilter());
       },
-    })
+    }),
+    { procedure: "inventory.receivePurchaseOrder", label: "Receive purchase order" },
   );
 
   const adjustStock = useCallback(

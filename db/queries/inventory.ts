@@ -10,6 +10,7 @@ import {
     variantInventoryTable,
     variantsTable,
 } from "@/db/schema/variants";
+import { sendBusinessNotification } from "@/lib/notifications/send-business-notification";
 import {
     buildVariantInventory,
     DEFAULT_STOCK_LOCATIONS,
@@ -205,6 +206,23 @@ export async function adjustVariantInventoryQuery(data: {
                 notes: data.notes || null,
                 adjustedBy: data.adjustedBy ?? null,
             });
+
+        if (data.quantity < 0 && nextQuantity <= inventoryRow.reorderPoint) {
+            const [variantDetails] = await tx
+                .select({
+                    productName: productsTable.name,
+                    variantName: sql<string>`concat(${variantsTable.color}, ' / ', ${variantsTable.size})`,
+                })
+                .from(variantsTable)
+                .innerJoin(productsTable, eq(productsTable.id, variantsTable.productId))
+                .where(eq(variantsTable.id, data.variantId));
+
+            await sendBusinessNotification("low_stock_alert", {
+                productName: variantDetails?.productName ?? "Inventory item",
+                variantName: variantDetails?.variantName ?? "variant",
+                stock: nextQuantity,
+            });
+        }
 
         return updated;
     });

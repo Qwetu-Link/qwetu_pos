@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
+import { useOfflineMutation } from "./useOfflineMutation";
 
 export const useGetCategories = () => {
   const trpc = useTRPC();
@@ -34,12 +35,13 @@ export const useCreateCategory = () => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  return useMutation(
+  return useOfflineMutation(
     trpc.categories.addCategory.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(trpc.categories.pathFilter());
       },
     }),
+    { procedure: "categories.addCategory", label: "Create category" },
   );
 };
 
@@ -47,12 +49,13 @@ export const useUpdateCategory = () => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  return useMutation(
+  return useOfflineMutation(
     trpc.categories.editCategory.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(trpc.categories.pathFilter());
       },
     }),
+    { procedure: "categories.editCategory", label: "Update category" },
   );
 };
 
@@ -60,12 +63,12 @@ export const useDeleteCategory = () => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  return useMutation(
+  return useOfflineMutation(
     trpc.categories.removeCategory.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(trpc.categories.pathFilter());
       },
     }),
+    { procedure: "categories.removeCategory", label: "Delete category" },
   );
 };
-
