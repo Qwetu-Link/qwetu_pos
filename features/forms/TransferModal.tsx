@@ -11,7 +11,7 @@ interface TransferModalProps {
   item: InventoryItem;
   isTransferring?: boolean;
   onClose: () => void;
-  onConfirm: (variantId: string, from: string, to: string, qty: number) => Promise<boolean>;
+  onConfirm: (variantId: string, from: string, to: string, qty: number) => Promise<void>;
 }
 
 const transferStockSchema = z.object({
@@ -24,6 +24,11 @@ const transferStockSchema = z.object({
 });
 
 type TransferStockFormValues = z.infer<typeof transferStockSchema>;
+type LocationName = (typeof LOCATIONS)[number];
+
+function isLocationName(value: string): value is LocationName {
+  return LOCATIONS.some((location) => location === value);
+}
 
 export function TransferModal({
   item,
@@ -31,6 +36,13 @@ export function TransferModal({
   onClose,
   onConfirm,
 }: TransferModalProps) {
+  const stockedLocation = item.inventory.locations.find(
+    (location) => location.stock > 0 && isLocationName(location.name),
+  )?.name;
+  const sourceLocation: LocationName =
+    stockedLocation && isLocationName(stockedLocation) ? stockedLocation : LOCATIONS[0];
+  const destinationLocation =
+    LOCATIONS.find((location) => location !== sourceLocation) ?? LOCATIONS[1];
   const {
     control,
     formState: { errors },
@@ -42,8 +54,8 @@ export function TransferModal({
     mode: "onBlur",
     reValidateMode: "onChange",
     defaultValues: {
-      from: LOCATIONS[0],
-      to: LOCATIONS[1],
+      from: sourceLocation,
+      to: destinationLocation,
       qty: 1,
     },
   });
@@ -53,15 +65,24 @@ export function TransferModal({
     item.inventory.locations.find((l) => l.name === from)?.stock ?? 0;
 
   async function handleConfirm(values: TransferStockFormValues) {
-    const success = await onConfirm(item.variantId, values.from, values.to, values.qty);
-    if (!success) {
+    if (fromLocationStock < values.qty) {
       setError("qty", {
         message: `Insufficient stock at ${values.from}. Available: ${fromLocationStock}`,
       });
       return;
     }
 
-    onClose();
+    try {
+      await onConfirm(item.variantId, values.from, values.to, values.qty);
+      onClose();
+    } catch (error) {
+      setError("root", {
+        message:
+          error instanceof Error
+            ? error.message
+            : "Could not transfer stock. Please try again.",
+      });
+    }
   }
 
   return (
@@ -140,6 +161,9 @@ export function TransferModal({
               className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-black placeholder:text-gray-500"
             />
             {errors.qty && <p className="text-red-500 text-xs mt-1">{errors.qty.message}</p>}
+            {errors.root ? (
+              <p className="text-red-500 text-xs mt-2">{errors.root.message}</p>
+            ) : null}
           </div>
 
           <div className="flex gap-3 pt-1">

@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { categoryTable } from "@/db/schema/category";
+import { productsTable } from "@/db/schema/products";
 import { and, desc, eq, sql } from "drizzle-orm";
 
 export const getCategoriesQuery = async (businessId: string) => {
@@ -8,10 +9,25 @@ export const getCategoriesQuery = async (businessId: string) => {
             id: categoryTable.id,
             name: categoryTable.name,
             description: categoryTable.description,
-            icon: sql<string | null>`null`,
+            icon: categoryTable.icon,
+            productCount: sql<number>`count(${productsTable.id})::int`,
         })
         .from(categoryTable)
+        .leftJoin(
+            productsTable,
+            and(
+                eq(productsTable.categoryId, categoryTable.id),
+                eq(productsTable.businessId, businessId),
+            ),
+        )
         .where(eq(categoryTable.businessId, businessId))
+        .groupBy(
+            categoryTable.id,
+            categoryTable.name,
+            categoryTable.description,
+            categoryTable.icon,
+            categoryTable.createdAt,
+        )
         .orderBy(desc(categoryTable.createdAt))
 };
 
@@ -24,13 +40,27 @@ export const getCategoryByIdQuery = async (data: {
             id: categoryTable.id,
             name: categoryTable.name,
             description: categoryTable.description,
-            icon: sql<string | null>`null`,
+            icon: categoryTable.icon,
+            productCount: sql<number>`count(${productsTable.id})::int`,
         })
         .from(categoryTable)
+        .leftJoin(
+            productsTable,
+            and(
+                eq(productsTable.categoryId, categoryTable.id),
+                eq(productsTable.businessId, data.businessId),
+            ),
+        )
         .where(and(
             eq(categoryTable.id, data.id),
             eq(categoryTable.businessId, data.businessId),
-        ));
+        ))
+        .groupBy(
+            categoryTable.id,
+            categoryTable.name,
+            categoryTable.description,
+            categoryTable.icon,
+        );
 
     return category;
 };

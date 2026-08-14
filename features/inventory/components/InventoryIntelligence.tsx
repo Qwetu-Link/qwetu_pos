@@ -331,14 +331,17 @@ export function InventoryIntelligence() {
           isTransferring={isTransferring}
           onClose={() => setTransferItem(null)}
           onConfirm={async (variantId, from, to, qty) => {
+            setActionError("");
             try {
-              const success = await transferStock(variantId, from, to, qty);
-              if (success) {
-                setTransferItem(null);
-              }
-              return success;
-            } catch {
-              return false;
+              await transferStock(variantId, from, to, qty);
+              setTransferItem(null);
+            } catch (error) {
+              const message =
+                error instanceof Error
+                  ? error.message
+                  : "Could not transfer stock.";
+              setActionError(message);
+              throw new Error(message);
             }
           }}
         />
@@ -346,4 +349,3 @@ export function InventoryIntelligence() {
     </div>
   );
 }
-

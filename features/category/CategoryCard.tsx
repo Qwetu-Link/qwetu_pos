@@ -4,6 +4,7 @@ import type { Category } from "@/types/categories";
 import {
   Baby,
   BedDouble,
+  Boxes,
   Gem,
   Pencil,
   Shirt,
@@ -84,6 +85,10 @@ export default function CategoryCard({ category, onEdit, onDelete }: Props) {
         <span className="text-xs text-gray-400 flex items-center gap-1">
           <CategoryIcon size={12} />
           Category
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+          <Boxes size={12} />
+          {category.productCount ?? 0} products
         </span>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { categoryTable } from "@/db/schema/category";
 import { createVariantInventoryRowsQuery } from "@/db/queries/inventory";
 import { productImages, productsTable } from "@/db/schema/products";
 import {
+    locationTable,
     variantInventoryTable,
     variantsTable,
 } from "@/db/schema/variants";
@@ -90,12 +91,14 @@ export const getProductsQuery = async (businessId?: string) => {
         db
             .select({
                 variantId: variantInventoryTable.variantId,
+                locationName: locationTable.name,
                 totalStock: variantInventoryTable.totalStock,
                 reorderPoint: variantInventoryTable.reorderPoint,
                 status: variantInventoryTable.status,
                 lastRestocked: variantInventoryTable.lastRestocked,
             })
             .from(variantInventoryTable)
+            .innerJoin(locationTable, eq(variantInventoryTable.locationId, locationTable.id))
             .where(businessId ? eq(variantInventoryTable.businessId, businessId) : undefined),
     ]);
 
@@ -155,11 +158,17 @@ export const getProductsQuery = async (businessId?: string) => {
                     )
                         ? "incoming" as const
                         : variantInventoryRows[0]?.status ?? "reorder";
-                    const locations = DEFAULT_STOCK_LOCATIONS.map((defaultLocation, index) => ({
-                        name: defaultLocation.name,
-                        stock: index === 0 ? stock : defaultLocation.stock,
-                        reorderPoint,
-                    }));
+                    const locations = DEFAULT_STOCK_LOCATIONS.map((defaultLocation) => {
+                        const locationInventory = variantInventoryRows.find(
+                            (inventory) => inventory.locationName === defaultLocation.name,
+                        );
+
+                        return {
+                            name: defaultLocation.name,
+                            stock: locationInventory?.totalStock ?? defaultLocation.stock,
+                            reorderPoint: locationInventory?.reorderPoint ?? reorderPoint,
+                        };
+                    });
 
                     return computeInventoryStatus({
                         totalStock: stock,

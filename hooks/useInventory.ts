@@ -59,6 +59,7 @@ export function useInventory(sourceItems?: InventoryItem[]) {
     trpc.inventory.transferStock.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(trpc.products.pathFilter());
+        await queryClient.invalidateQueries(trpc.inventory.pathFilter());
       },
     }),
     { procedure: "inventory.transferStock", label: "Transfer stock" },
