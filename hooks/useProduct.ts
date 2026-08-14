@@ -58,7 +58,11 @@ export const useCreateProduct = () => {
                 await queryClient.invalidateQueries(trpc.variants.pathFilter());
             },
         }),
-        { procedure: "products.addProduct", label: "Create product" },
+        {
+            procedure: "products.addProduct",
+            label: "Create product",
+            showSuccessToast: false,
+        },
     );
 };
 
@@ -72,7 +76,11 @@ export const useUpdateProduct = () => {
                 await queryClient.invalidateQueries(trpc.products.pathFilter());
             },
         }),
-        { procedure: "products.editProduct", label: "Update product" },
+        {
+            procedure: "products.editProduct",
+            label: "Update product",
+            showSuccessToast: false,
+        },
     );
 };
 
@@ -139,6 +147,10 @@ export const useDeleteProduct = () => {
                 await queryClient.invalidateQueries(trpc.variants.pathFilter());
             },
         }),
-        { procedure: "products.removeProduct", label: "Delete product" },
+        {
+            procedure: "products.removeProduct",
+            label: "Delete product",
+            showSuccessToast: false,
+        },
     );
 };

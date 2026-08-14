@@ -41,7 +41,11 @@ export const useCreateCategory = () => {
         await queryClient.invalidateQueries(trpc.categories.pathFilter());
       },
     }),
-    { procedure: "categories.addCategory", label: "Create category" },
+    {
+      procedure: "categories.addCategory",
+      label: "Create category",
+      showSuccessToast: false,
+    },
   );
 };
 
@@ -55,7 +59,11 @@ export const useUpdateCategory = () => {
         await queryClient.invalidateQueries(trpc.categories.pathFilter());
       },
     }),
-    { procedure: "categories.editCategory", label: "Update category" },
+    {
+      procedure: "categories.editCategory",
+      label: "Update category",
+      showSuccessToast: false,
+    },
   );
 };
 
@@ -69,6 +77,10 @@ export const useDeleteCategory = () => {
         await queryClient.invalidateQueries(trpc.categories.pathFilter());
       },
     }),
-    { procedure: "categories.removeCategory", label: "Delete category" },
+    {
+      procedure: "categories.removeCategory",
+      label: "Delete category",
+      showSuccessToast: false,
+    },
   );
 };

@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   CalendarDays,
@@ -70,7 +71,6 @@ export default function OrderDetailsPage() {
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [draftStatus, setDraftStatus] = useState<OrderStatus>("pending");
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const {
     formState: { errors: paymentErrors },
     handleSubmit: handlePaymentSubmit,
@@ -112,8 +112,12 @@ export default function OrderDetailsPage() {
   }, [order]);
 
   function showToast(message: string, type: "success" | "error" = "success") {
-    setToast({ message, type });
-    window.setTimeout(() => setToast(null), 3000);
+    if (type === "error") {
+      toast.error(message);
+      return;
+    }
+
+    toast.success(message);
   }
 
   async function updateStatus() {
@@ -125,9 +129,8 @@ export default function OrderDetailsPage() {
       });
       setOrderOverride(updatedOrder);
       setIsStatusOpen(false);
-      showToast(`Order status updated to ${ORDER_STATUS_CONFIG[draftStatus].label}`);
     } catch {
-      showToast("Could not update order status", "error");
+      // The shared mutation hook handles the Sonner error toast.
     }
   }
 
@@ -157,9 +160,8 @@ export default function OrderDetailsPage() {
       setOrderOverride(updatedOrder);
       setIsPaymentOpen(false);
       resetPayment();
-      showToast(`Payment of ${formatCurrency(values.amount)} recorded`);
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : "Could not record payment", "error");
+    } catch {
+      // The shared mutation hook handles the Sonner error toast.
     }
   }
 
@@ -558,12 +560,6 @@ export default function OrderDetailsPage() {
               </div>
             </form>
           </div>
-        </div>
-      )}
-
-      {toast && (
-        <div className={`fixed bottom-4 left-3 right-3 z-[60] rounded-lg px-5 py-3 text-sm font-semibold text-white shadow-2xl sm:left-auto sm:right-6 ${toast.type === "success" ? "bg-emerald-600" : "bg-red-600"}`}>
-          {toast.message}
         </div>
       )}
     </div>
