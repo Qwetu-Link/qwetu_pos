@@ -28,6 +28,8 @@ type DatabaseError = {
     code?: string;
     constraint_name?: string;
     constraint?: string;
+    message?: string;
+    detail?: string;
 };
 
 function getDatabaseError(error: unknown): DatabaseError {
@@ -102,21 +104,18 @@ function getFriendlyProductError(error: unknown, action: "create" | "update" | "
     if (
         errorMessage.includes("Supabase storage is not configured") ||
         errorMessage.includes("Only JPEG, PNG, and WEBP") ||
+        errorMessage.includes("Only JPG, PNG, and WEBP") ||
+        errorMessage.includes("HEIC/HEIF images are not supported") ||
         errorMessage.includes("Product images must") ||
         errorMessage.includes("Could not read image dimensions") ||
+        errorMessage.includes("Image storage upload failed") ||
+        errorMessage.includes("Image storage cleanup failed") ||
         errorMessage.includes("does not belong to this business") ||
         errorMessage.includes("not found for this business")
     ) {
         throw new TRPCError({
             code: "BAD_REQUEST",
             message: errorMessage,
-        });
-    }
-
-    if (databaseError.code === "23503") {
-        throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "The selected product, category, or business record does not exist.",
         });
     }
 
@@ -129,12 +128,54 @@ function getFriendlyProductError(error: unknown, action: "create" | "update" | "
 
     const fallbackMessage =
         action === "create"
-            ? "Could not create the product. Please check the details and try again."
+            ? "Could not create the product because the database rejected the product details."
             : action === "update"
-                ? "Could not update the product. Please check the details and try again."
+                ? "Could not update the product because the database rejected the product details."
                 : action === "upload"
-                    ? "Could not upload the product image. Please try again."
-                    : "Could not delete the product. Please try again.";
+                    ? "Could not save the product image because the image upload or image record save failed."
+                    : "Could not delete the product because the database rejected the delete request.";
+
+    if (databaseError.code === "23502") {
+        throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "A required product field is missing.",
+        });
+    }
+
+    if (databaseError.code === "22P02") {
+        throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "One of the product, category, variant, or business ids is invalid.",
+        });
+    }
+
+    if (databaseError.code === "23505") {
+        throw new TRPCError({
+            code: "CONFLICT",
+            message: "A product, variant, or image record already exists with the same unique value.",
+        });
+    }
+
+    if (databaseError.code === "23503" && action === "upload") {
+        throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Image records could not be saved because the product, business, or variant reference is invalid.",
+        });
+    }
+
+    if (databaseError.code === "23503" && action === "delete") {
+        throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Product could not be deleted because related records still reference it.",
+        });
+    }
+
+    if (databaseError.code === "23503") {
+        throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "The selected product, category, variant, or business record does not exist.",
+        });
+    }
 
     throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",

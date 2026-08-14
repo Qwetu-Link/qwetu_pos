@@ -4,6 +4,7 @@ import ProductModal from "@/features/forms/ProductModal";
 import { uploadProductImagesFromFiles } from "@/features/products/uploadProductImages";
 import { useCreateProduct, useSaveUploadedProductImages } from "@/hooks/useProduct";
 import { useGetCategories } from "@/hooks/useCategory";
+import { isOfflineQueuedResult } from "@/hooks/useOfflineMutation";
 import type { ProductSaveValues } from "@/types/catalog";
 import { buildVariantCreateInputs } from "@/utils/catalog-utils";
 import { ArrowLeft, PackagePlus } from "lucide-react";
@@ -17,6 +18,15 @@ const productToastStyle = {
   border: "1px solid #86efac",
   color: "#166534",
 } as const;
+
+function getImageErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Could not upload the product images.";
+}
+
+function getProductCreateErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : "The product details could not be saved.";
+  return `Product was not created. ${message}`;
+}
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -46,6 +56,12 @@ export default function AddProductPage() {
       });
 
       const imageFiles = values.imageFiles ?? [];
+      if (isOfflineQueuedResult(product)) {
+        toast.info("Product saved offline. Images can be uploaded after it syncs online.");
+        router.push("/admin/products");
+        return;
+      }
+
       if (imageFiles.length > 0) {
         const variantIdsByClientId = new Map(
           product.variants.map((variant, index) => [values.variants[index]?.id, variant.id]),
@@ -58,12 +74,33 @@ export default function AddProductPage() {
             file: image.file,
             variantId: image.variantId ? variantIdsByClientId.get(image.variantId) ?? null : null,
           })),
+        }).catch((error) => {
+          const message = getImageErrorMessage(error);
+          setUploadError(message);
+          toast.warning(`Product created, but image upload failed. ${message}`);
+          router.push(`/admin/products/${product.id}/edit`);
+          return null;
         });
-        await saveUploadedProductImages.mutateAsync({
+
+        if (!uploadedImages) {
+          return;
+        }
+
+        const savedImages = await saveUploadedProductImages.mutateAsync({
           productId: product.id,
           mode: "append",
           images: uploadedImages,
+        }).catch((error) => {
+          const message = getImageErrorMessage(error);
+          setUploadError(message);
+          toast.warning(`Product created and image files uploaded, but image records were not saved. ${message}`);
+          router.push(`/admin/products/${product.id}/edit`);
+          return null;
         });
+
+        if (!savedImages) {
+          return;
+        }
       }
 
       toast.success("Product created successfully.", {
@@ -71,9 +108,9 @@ export default function AddProductPage() {
       });
       router.push("/admin/products");
     } catch (error) {
-      if (error instanceof Error) {
-        setUploadError(error.message);
-      }
+      const message = getProductCreateErrorMessage(error);
+      setUploadError(message);
+      toast.error(message);
     } finally {
       setIsUploadingImages(false);
     }

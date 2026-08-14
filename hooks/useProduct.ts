@@ -62,6 +62,7 @@ export const useCreateProduct = () => {
             procedure: "products.addProduct",
             label: "Create product",
             showSuccessToast: false,
+            showErrorToast: false,
         },
     );
 };
@@ -80,6 +81,7 @@ export const useUpdateProduct = () => {
             procedure: "products.editProduct",
             label: "Update product",
             showSuccessToast: false,
+            showErrorToast: false,
         },
     );
 };
@@ -151,6 +153,7 @@ export const useDeleteProduct = () => {
             procedure: "products.removeProduct",
             label: "Delete product",
             showSuccessToast: false,
+            showErrorToast: false,
         },
     );
 };

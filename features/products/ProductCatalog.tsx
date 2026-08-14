@@ -40,7 +40,7 @@ export default function ProductCatalog() {
     category: "all",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
+  const [perPage, setPerPage] = useState(12);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const filtered = useMemo(() => {
@@ -88,8 +88,12 @@ export default function ProductCatalog() {
         style: productToastStyles.deleted,
       });
       setDeleteTarget(null);
-    } catch {
-      // Mutation state exposes the error message in the page alert.
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? `Product was not deleted. ${error.message}`
+          : "Product was not deleted. Please try again.",
+      );
     }
   }
 
@@ -163,7 +167,7 @@ export default function ProductCatalog() {
       </div>
 
       {isLoading ? (
-        <ProductCardsSkeleton count={6} />
+        <ProductCardsSkeleton count={12} />
       ) : paginated.length === 0 ? (
         <EmptyState
           icon={Package}

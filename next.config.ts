@@ -6,6 +6,13 @@ import { randomUUID } from "node:crypto";
 const revision =
   spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout.trim() ||
   randomUUID();
+const supabaseImageHost = (() => {
+  try {
+    return process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).hostname : null;
+  } catch {
+    return null;
+  }
+})();
 
 const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
@@ -29,6 +36,15 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "via.placeholder.com",
       },
+      ...(supabaseImageHost
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: supabaseImageHost,
+              pathname: "/storage/v1/object/public/products/**",
+            },
+          ]
+        : []),
     ],
   },
   allowedDevOrigins: ['192.168.18.3', '192.168.0.39'],

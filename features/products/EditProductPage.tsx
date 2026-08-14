@@ -13,6 +13,7 @@ import {
   useSaveUploadedProductImages,
   useUpdateProduct,
 } from "@/hooks/useProduct";
+import { isOfflineQueuedResult } from "@/hooks/useOfflineMutation";
 import { useState } from "react";
 
 const productToastStyles = {
@@ -22,6 +23,15 @@ const productToastStyles = {
     color: "#1e40af",
   },
 } as const;
+
+function getImageErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Could not update the product images.";
+}
+
+function getProductUpdateErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : "The product details could not be updated.";
+  return `Product was not updated. ${message}`;
+}
 
 export default function EditProductPage({
   product,
@@ -52,7 +62,7 @@ export default function EditProductPage({
     setUploadError("");
 
     try {
-      await updateProduct.mutateAsync({
+      const updatedProduct = await updateProduct.mutateAsync({
         id: existingId,
         name: values.name,
         categoryId: values.categoryId,
@@ -60,6 +70,12 @@ export default function EditProductPage({
         description: values.description,
         imageAssignments: values.imageAssignments,
       });
+
+      if (isOfflineQueuedResult(updatedProduct)) {
+        toast.info("Product update saved offline. Image changes can be applied after it syncs online.");
+        router.push(`/admin/products/${existingId}`);
+        return;
+      }
 
       const imageFiles = values.imageFiles ?? [];
       if (imageFiles.length > 0) {
@@ -70,19 +86,50 @@ export default function EditProductPage({
             file: image.file,
             variantId: image.variantId,
           })),
+        }).catch((error) => {
+          const message = getImageErrorMessage(error);
+          setUploadError(message);
+          toast.warning(`Product details updated, but image upload failed. ${message}`);
+          router.push(`/admin/products/${existingId}`);
+          return null;
         });
-        await saveUploadedProductImages.mutateAsync({
+
+        if (!uploadedImages) {
+          return;
+        }
+
+        const savedImages = await saveUploadedProductImages.mutateAsync({
           productId: existingId,
           mode: values.replaceImages ? "replace" : "append",
           images: uploadedImages,
+        }).catch((error) => {
+          const message = getImageErrorMessage(error);
+          setUploadError(message);
+          toast.warning(`Product details updated and image files uploaded, but image records were not saved. ${message}`);
+          router.push(`/admin/products/${existingId}`);
+          return null;
         });
+
+        if (!savedImages) {
+          return;
+        }
       }
 
       if (!values.replaceImages && values.removedImageUrls?.length) {
-        await removeProductImages.mutateAsync({
+        const removedImages = await removeProductImages.mutateAsync({
           productId: existingId,
           imageUrls: values.removedImageUrls,
+        }).catch((error) => {
+          const message = getImageErrorMessage(error);
+          setUploadError(message);
+          toast.warning(`Product details updated, but selected image removal failed. ${message}`);
+          router.push(`/admin/products/${existingId}`);
+          return null;
         });
+
+        if (!removedImages) {
+          return;
+        }
       }
 
       toast.success("Product updated successfully.", {
@@ -90,9 +137,9 @@ export default function EditProductPage({
       });
       router.push(`/admin/products/${existingId}`);
     } catch (error) {
-      if (error instanceof Error) {
-        setUploadError(error.message);
-      }
+      const message = getProductUpdateErrorMessage(error);
+      setUploadError(message);
+      toast.error(message);
     } finally {
       setIsUploadingImages(false);
     }
