@@ -10,6 +10,7 @@ import { useCustomers } from "@/hooks/useCustomers";
 import { useCreateOrder } from "@/hooks/useOrders";
 import { useGetProducts } from "@/hooks/useProduct";
 import { FormPageSkeleton } from "@/components/skeletons";
+import { getProductImageSrc } from "@/utils/catalog-utils";
 
 interface ManualAddOrderPageProps {
   customerId?: string;
@@ -36,6 +37,9 @@ export default function ManualAddOrderPage({ customerId }: ManualAddOrderPagePro
           productId: product.id,
           sku: variant.sku,
           name: `${product.name} - ${variant.color} (${variant.size})`,
+          imageUrl:
+            product.imageDetails?.find((image) => image.variantId === variant.id)?.url ??
+            getProductImageSrc(product),
           sellPrice: variant.sellPrice,
           locations: variant.inventory.locations
             .filter((location) => location.stock > 0)

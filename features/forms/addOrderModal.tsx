@@ -16,6 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { formatCurrency } from "@/utils/orderUtils";
+import ProductImage from "@/features/products/ProductImage";
 import type {
   Customer,
   CustomerFormData,
@@ -44,6 +45,7 @@ export interface OrderVariantOption {
   productId: string;
   sku: string;
   name: string;
+  imageUrl?: string;
   sellPrice: number;
   locations: OrderVariantLocationOption[];
 }
@@ -523,29 +525,39 @@ export default function AddOrderModal({
                   </div>
 
                   {item.variantId ? (
-                    <div className="mb-3">
-                      <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                        Stock Location
-                      </label>
-                      <select
-                        value={item.locationName}
-                        onChange={(event) =>
-                          updateLineItem(item.id, { locationName: event.target.value })
-                        }
-                        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-black outline-none transition focus:ring-2 focus:ring-emerald-500"
-                      >
-                        <option value="">Select stock location...</option>
-                        {getAvailableLocations(item.variantId).map((location) => (
-                          <option key={location.name} value={location.name}>
-                            {location.name} - {location.stock} available
-                          </option>
-                        ))}
-                      </select>
-                      {getAvailableLocations(item.variantId).length === 0 ? (
-                        <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-                          This variant is out of stock in all locations.
-                        </p>
-                      ) : null}
+                    <div className="mb-3 grid gap-3 sm:grid-cols-[88px_1fr]">
+                      <div className="relative h-20 w-20 overflow-hidden rounded-lg border border-slate-200 bg-white">
+                        <ProductImage
+                          src={getVariant(item.variantId)?.imageUrl}
+                          alt={getVariant(item.variantId)?.name ?? "Selected product"}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                          Stock Location
+                        </label>
+                        <select
+                          value={item.locationName}
+                          onChange={(event) =>
+                            updateLineItem(item.id, { locationName: event.target.value })
+                          }
+                          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-black outline-none transition focus:ring-2 focus:ring-emerald-500"
+                        >
+                          <option value="">Select stock location...</option>
+                          {getAvailableLocations(item.variantId).map((location) => (
+                            <option key={location.name} value={location.name}>
+                              {location.name} - {location.stock} available
+                            </option>
+                          ))}
+                        </select>
+                        {getAvailableLocations(item.variantId).length === 0 ? (
+                          <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                            This variant is out of stock in all locations.
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
                   ) : null}
 

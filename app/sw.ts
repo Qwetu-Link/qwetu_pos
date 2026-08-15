@@ -1,4 +1,6 @@
 import {
+    CacheFirst,
+    ExpirationPlugin,
     Serwist,
     type PrecacheEntry,
     type SerwistGlobalConfig,
@@ -22,7 +24,25 @@ const serwist = new Serwist({
     skipWaiting: true,
     clientsClaim: true,
     navigationPreload: true,
-    runtimeCaching: defaultCache,
+    runtimeCaching: [
+        {
+            matcher: ({ request, url }) =>
+                request.destination === "image" &&
+                url.pathname.startsWith("/storage/v1/object/public/products/"),
+            method: "GET",
+            handler: new CacheFirst({
+                cacheName: "supabase-product-images",
+                plugins: [
+                    new ExpirationPlugin({
+                        maxEntries: 256,
+                        maxAgeSeconds: 30 * 24 * 60 * 60,
+                        maxAgeFrom: "last-used",
+                    }),
+                ],
+            }),
+        },
+        ...defaultCache,
+    ],
     fallbacks: {
         entries: [
             {

@@ -16,6 +16,10 @@ type NavigatorWithStandalone = Navigator & {
 };
 
 function isStandaloneMode() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
     (navigator as NavigatorWithStandalone).standalone === true
@@ -23,6 +27,10 @@ function isStandaloneMode() {
 }
 
 function isAndroidChrome() {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
   const ua = navigator.userAgent;
 
   return (
@@ -35,8 +43,8 @@ function isAndroidChrome() {
 export default function AndroidInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [isStandalone, setIsStandalone] = useState(false);
-  const [isSupportedBrowser, setIsSupportedBrowser] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(isStandaloneMode);
+  const [isSupportedBrowser] = useState(isAndroidChrome);
   const [showFallbackHelp, setShowFallbackHelp] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
@@ -58,9 +66,6 @@ export default function AndroidInstallPrompt() {
       setShowFallbackHelp(false);
       setIsStandalone(true);
     };
-
-    updateDisplayMode();
-    setIsSupportedBrowser(isAndroidChrome());
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", handleInstalled);
