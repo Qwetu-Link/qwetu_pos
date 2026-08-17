@@ -1,15 +1,38 @@
-import EmptyState from "@/components/common/EmptyState";
-import { Activity } from "lucide-react";
-import type { DashboardActivity, DashboardTone } from "@/data/dashboard-data";
+import type { DashboardActivity, DashboardTone } from "@/types/dashboard";
+import { icon } from "@/utils/icons";
 
-const dotStyles: Record<DashboardTone, string> = {
-  emerald: "bg-emerald-500",
-  blue: "bg-blue-500",
-  violet: "bg-violet-500",
-  amber: "bg-amber-500",
-  red: "bg-red-500",
-  slate: "bg-slate-500",
+const activityToneClass: Record<DashboardTone, string> = {
+  emerald: "emerald",
+  blue: "blue",
+  violet: "violet",
+  amber: "orange",
+  red: "orange",
+  slate: "blue",
 };
+
+function getActivityIcon(activity: DashboardActivity) {
+  if (activity.title.includes('Payment') || activity.title.includes('Sale')) return 'ArrowDownLeft';
+  if (activity.title.includes('Refund') || activity.tone === 'red') return 'ArrowUpRight';
+  if (activity.title.includes('Installment') || activity.title.includes('Deposit')) return 'Wallet';
+  if (activity.tone === 'amber') return 'Clock';
+  return 'Receipt';
+}
+
+function getActivityColor(activity: DashboardActivity) {
+  const title = activity.title.toLowerCase();
+
+  if (title.includes("refund") || activity.tone === "red") return "red";
+  if (title.includes("expense") || title.includes("purchase")) return "orange";
+  if (title.includes("installment") || title.includes("deposit")) return "blue";
+  if (title.includes("payment") || title.includes("sale")) return "emerald";
+  if (title.includes("adjustment") || title.includes("discount")) return "violet";
+
+  return activityToneClass[activity.tone];
+}
+
+function getActivityMeta(activity: DashboardActivity) {
+  return activity.detail.match(/KES [\d,]+/)?.[0] ?? activity.title.split(" ").at(-1) ?? "Activity";
+}
 
 export default function DashboardActivityPanel({
   activities,
@@ -17,35 +40,33 @@ export default function DashboardActivityPanel({
   activities: DashboardActivity[];
 }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-900">Live Activity</h2>
-      {activities.length === 0 ? (
-        <div className="mt-4">
-          <EmptyState
-            compact
-            icon={Activity}
-            title="No activity yet"
-            description="Recent order, stock, and collection events will appear here."
-          />
+    <div className="panel activity-panel">
+      <div className="panel-head">
+        <div>
+          <span className="eyebrow">Live feed</span>
+          <h3>Recent activity</h3>
         </div>
-      ) : (
-      <div className="mt-4 space-y-4">
-        {activities.map((activity) => (
-          <div key={`${activity.title}-${activity.time}`} className="flex gap-3">
-            <span
-              className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${dotStyles[activity.tone]}`}
-            />
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="font-semibold text-slate-900">{activity.title}</p>
-                <span className="text-xs text-slate-400">{activity.time}</span>
-              </div>
-              <p className="mt-1 text-sm text-slate-500">{activity.detail}</p>
+        <button type="button" className="text-btn">
+          View all {icon('ArrowUpRight', { size: 14 })}
+        </button>
+      </div>
+      <div className="activity-list">
+        {activities.map((activity, index) => (
+          <div className="activity-row" key={`${activity.title}-${activity.time}-${index}`}>
+            <div className={`activity-dot ${getActivityColor(activity)}`}>
+              {icon(getActivityIcon(activity), { size: 14 })}
+            </div>
+            <div className="activity-copy">
+              <strong>{activity.title}</strong>
+              <span>{activity.detail}</span>
+            </div>
+            <div className="activity-meta">
+              <strong>{getActivityMeta(activity)}</strong>
+              <span>{activity.time}</span>
             </div>
           </div>
         ))}
       </div>
-      )}
-    </section>
-  );
+    </div>
+  )
 }

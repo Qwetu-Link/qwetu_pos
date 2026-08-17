@@ -1,15 +1,20 @@
 import { LayoutDashboard } from "lucide-react";
 import EmptyState from "@/components/common/EmptyState";
 import type { RoleDashboardData } from "@/data/dashboard-data";
+import type { DashboardSummary } from "@/types/dashboard-live";
 import DashboardActions from "./DashboardActions";
 import DashboardActivityPanel from "./DashboardActivityPanel";
 import DashboardMetricCard from "./DashboardMetricCard";
 import DashboardProgressPanel from "./DashboardProgressPanel";
+import { CollectionChart } from "./CollectionChart";
+import { PortfolioHealth } from "./PortfolioHealth";
 
 export default function RoleDashboard({
   dashboard,
+  summary,
 }: {
   dashboard: RoleDashboardData;
+  summary: DashboardSummary;
 }) {
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
@@ -39,8 +44,13 @@ export default function RoleDashboard({
           ))}
         </section>
       )}
+      <div className="dashboard-grid">
+          <CollectionChart data={summary.collectionTrend} />
+          <PortfolioHealth data={summary.paymentHealth} />
+        </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
+
         <div className="space-y-6">
           <DashboardActivityPanel activities={dashboard.activities} />
           <DashboardProgressPanel bars={dashboard.bars} />

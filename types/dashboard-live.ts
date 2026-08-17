@@ -2,6 +2,16 @@ import type { DashboardActivity, DashboardBar } from "./dashboard";
 
 export type DashboardRoleKey = "owner" | "manager" | "cashier" | "accountant" | "inventory";
 
+export interface DashboardCollectionPoint {
+  month: string;
+  value: number;
+}
+
+export interface DashboardPaymentHealthItem {
+  label: "Active" | "Overdue" | "Completed";
+  value: number;
+}
+
 export interface DashboardSummary {
   revenueToday: number;
   revenueMonth: number;
@@ -23,10 +33,13 @@ export interface DashboardSummary {
   criticalStock: number;
   completedSalesToday: number;
   installmentsToday: number;
+  collectedThisMonth: number;
   reportsReady: number;
   pendingReconciliation: number;
   activities: DashboardActivity[];
   paymentBars: DashboardBar[];
   stockBars: DashboardBar[];
   orderBars: DashboardBar[];
+  collectionTrend: DashboardCollectionPoint[];
+  paymentHealth: DashboardPaymentHealthItem[];
 }

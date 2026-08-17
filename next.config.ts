@@ -38,16 +38,16 @@ const nextConfig: NextConfig = {
       },
       ...(supabaseImageHost
         ? [
-            {
-              protocol: "https" as const,
-              hostname: supabaseImageHost,
-              pathname: "/storage/v1/object/public/products/**",
-            },
-          ]
+          {
+            protocol: "https" as const,
+            hostname: supabaseImageHost,
+            pathname: "/storage/v1/object/public/products/**",
+          },
+        ]
         : []),
     ],
   },
-  allowedDevOrigins: ['192.168.18.3', '192.168.0.39'],
+  allowedDevOrigins: ['192.168.18.3', '192.168.0.39', '192.168.0.209'],
   // # service worker extra security headers
   async headers() {
     return [

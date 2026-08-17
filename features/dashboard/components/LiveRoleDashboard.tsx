@@ -8,10 +8,12 @@ import {
   PackageCheck,
   Receipt,
   ShoppingCart,
+  TriangleAlert,
   Users,
   WalletCards,
 } from "lucide-react";
 import EmptyState from "@/components/common/EmptyState";
+import { DashboardSkeleton } from "@/components/skeletons";
 import { dashboardData } from "@/data/dashboard-data";
 import { formatCurrency } from "@/data/transaction-data";
 import { useDashboardSummary } from "@/hooks/useDashboard";
@@ -19,12 +21,37 @@ import type { RoleDashboardData } from "@/types/dashboard";
 import type { DashboardRoleKey, DashboardSummary } from "@/types/dashboard-live";
 import RoleDashboard from "./RoleDashboard";
 
+const primaryQuickActions = [
+  {
+    label: "Create order",
+    href: "/admin/orders/add",
+    detail: "Start a new customer order",
+  },
+  {
+    label: "New customer",
+    href: "/admin/customers",
+    detail: "Add or manage customer records",
+  },
+];
+
 function formatCount(value: number) {
   return value.toLocaleString();
 }
 
+function withPrimaryQuickActions(base: RoleDashboardData): RoleDashboardData {
+  const existingHrefs = new Set(base.actions.map((action) => action.href));
+
+  return {
+    ...base,
+    actions: [
+      ...primaryQuickActions.filter((action) => !existingHrefs.has(action.href)),
+      ...base.actions,
+    ],
+  };
+}
+
 function buildDashboard(role: DashboardRoleKey, summary: DashboardSummary): RoleDashboardData {
-  const base = dashboardData[role];
+  const base = withPrimaryQuickActions(dashboardData[role]);
   const sharedActivities = summary.activities;
 
   if (role === "manager") {
@@ -197,18 +224,18 @@ function buildDashboard(role: DashboardRoleKey, summary: DashboardSummary): Role
         icon: ShoppingCart,
       },
       {
-        label: "Collections Due",
+        label: "Outstanding arrears",
         value: formatCurrency(summary.collectionsDue),
         detail: `${summary.activePlans} active Lipa Mdogo plans`,
         tone: "amber",
-        icon: WalletCards,
+        icon: TriangleAlert,
       },
       {
-        label: "Active Customers",
-        value: formatCount(summary.activeCustomers),
-        detail: `+${summary.newCustomersMonth} this month`,
+        label: "Collected this month",
+        value: formatCurrency(summary.collectedThisMonth),
+        detail: `${summary.receiptsTodayCount} receipts today`,
         tone: "violet",
-        icon: Users,
+        icon: WalletCards,
       },
     ],
     activities: sharedActivities,
@@ -220,16 +247,7 @@ export default function LiveRoleDashboard({ role }: { role: DashboardRoleKey }) 
   const { summary, isLoading, isError, error } = useDashboardSummary();
 
   if (isLoading) {
-    return (
-      <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="h-28 animate-pulse rounded-xl bg-slate-100" />
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[0, 1, 2, 3].map((item) => (
-            <div key={item} className="h-32 animate-pulse rounded-xl bg-slate-100" />
-          ))}
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (isError || !summary) {
@@ -244,5 +262,5 @@ export default function LiveRoleDashboard({ role }: { role: DashboardRoleKey }) 
     );
   }
 
-  return <RoleDashboard dashboard={buildDashboard(role, summary)} />;
+  return <RoleDashboard dashboard={buildDashboard(role, summary)} summary={summary} />;
 }

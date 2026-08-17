@@ -7,7 +7,7 @@ import { productsTable } from "@/db/schema/products";
 import { variantInventoryTable, variantsTable } from "@/db/schema/variants";
 import type { DashboardActivity, DashboardBar, DashboardTone } from "@/types/dashboard";
 import type { DashboardSummary } from "@/types/dashboard-live";
-import { and, count, desc, eq, gt, gte, inArray, lte, ne, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, gt, gte, inArray, isNull, lt, lte, ne, or, sql } from "drizzle-orm";
 
 type PaymentMethod = typeof transactionTable.$inferSelect.paymentMethod;
 
@@ -17,6 +17,14 @@ function startOfDay(date: Date) {
 
 function startOfMonth(date: Date) {
     return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function addMonths(date: Date, months: number) {
+    return new Date(date.getFullYear(), date.getMonth() + months, 1);
+}
+
+function formatMonth(date: Date) {
+    return date.toLocaleString("en-US", { month: "short" });
 }
 
 function toNumber(value: unknown) {
@@ -101,10 +109,15 @@ export async function getDashboardSummaryQuery(businessId: string): Promise<Dash
         criticalStock,
         completedSalesToday,
         installmentsToday,
+        collectedThisMonth,
         paymentRows,
         stockRows,
         orderRows,
         activityRows,
+        collectionTrendRows,
+        activePaymentPlans,
+        overduePaymentPlans,
+        completedPaymentPlans,
     ] = await Promise.all([
         getScalar(db.select({ total: sql<number>`coalesce(sum(${transactionTable.amount}), 0)` })
             .from(transactionTable)
@@ -224,6 +237,15 @@ export async function getDashboardSummaryQuery(businessId: string): Promise<Dash
                 gt(transactionTable.amount, 0),
                 gte(transactionTable.transactedAt, today),
             )), "total"),
+        getScalar(db.select({ total: sql<number>`coalesce(sum(${transactionTable.amount}), 0)` })
+            .from(transactionTable)
+            .where(and(
+                eq(transactionTable.businessId, businessId),
+                eq(transactionTable.status, "success"),
+                inArray(transactionTable.tnxType, ["installment", "deposit", "payment"]),
+                gt(transactionTable.amount, 0),
+                gte(transactionTable.transactedAt, month),
+            )), "total"),
         db.select({
             method: transactionTable.paymentMethod,
             total: sql<number>`coalesce(sum(${transactionTable.amount}), 0)`,
@@ -255,6 +277,49 @@ export async function getDashboardSummaryQuery(businessId: string): Promise<Dash
             .where(eq(transactionTable.businessId, businessId))
             .orderBy(desc(transactionTable.transactedAt))
             .limit(5),
+        Promise.all(Array.from({ length: 12 }, (_, index) => {
+            const start = addMonths(month, index - 11);
+            const end = addMonths(start, 1);
+
+            return getScalar(db.select({ total: sql<number>`coalesce(sum(${transactionTable.amount}), 0)` })
+                .from(transactionTable)
+                .where(and(
+                    eq(transactionTable.businessId, businessId),
+                    eq(transactionTable.status, "success"),
+                    gt(transactionTable.amount, 0),
+                    gte(transactionTable.transactedAt, start),
+                    lt(transactionTable.transactedAt, end),
+                )), "total").then((total) => ({
+                    month: formatMonth(start),
+                    value: total,
+                }));
+        })),
+        getScalar(db.select({ total: count() })
+            .from(invoiceTable)
+            .where(and(
+                eq(invoiceTable.businessId, businessId),
+                gt(invoiceTable.installments, 0),
+                gt(invoiceTable.balance, 0),
+                ne(invoiceTable.status, "cancelled"),
+                ne(invoiceTable.status, "overdue"),
+                or(isNull(invoiceTable.dueDate), gte(invoiceTable.dueDate, now)),
+            )), "total"),
+        getScalar(db.select({ total: count() })
+            .from(invoiceTable)
+            .where(and(
+                eq(invoiceTable.businessId, businessId),
+                gt(invoiceTable.installments, 0),
+                gt(invoiceTable.balance, 0),
+                ne(invoiceTable.status, "cancelled"),
+                or(eq(invoiceTable.status, "overdue"), lt(invoiceTable.dueDate, now)),
+            )), "total"),
+        getScalar(db.select({ total: count() })
+            .from(invoiceTable)
+            .where(and(
+                eq(invoiceTable.businessId, businessId),
+                gt(invoiceTable.installments, 0),
+                or(eq(invoiceTable.status, "paid"), lte(invoiceTable.balance, 0)),
+            )), "total"),
     ]);
 
     const paymentBars = buildBars(
@@ -309,11 +374,18 @@ export async function getDashboardSummaryQuery(businessId: string): Promise<Dash
         criticalStock,
         completedSalesToday,
         installmentsToday,
+        collectedThisMonth,
         reportsReady: receiptsTodayCount > 0 || revenueMonth > 0 ? 1 : 0,
         pendingReconciliation: pendingExpenses + awaitingPayment,
         activities,
         paymentBars,
         stockBars,
         orderBars,
+        collectionTrend: collectionTrendRows,
+        paymentHealth: [
+            { label: "Active", value: activePaymentPlans },
+            { label: "Overdue", value: overduePaymentPlans },
+            { label: "Completed", value: completedPaymentPlans },
+        ],
     };
 }
