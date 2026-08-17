@@ -1,6 +1,6 @@
 import type { Order, OrderStatus } from "../types/orderTypes";
 import { ORDER_STATUS_CONFIG } from "@/data/customer-config";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCompactCurrency, formatCurrency } from "@/utils/formatters";
 
 export const statusStyles: Record<OrderStatus, string> = {
   delivered: ORDER_STATUS_CONFIG.delivered.color,
@@ -10,7 +10,7 @@ export const statusStyles: Record<OrderStatus, string> = {
   pending: ORDER_STATUS_CONFIG.pending.color,
 };
 
-export { formatCurrency };
+export { formatCompactCurrency, formatCurrency };
 
 export const formatDate = (date: string) => new Date(date).toLocaleDateString();
 
