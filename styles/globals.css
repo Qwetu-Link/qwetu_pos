@@ -803,6 +803,65 @@ html[data-theme="light"] .finance-theme [class~="hover:text-white"]:hover {
     display: none;
   }
 
+  .dashboard-grid .chart-panel {
+    min-height: 340px;
+  }
+
+  .dashboard-grid .chart-panel .panel-head {
+    align-items: flex-start;
+    padding: 20px 16px 6px;
+  }
+
+  .dashboard-grid .chart-panel .eyebrow {
+    font-size: 11px;
+  }
+
+  .dashboard-grid .chart-panel .panel-head h3 {
+    font-size: 16px;
+  }
+
+  .dashboard-grid .chart-panel .chart-actions {
+    flex-shrink: 0;
+  }
+
+  .dashboard-grid .chart-panel .chart-actions select {
+    width: 118px;
+    max-width: 34vw;
+    padding: 6px;
+    font-size: 10px;
+  }
+
+  .dashboard-grid .chart-panel .chart-wrap {
+    height: 245px;
+    padding: 18px 14px 18px;
+  }
+
+  .dashboard-grid .chart-panel .y-axis {
+    width: 48px;
+    min-width: 48px;
+    padding-right: 8px;
+    font-size: 9px;
+  }
+
+  .dashboard-grid .chart-panel .line-chart {
+    inset-bottom: 28px;
+    height: calc(100% - 28px);
+  }
+
+  .dashboard-grid .chart-panel .chart-grid {
+    inset-bottom: 28px;
+  }
+
+  .dashboard-grid .chart-panel .x-axis {
+    gap: 10px;
+    overflow: hidden;
+    font-size: 9px;
+  }
+
+  .dashboard-grid .chart-panel .x-axis span:nth-child(even) {
+    display: none;
+  }
+
   .chart-panel,
   .health-panel {
     min-height: 290px;
