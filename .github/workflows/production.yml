@@ -1,0 +1,51 @@
+name: Production Qwetu POS Deploy to DirectAdmin via FTP
+
+# Run manually or on push to the main branch
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy via FTP
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Clone repository code onto runner
+      - name: Get latest code
+        uses: actions/checkout@v4
+
+      # Step 2: Initialize Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "npm"
+
+      # Step 3: Install all project workspace dependencies
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Write .env from GitHub Secret
+        run: |
+          echo "${{ secrets.QWETU_POS_ENV }}" | tr -d '\r' > .env
+
+      # Step 4: Run production compilation
+      - name: Build Qwetu POS Application
+        run: npm run build
+
+      # Step 5: Transfer files directly to DirectAdmin folder via FTP
+      - name: Sync Files via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          # local-dir: ./out/
+          # server-dir: ./public_html/
+          server-dir: ./qwetu_pos/
+          timeout: 86400000
+          log-level: standard
+          dangerous-clean-slate: false
