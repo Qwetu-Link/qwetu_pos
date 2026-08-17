@@ -13,35 +13,37 @@ export function PaymentMethodChart() {
   ]
 
   return (
-    <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-6 shadow-sm">
+    <div className="min-w-0 rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-4 shadow-sm sm:p-6">
       <h3 className="mb-1 text-lg font-semibold text-white">POS Payment Mix</h3>
       <p className="mb-4 text-sm text-[#9CB4CA]">Sales collections by checkout method.</p>
 
-      <ResponsiveContainer width="100%" height={250}>
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={60}
-            outerRadius={100}
-            paddingAngle={2}
-            dataKey="value"
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Tooltip
-            contentStyle={{
-              backgroundColor: '#0C0F1D',
-              border: '1px solid #42688C',
-              borderRadius: '6px',
-            }}
-            labelStyle={{ color: '#ffffff' }}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+      <div className="h-56 min-w-0 sm:h-[250px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius="48%"
+              outerRadius="78%"
+              paddingAngle={2}
+              dataKey="value"
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip
+              contentStyle={{
+                backgroundColor: '#0C0F1D',
+                border: '1px solid #42688C',
+                borderRadius: '6px',
+              }}
+              labelStyle={{ color: '#ffffff' }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
 
       <div className="mt-4 space-y-2">
         {data.map((item) => (

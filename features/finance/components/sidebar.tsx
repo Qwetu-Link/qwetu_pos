@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import type { FinanceNavItem, FinanceSidebarProps } from "@/types/finance";
 
-export function Sidebar({ open }: FinanceSidebarProps) {
+export function Sidebar({ open, onToggle }: FinanceSidebarProps) {
   const pathname = usePathname();
 
   const menuItems: FinanceNavItem[] = [
@@ -85,11 +85,20 @@ export function Sidebar({ open }: FinanceSidebarProps) {
   ];
 
   return (
-    <aside
-      className={`fixed top-0 bottom-0 left-0 z-50 bg-[#0C0F1D] border-r border-[#42688C]/20 flex flex-col justify-between shadow-xl shadow-[#050724]/30 transition-[width] duration-300 ease-in-out hidden md:flex ${
-        open ? "w-[280px]" : "w-[88px]"
-      }`}
-    >
+    <>
+      {open && (
+        <button
+          type="button"
+          aria-label="Close finance navigation"
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={onToggle}
+        />
+      )}
+      <aside
+        className={`fixed top-0 bottom-0 left-0 z-50 flex w-[280px] flex-col justify-between border-r border-[#42688C]/20 bg-[#0C0F1D] shadow-xl shadow-[#050724]/30 transition-transform duration-300 ease-in-out md:transition-[width] ${
+          open ? "translate-x-0 md:w-[280px]" : "-translate-x-full md:translate-x-0 md:w-[88px]"
+        }`}
+      >
       {/* Branding and Navigation Container */}
       <div className="flex flex-col flex-1 min-h-0">
         {/* Logo Area matches your premium branding setup */}
@@ -117,7 +126,9 @@ export function Sidebar({ open }: FinanceSidebarProps) {
               pathname === menu.href || pathname.startsWith(menu.href + "/");
 
             return (
-              <Link key={menu.section} href={menu.href} passHref>
+              <Link key={menu.section} href={menu.href} passHref onClick={() => {
+                if (window.innerWidth < 768) onToggle();
+              }}>
                 <button
                   title={!open ? menu.label : undefined}
                   className={`w-full flex items-center gap-3 rounded-xl text-sm font-medium transition-all group duration-200 ${
@@ -163,6 +174,7 @@ export function Sidebar({ open }: FinanceSidebarProps) {
           )}
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

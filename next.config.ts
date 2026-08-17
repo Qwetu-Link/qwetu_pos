@@ -47,7 +47,7 @@ const nextConfig: NextConfig = {
         : []),
     ],
   },
-  allowedDevOrigins: ['192.168.18.3', '192.168.0.39', '192.168.0.209'],
+  allowedDevOrigins: ['192.168.18.3', '192.168.0.39', '192.168.0.228'],
   // # service worker extra security headers
   async headers() {
     return [

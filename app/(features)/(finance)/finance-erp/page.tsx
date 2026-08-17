@@ -83,28 +83,28 @@ function StatusBadge({ status }: { status: BranchMoneyStatus }) {
 
 export default function FinDashboard() {
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="flex items-center gap-3 text-3xl font-extrabold text-white">
+    <div className="min-w-0 space-y-6">
+      <header className="flex min-w-0 flex-col justify-between gap-4 lg:flex-row lg:items-center">
+        <div className="min-w-0">
+          <h1 className="flex min-w-0 items-center gap-3 text-xl font-extrabold leading-tight text-white sm:text-2xl lg:text-3xl">
             <ShieldCheck className="h-8 w-8 text-[#E2F4DF]" />
-            Money Overview
+            <span className="min-w-0 break-words">Money Overview</span>
           </h1>
-          <p className="mt-1 text-[#9CB4CA]">
+          <p className="mt-1 max-w-3xl text-sm text-[#9CB4CA] sm:text-base">
             A simple view of money coming in, money going out, payroll, refunds, and branch performance.
           </p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
           <Link
             href="/finance-erp/payments"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#42688C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#52789B]"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#42688C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#52789B] sm:w-auto"
           >
             View Payments
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
             href="/finance-erp/expense"
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] px-4 py-2.5 text-sm font-semibold text-[#E2F4DF] transition hover:bg-[#13203A]"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] px-4 py-2.5 text-sm font-semibold text-[#E2F4DF] transition hover:bg-[#13203A] sm:w-auto"
           >
             Add Expense
           </Link>
@@ -113,8 +113,8 @@ export default function FinDashboard() {
 
       <KPICards />
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+      <section className="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="min-w-0 rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-4 shadow-sm sm:p-5">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#42688C]/20 text-[#E2F4DF]">
               <CheckCircle2 className="h-5 w-5" />
@@ -140,7 +140,7 @@ export default function FinDashboard() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+        <div className="min-w-0 rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-4 shadow-sm sm:p-5">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#42688C]/20 text-[#E2F4DF]">
               <Building2 className="h-5 w-5" />
@@ -154,7 +154,7 @@ export default function FinDashboard() {
           <p className="mt-1 text-sm text-[#9CB4CA]">Active branches reporting today</p>
         </div>
 
-        <div className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+        <div className="min-w-0 rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-4 shadow-sm sm:p-5 md:col-span-2 xl:col-span-1">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-400/15 text-amber-200">
               <Clock3 className="h-5 w-5" />
@@ -169,16 +169,16 @@ export default function FinDashboard() {
         </div>
       </section>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="md:col-span-2">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-2">
+        <div className="lg:col-span-2">
           <RevenueChart />
         </div>
         <PaymentMethodChart />
         <ProfitTrendsChart />
       </div>
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="overflow-hidden rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] shadow-sm">
+      <section className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="min-w-0 overflow-hidden rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] shadow-sm">
           <div className="border-b border-[#42688C]/20 px-5 py-4">
             <h2 className="text-lg font-bold text-white">Branch Money Summary</h2>
             <p className="text-sm text-[#9CB4CA]">Sales received by each branch today.</p>
@@ -206,7 +206,7 @@ export default function FinDashboard() {
           />
         </div>
 
-        <aside className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm">
+        <aside className="min-w-0 rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-4 shadow-sm sm:p-5">
           <h2 className="text-lg font-bold text-white">Common Tasks</h2>
           <p className="mt-1 text-sm text-[#9CB4CA]">The actions most users need day to day.</p>
           <div className="mt-4 space-y-3">

@@ -51,7 +51,7 @@ export function KPICards() {
   ]
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {kpis.map((kpi, idx) => {
         const Icon = kpi.icon
         const isPositive = kpi.change.startsWith('+')
@@ -59,7 +59,7 @@ export function KPICards() {
         return (
           <div
             key={idx}
-            className="rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-5 shadow-sm transition hover:border-[#42688C]/50 hover:shadow-md"
+            className="min-w-0 rounded-xl border border-[#42688C]/30 bg-[#0C0F1D] p-4 shadow-sm transition hover:border-[#42688C]/50 hover:shadow-md sm:p-5"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
@@ -68,7 +68,7 @@ export function KPICards() {
                 </p>
 
                 <div className="mt-3 flex flex-wrap items-baseline gap-2">
-                  <h3 className="text-2xl font-bold tracking-tight text-white">
+                  <h3 className="break-words text-xl font-bold tracking-tight text-white sm:text-2xl">
                     {kpi.value}
                   </h3>
 
@@ -82,7 +82,7 @@ export function KPICards() {
                 </div>
               </div>
 
-              <div className={`rounded-lg p-3 ${kpi.iconBg}`}>
+              <div className={`shrink-0 rounded-lg p-3 ${kpi.iconBg}`}>
                 <Icon className="h-5 w-5" />
               </div>
             </div>

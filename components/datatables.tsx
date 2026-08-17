@@ -132,7 +132,7 @@ export function DataTable<TData, TValue>({
           ) : (
             <div />
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {toolbar}
             {showColumnToggle && hideableColumns.length ? (
               <details className="relative">
@@ -177,7 +177,7 @@ export function DataTable<TData, TValue>({
         </div>
       ) : null}
 
-      <div className={cn("overflow-hidden rounded-xl border", dark ? "border-[#42688C]/30" : "border-slate-200 bg-white shadow-sm")}>
+      <div className={cn("overflow-x-auto overflow-y-hidden rounded-xl border", dark ? "border-[#42688C]/30" : "border-slate-200 bg-white shadow-sm")}>
         <Table className={minWidth}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -257,7 +257,7 @@ export function DataTable<TData, TValue>({
             ) : null}
             Showing {firstRow}-{lastRow} of {filteredCount}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>
               <ChevronsLeft className="h-4 w-4" />
             </Button>

@@ -8,8 +8,8 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 export function TopNav({ onMenuClick }: FinanceTopNavProps) {
   return (
     <header className="w-full flex-shrink-0 border-b border-[#42688C]/30 bg-[#0C0F1D] shadow-sm">
-      <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
-        <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <button
             onClick={onMenuClick}
             aria-label="Toggle finance navigation"
@@ -28,7 +28,7 @@ export function TopNav({ onMenuClick }: FinanceTopNavProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           <ThemeToggle />
 
           <button className="relative rounded-lg p-2 text-[#B8CBE0] transition-colors hover:bg-[#1A2846] hover:text-white" aria-label="Notifications">
@@ -36,8 +36,8 @@ export function TopNav({ onMenuClick }: FinanceTopNavProps) {
             <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#E2F4DF] ring-2 ring-white"></span>
           </button>
 
-          <div className="flex items-center gap-2 border-l border-[#42688C]/20 pl-4">
-            <button className="rounded-lg p-2 text-[#9CB4CA] transition-colors hover:bg-[#1A2846] hover:text-white" aria-label="Financial management settings">
+          <div className="flex items-center gap-1.5 border-l border-[#42688C]/20 pl-2 sm:gap-2 sm:pl-4">
+            <button className="hidden rounded-lg p-2 text-[#9CB4CA] transition-colors hover:bg-[#1A2846] hover:text-white sm:inline-flex" aria-label="Financial management settings">
               <Settings className="h-5 w-5" />
             </button>
 
@@ -45,7 +45,7 @@ export function TopNav({ onMenuClick }: FinanceTopNavProps) {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#42688C]/40 bg-[#42688C]/20 text-xs font-bold text-[#E2F4DF] shadow-sm transition-transform group-hover:scale-105">
                 JD
               </div>
-              <span className="hidden text-sm font-bold text-[#E2F4DF] transition-colors group-hover:text-white sm:inline">
+              <span className="hidden text-sm font-bold text-[#E2F4DF] transition-colors group-hover:text-white lg:inline">
                 John Doe
               </span>
             </button>
