@@ -27,7 +27,8 @@ if (process.env.NODE_ENV !== "production") {
     globalForDb.qwetuPostgresClient = client;
 }
 
-export const db = drizzle(client);
+// export const db = drizzle(client);
+export const db = drizzle({ client });
 
 // import { config } from 'dotenv';
 // import { drizzle } from 'drizzle-orm/postgres-js'
