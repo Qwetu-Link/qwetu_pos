@@ -273,7 +273,7 @@ export async function getAdminReportCenterData(businessId: string): Promise<Admi
     ),
     db
       .select({
-        month: sql<string>`to_char(${transactionTable.transactedAt}, 'YYYY-MM')`,
+        month: sql<string>`date_format(${transactionTable.transactedAt}, '%Y-%m')`,
         total: sql<number>`coalesce(sum(${transactionTable.amount}), 0)`,
       })
       .from(transactionTable)
@@ -283,15 +283,15 @@ export async function getAdminReportCenterData(businessId: string): Promise<Admi
         gt(transactionTable.amount, 0),
         gte(transactionTable.transactedAt, trendStart),
       ))
-      .groupBy(sql`to_char(${transactionTable.transactedAt}, 'YYYY-MM')`),
+      .groupBy(sql`date_format(${transactionTable.transactedAt}, '%Y-%m')`),
     db
       .select({
-        month: sql<string>`to_char(${expenseTable.createdAt}, 'YYYY-MM')`,
+        month: sql<string>`date_format(${expenseTable.createdAt}, '%Y-%m')`,
         total: sql<number>`abs(coalesce(sum(${expenseTable.amount}), 0))`,
       })
       .from(expenseTable)
       .where(and(eq(expenseTable.businessId, businessId), gte(expenseTable.createdAt, trendStart)))
-      .groupBy(sql`to_char(${expenseTable.createdAt}, 'YYYY-MM')`),
+      .groupBy(sql`date_format(${expenseTable.createdAt}, '%Y-%m')`),
     db
       .select({
         name: orderItemTable.name,
@@ -476,3 +476,4 @@ export async function getAdminReportCenterData(businessId: string): Promise<Admi
     })),
   };
 }
+

@@ -1,32 +1,25 @@
-import {
-    integer,
-    pgEnum,
-    pgTable,
-    timestamp,
-    uniqueIndex,
-    uuid,
-    varchar,
-} from "drizzle-orm/pg-core";
 import { orderTable } from "./orders";
 import { businessTable } from "./business";
+import { int, mysqlEnum, mysqlTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { randomUUID } from "crypto";
 
-export const invoiceStatusEnum = pgEnum("invoice_status", [
+const invoiceStatusValues = [
     "draft",
     "issued",
     "partially_paid",
     "paid",
     "overdue",
     "cancelled",
-]);
+] as const;
 
-export const invoiceTable = pgTable("invoices", {
-    id: uuid("id").defaultRandom().primaryKey(),
-    businessId: uuid("business_id")
+export const invoiceTable = mysqlTable("invoices", {
+    id: varchar("id", { length: 36 }).$defaultFn(() => randomUUID()).primaryKey(),
+    businessId: varchar("business_id", { length: 36 })
         .notNull()
         .references(() => businessTable.id, {
             onDelete: "cascade",
         }),
-    orderId: uuid("order_id")
+    orderId: varchar("order_id", { length: 36 })
         .notNull()
         .references(() => orderTable.id, {
             onDelete: "restrict",
@@ -35,14 +28,14 @@ export const invoiceTable = pgTable("invoices", {
     invoiceNumber: varchar("invoice_number", {
         length: 50,
     }).notNull().unique(),
-    subtotal: integer("subtotal").notNull(),
-    discount: integer("discount").default(0).notNull(),
-    tax: integer("tax").default(0).notNull(),
-    total: integer("total").notNull(),
-    balance: integer("balance").notNull(),
-    installments: integer("installments").default(0).notNull(),
-    installmentAmount: integer("installment_amount").default(0).notNull(),
-    status: invoiceStatusEnum("status")
+    subtotal: int("subtotal").notNull(),
+    discount: int("discount").default(0).notNull(),
+    tax: int("tax").default(0).notNull(),
+    total: int("total").notNull(),
+    balance: int("balance").notNull(),
+    installments: int("installments").default(0).notNull(),
+    installmentAmount: int("installment_amount").default(0).notNull(),
+    status: mysqlEnum("status", invoiceStatusValues)
         .default("issued")
         .notNull(),
     frequency: varchar("frequency", { length: 50 }),
@@ -52,10 +45,10 @@ export const invoiceTable = pgTable("invoices", {
     createdAt: timestamp("created_at")
         .defaultNow()
         .notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => new Date())
-    .notNull(),
+    updatedAt: timestamp("updated_at")
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
 }, (table) => ({
     uniqueInvoice: uniqueIndex("business_invoice_idx")
         .on(table.businessId, table.invoiceNumber)

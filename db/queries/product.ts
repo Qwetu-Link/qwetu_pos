@@ -18,7 +18,7 @@ import {
     computeInventoryStatus,
     DEFAULT_STOCK_LOCATIONS,
 } from "@/utils/catalog-utils";
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import crypto from "crypto";
 
 type ProductImageInput = ProductImageUpload & {
@@ -245,16 +245,22 @@ export const createProductQuery = async (data: {
 }) => {
     await ensureCategoryBelongsToBusiness(data.categoryId, data.businessId);
 
-    const [product] = await db
+    const id = crypto.randomUUID();
+    await db
         .insert(productsTable)
         .values({
+            id,
             businessId: data.businessId,
             name: data.name,
             categoryId: data.categoryId ?? null,
             brand: data.brand,
             description: data.description ?? null,
-        })
-        .returning();
+        });
+
+    const [product] = await db
+        .select()
+        .from(productsTable)
+        .where(eq(productsTable.id, id));
 
     return product;
 };
@@ -271,7 +277,7 @@ export const updateProductQuery = async (data: {
 
     await ensureCategoryBelongsToBusiness(categoryId, businessId);
 
-    const [product] = await db
+    await db
         .update(productsTable)
         .set({
             name,
@@ -282,8 +288,15 @@ export const updateProductQuery = async (data: {
         .where(and(
             eq(productsTable.id, id),
             eq(productsTable.businessId, businessId),
-        ))
-        .returning();
+        ));
+
+    const [product] = await db
+        .select()
+        .from(productsTable)
+        .where(and(
+            eq(productsTable.id, id),
+            eq(productsTable.businessId, businessId),
+        ));
 
     if (product) {
         await db
@@ -336,12 +349,26 @@ export const deleteProductQuery = async (data: {
         }
 
         const [deletedProduct] = await tx
+            .select()
+            .from(productsTable)
+            .where(and(
+                eq(productsTable.id, data.id),
+                eq(productsTable.businessId, data.businessId),
+            ));
+
+        if (!deletedProduct) {
+            return {
+                product: undefined,
+                imagePaths: Array.from(paths),
+            };
+        }
+
+        await tx
             .delete(productsTable)
             .where(and(
                 eq(productsTable.id, data.id),
                 eq(productsTable.businessId, data.businessId),
-            ))
-            .returning();
+            ));
 
         return {
             product: deletedProduct,
@@ -422,27 +449,32 @@ export const replaceProductImagesQuery = async (data: {
                     eq(productImages.businessId, data.businessId),
                 ));
 
-            return tx
+            const imageValues = uploaded.map((image, index) => ({
+                id: crypto.randomUUID(),
+                businessId: data.businessId,
+                productId: data.productId,
+                originalPath: image.originalPath,
+                optimizedPath: image.optimizedPath,
+                thumbnailPath: image.thumbnailPath,
+                watermarkedPath: image.watermarkPath,
+                alt: product.name,
+                variantId: data.files[index]?.variantId ?? null,
+                width: image.width,
+                height: image.height,
+                fileSize: image.fileSize,
+                mimeType: image.mimeType,
+                displayOrder: index,
+                isPrimary: index === 0,
+            }));
+
+            await tx
                 .insert(productImages)
-                .values(
-                    uploaded.map((image, index) => ({
-                        businessId: data.businessId,
-                        productId: data.productId,
-                        originalPath: image.originalPath,
-                        optimizedPath: image.optimizedPath,
-                        thumbnailPath: image.thumbnailPath,
-                        watermarkedPath: image.watermarkPath,
-                        alt: product.name,
-                        variantId: data.files[index]?.variantId ?? null,
-                        width: image.width,
-                        height: image.height,
-                        fileSize: image.fileSize,
-                        mimeType: image.mimeType,
-                        displayOrder: index,
-                        isPrimary: index === 0,
-                    })),
-                )
-                .returning();
+                .values(imageValues);
+
+            return tx
+                .select()
+                .from(productImages)
+                .where(inArray(productImages.id, imageValues.map((image) => image.id)));
         });
 
         await deleteImages(Array.from(oldPaths)).catch(() => undefined);
@@ -507,17 +539,27 @@ export const removeProductImagesQuery = async (data: {
     }
 
     const deleted = await db.transaction(async (tx) => {
-        const removed = [];
+            const removed = [];
 
         for (const imageId of imageIds) {
             const [row] = await tx
+                .select()
+                .from(productImages)
+                .where(and(
+                    eq(productImages.id, imageId),
+                    eq(productImages.productId, data.productId),
+                    eq(productImages.businessId, data.businessId),
+                ));
+
+            if (!row) continue;
+
+            await tx
                 .delete(productImages)
                 .where(and(
                     eq(productImages.id, imageId),
                     eq(productImages.productId, data.productId),
                     eq(productImages.businessId, data.businessId),
-                ))
-                .returning();
+                ));
 
             if (row) removed.push(row);
         }
@@ -556,27 +598,32 @@ export const uploadProductImagesQuery = async (data: {
 
     try {
         return await db.transaction(async (tx) => {
-            return tx
+            const imageValues = uploaded.map((image, index) => ({
+                id: crypto.randomUUID(),
+                businessId: data.businessId,
+                productId: data.productId,
+                originalPath: image.originalPath,
+                optimizedPath: image.optimizedPath,
+                thumbnailPath: image.thumbnailPath,
+                watermarkedPath: image.watermarkPath,
+                alt: product.name,
+                variantId: data.files[index]?.variantId ?? null,
+                width: image.width,
+                height: image.height,
+                fileSize: image.fileSize,
+                mimeType: image.mimeType,
+                displayOrder: index,
+                isPrimary: index === 0,
+            }));
+
+            await tx
                 .insert(productImages)
-                .values(
-                    uploaded.map((image, index) => ({
-                        businessId: data.businessId,
-                        productId: data.productId,
-                        originalPath: image.originalPath,
-                        optimizedPath: image.optimizedPath,
-                        thumbnailPath: image.thumbnailPath,
-                        watermarkedPath: image.watermarkPath,
-                        alt: product.name,
-                        variantId: data.files[index]?.variantId ?? null,
-                        width: image.width,
-                        height: image.height,
-                        fileSize: image.fileSize,
-                        mimeType: image.mimeType,
-                        displayOrder: index,
-                        isPrimary: index === 0,
-                    })),
-                )
-                .returning();
+                .values(imageValues);
+
+            return tx
+                .select()
+                .from(productImages)
+                .where(inArray(productImages.id, imageValues.map((image) => image.id)));
         });
     } catch (error) {
         await deleteImages(uploadedPaths).catch(() => undefined);
@@ -650,27 +697,32 @@ export const saveUploadedProductImagesQuery = async (data: {
                     ));
             }
 
-            return tx
+            const imageValues = data.images.map((image, index) => ({
+                id: crypto.randomUUID(),
+                businessId: data.businessId,
+                productId: data.productId,
+                originalPath: image.originalPath,
+                optimizedPath: image.optimizedPath,
+                thumbnailPath: image.thumbnailPath,
+                watermarkedPath: image.watermarkPath,
+                alt: product.name,
+                variantId: image.variantId ?? null,
+                width: image.width,
+                height: image.height,
+                fileSize: image.fileSize,
+                mimeType: image.mimeType,
+                displayOrder: index,
+                isPrimary: index === 0,
+            }));
+
+            await tx
                 .insert(productImages)
-                .values(
-                    data.images.map((image, index) => ({
-                        businessId: data.businessId,
-                        productId: data.productId,
-                        originalPath: image.originalPath,
-                        optimizedPath: image.optimizedPath,
-                        thumbnailPath: image.thumbnailPath,
-                        watermarkedPath: image.watermarkPath,
-                        alt: product.name,
-                        variantId: image.variantId ?? null,
-                        width: image.width,
-                        height: image.height,
-                        fileSize: image.fileSize,
-                        mimeType: image.mimeType,
-                        displayOrder: index,
-                        isPrimary: index === 0,
-                    })),
-                )
-                .returning();
+                .values(imageValues);
+
+            return tx
+                .select()
+                .from(productImages)
+                .where(inArray(productImages.id, imageValues.map((image) => image.id)));
         });
 
         if (data.mode === "replace") {
@@ -716,7 +768,7 @@ export const createProductWithRelationsQuery = async (data: {
 
     try {
         return await db.transaction(async (tx) => {
-            const [product] = await tx
+            await tx
                 .insert(productsTable)
                 .values(
                     {
@@ -727,28 +779,39 @@ export const createProductWithRelationsQuery = async (data: {
                         brand: data.brand,
                         description: data.description ?? null,
                     },
-                )
-                .returning();
+                );
+
+            const [product] = await tx
+                .select()
+                .from(productsTable)
+                .where(eq(productsTable.id, productId));
 
             const variantInputs = data.variants?.length
                 ? buildVariantCreateInputs(data.name, data.variants)
                 : [];
 
-            const variants = variantInputs.length
-                ? await tx
+            const variantValues = variantInputs.map((variant) => ({
+                id: crypto.randomUUID(),
+                sku: variant.sku,
+                color: variant.color,
+                size: variant.size,
+                buyPrice: variant.buyPrice,
+                sellPrice: variant.sellPrice,
+                businessId: data.businessId,
+                productId,
+            }));
+
+            if (variantValues.length) {
+                await tx
                     .insert(variantsTable)
-                    .values(
-                        variantInputs.map((variant) => ({
-                            sku: variant.sku,
-                            color: variant.color,
-                            size: variant.size,
-                            buyPrice: variant.buyPrice,
-                            sellPrice: variant.sellPrice,
-                            businessId: data.businessId,
-                            productId,
-                        })),
-                    )
-                    .returning()
+                    .values(variantValues);
+            }
+
+            const variants = variantValues.length
+                ? await tx
+                    .select()
+                    .from(variantsTable)
+                    .where(inArray(variantsTable.id, variantValues.map((variant) => variant.id)))
                 : [];
 
             for (const [index, variant] of variants.entries()) {
@@ -762,36 +825,43 @@ export const createProductWithRelationsQuery = async (data: {
             const variantIdsByClientId = new Map(
                 variants.map((variant, index) => [data.variants?.[index]?.clientId, variant.id]),
             );
-            const images = uploaded.length
-                ? await tx
-                    .insert(productImages)
-                    .values(
-                        uploaded.map((image, index) => {
-                            const variantClientId = data.images?.[index]?.variantClientId;
-                            const directVariantId = data.images?.[index]?.variantId;
-                            const requestedVariantId =
-                                (variantClientId ? variantIdsByClientId.get(variantClientId) : undefined) ??
-                                (isUuid(directVariantId) ? directVariantId : undefined);
+            const imageValues = uploaded.map((image, index) => {
+                const variantClientId = data.images?.[index]?.variantClientId;
+                const directVariantId = data.images?.[index]?.variantId;
+                const requestedVariantId =
+                    (variantClientId ? variantIdsByClientId.get(variantClientId) : undefined) ??
+                    (isUuid(directVariantId) ? directVariantId : undefined);
 
-                            return {
-                                businessId: data.businessId,
-                                productId,
-                                variantId: requestedVariantId ?? null,
-                                originalPath: image.originalPath,
-                                optimizedPath: image.optimizedPath,
-                                thumbnailPath: image.thumbnailPath,
-                                watermarkedPath: image.watermarkPath,
-                                alt: data.name,
-                                width: image.width,
-                                height: image.height,
-                                fileSize: image.fileSize,
-                                mimeType: image.mimeType,
-                                displayOrder: index,
-                                isPrimary: index === 0,
-                            };
-                        }),
-                    )
-                    .returning()
+                return {
+                    id: crypto.randomUUID(),
+                    businessId: data.businessId,
+                    productId,
+                    variantId: requestedVariantId ?? null,
+                    originalPath: image.originalPath,
+                    optimizedPath: image.optimizedPath,
+                    thumbnailPath: image.thumbnailPath,
+                    watermarkedPath: image.watermarkPath,
+                    alt: data.name,
+                    width: image.width,
+                    height: image.height,
+                    fileSize: image.fileSize,
+                    mimeType: image.mimeType,
+                    displayOrder: index,
+                    isPrimary: index === 0,
+                };
+            });
+
+            if (imageValues.length) {
+                await tx
+                    .insert(productImages)
+                    .values(imageValues);
+            }
+
+            const images = imageValues.length
+                ? await tx
+                    .select()
+                    .from(productImages)
+                    .where(inArray(productImages.id, imageValues.map((image) => image.id)))
                 : [];
 
             return {
@@ -842,15 +912,23 @@ export const updateProductImageAssignmentsQuery = async (data: {
 
         if (!image) continue;
 
-        const [updated] = await db
+        await db
             .update(productImages)
             .set({ variantId: assignment.variantId ?? null })
             .where(and(
                 eq(productImages.id, image.id),
                 eq(productImages.productId, data.productId),
                 eq(productImages.businessId, data.businessId),
-            ))
-            .returning();
+            ));
+
+        const [updated] = await db
+            .select()
+            .from(productImages)
+            .where(and(
+                eq(productImages.id, image.id),
+                eq(productImages.productId, data.productId),
+                eq(productImages.businessId, data.businessId),
+            ));
 
         if (updated) updates.push(updated);
     }

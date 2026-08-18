@@ -1,41 +1,71 @@
-import { db } from "../db"
-import { usersTable } from "../db/schema/users"
-import { roleTable } from "../db/schema/roles"
-import bcrypt from "bcryptjs"
+import { db } from "../db";
+import { usersTable } from "../db/schema/users";
+import { roleTable } from "../db/schema/roles";
+import { and, eq, isNull } from "drizzle-orm";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 async function main() {
-  console.log("⏳ Starting Super User creation...")
+  console.log("Starting Super User creation...");
 
-  // 1. Create a global "Super Admin" role with no businessId linkage
-  const [superRole] = await db
-    .insert(roleTable)
-    .values({
-      name: "Super Admin",
-      businessId: null, // Global scope
-    })
-    .returning({ id: roleTable.id })
+  const email = process.env.SUPER_ADMIN_EMAIL ?? "admin@qwetupos.com";
+  const password = process.env.SUPER_ADMIN_PASSWORD ?? "AdminPassword123!";
+  const name = process.env.SUPER_ADMIN_NAME ?? "System Super User";
 
-  // 2. Hash your root credential securely
-  const passwordHash = await bcrypt.hash("YourSecureAdminPassword123!", 10)
+  const [existingRole] = await db
+    .select()
+    .from(roleTable)
+    .where(and(eq(roleTable.name, "SUPERADMIN"), isNull(roleTable.businessId)))
+    .limit(1);
 
-  // 3. Create the Super User
-  const [superUser] = await db
-    .insert(usersTable)
-    .values({
-      name: "System Super User",
-      email: "admin@qwetupos.com", // Change this to your root email
-      passwordHash: passwordHash,
-      businessId: null, // Belongs to no business; owns the platform
-      roleId: superRole.id,
+  let roleId = existingRole?.id;
+
+  if (!roleId) {
+    roleId = crypto.randomUUID();
+    await db.insert(roleTable).values({
+      id: roleId,
+      name: "SUPERADMIN",
+      businessId: null,
+      description: "System-wide super administrator",
+    });
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const [existingUser] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, email))
+    .limit(1);
+
+  if (existingUser) {
+    await db
+      .update(usersTable)
+      .set({
+        name,
+        passwordHash,
+        businessId: null,
+        roleId,
+        isActive: true,
+      })
+      .where(eq(usersTable.id, existingUser.id));
+  } else {
+    await db.insert(usersTable).values({
+      id: crypto.randomUUID(),
+      name,
+      email,
+      passwordHash,
+      businessId: null,
+      roleId,
       isActive: true,
-    })
-    .returning()
+    });
+  }
 
-  console.log(`✅ Super User successfully seeded: ${superUser.email}`)
-  process.exit(0)
+  console.log(`Super User successfully seeded: ${email}`);
+  process.exit(0);
 }
 
 main().catch((err) => {
-  console.error("❌ Seeding failed:", err)
-  process.exit(1)
-})
+  console.error("Seeding failed:", err);
+  process.exit(1);
+});

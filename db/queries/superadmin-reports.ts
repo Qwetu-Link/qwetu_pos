@@ -243,7 +243,7 @@ export async function getSuperAdminReportCenterData(): Promise<SuperAdminReportC
       .groupBy(transactionTable.businessId),
     db
       .select({
-        month: sql<string>`to_char(${transactionTable.transactedAt}, 'YYYY-MM')`,
+        month: sql<string>`date_format(${transactionTable.transactedAt}, '%Y-%m')`,
         amount: sql<number>`coalesce(sum(${transactionTable.amount}), 0)`,
       })
       .from(transactionTable)
@@ -252,7 +252,7 @@ export async function getSuperAdminReportCenterData(): Promise<SuperAdminReportC
         gt(transactionTable.amount, 0),
         gte(transactionTable.transactedAt, trendStart),
       ))
-      .groupBy(sql`to_char(${transactionTable.transactedAt}, 'YYYY-MM')`),
+      .groupBy(sql`date_format(${transactionTable.transactedAt}, '%Y-%m')`),
   ]);
 
   const ownerMap = new Map(ownerRows.map((row) => [row.businessId, toNumber(row.owners)]));
@@ -373,3 +373,4 @@ export async function getSuperAdminReportCenterData(): Promise<SuperAdminReportC
     tenants,
   };
 }
+

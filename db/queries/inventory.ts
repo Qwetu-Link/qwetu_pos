@@ -62,8 +62,8 @@ export async function ensureDefaultLocationsQuery(
                 reorderPoint: location.reorderPoint,
             })),
         )
-        .onConflictDoNothing({
-            target: [locationTable.businessId, locationTable.name],
+        .onDuplicateKeyUpdate({
+            set: { id: sql`${locationTable.id}` },
         });
 
     const locations = await client
@@ -93,7 +93,7 @@ export async function createVariantInventoryRowsQuery(
     await ensureVariantBelongsToBusiness(client, data.variantId, data.businessId);
     const locations = await ensureDefaultLocationsQuery(client, data.businessId);
 
-    return client
+    await client
         .insert(variantInventoryTable)
         .values(
             locations.map((location) => {
@@ -113,13 +113,17 @@ export async function createVariantInventoryRowsQuery(
                 };
             }),
         )
-        .onConflictDoNothing({
-            target: [
-                variantInventoryTable.variantId,
-                variantInventoryTable.locationId,
-            ],
-        })
-        .returning();
+        .onDuplicateKeyUpdate({
+            set: { id: sql`${variantInventoryTable.id}` },
+        });
+
+    return client
+        .select()
+        .from(variantInventoryTable)
+        .where(and(
+            eq(variantInventoryTable.businessId, data.businessId),
+            eq(variantInventoryTable.variantId, data.variantId),
+        ));
 }
 
 async function getInventoryRowByLocationName(
@@ -179,7 +183,7 @@ export async function adjustVariantInventoryQuery(data: {
         const nextQuantity = inventoryRow.totalStock + data.quantity;
         const quantityChanged = data.quantity;
 
-        const [updated] = await tx
+        await tx
             .update(variantInventoryTable)
             .set({
                 totalStock: nextQuantity,
@@ -189,8 +193,12 @@ export async function adjustVariantInventoryQuery(data: {
             .where(and(
                 eq(variantInventoryTable.id, inventoryRow.id),
                 eq(variantInventoryTable.businessId, data.businessId),
-            ))
-            .returning();
+            ));
+
+        const [updated] = await tx
+            .select()
+            .from(variantInventoryTable)
+            .where(eq(variantInventoryTable.id, inventoryRow.id));
 
         await tx
             .insert(stockAdjustmentLogsTable)
@@ -265,7 +273,7 @@ export async function transferVariantInventoryQuery(data: {
         const nextFromStock = fromRow.totalStock - data.quantity;
         const nextToStock = toRow.totalStock + data.quantity;
 
-        const [fromUpdated] = await tx
+        await tx
             .update(variantInventoryTable)
             .set({
                 totalStock: nextFromStock,
@@ -274,10 +282,9 @@ export async function transferVariantInventoryQuery(data: {
             .where(and(
                 eq(variantInventoryTable.id, fromRow.id),
                 eq(variantInventoryTable.businessId, data.businessId),
-            ))
-            .returning();
+            ));
 
-        const [toUpdated] = await tx
+        await tx
             .update(variantInventoryTable)
             .set({
                 totalStock: nextToStock,
@@ -287,8 +294,12 @@ export async function transferVariantInventoryQuery(data: {
             .where(and(
                 eq(variantInventoryTable.id, toRow.id),
                 eq(variantInventoryTable.businessId, data.businessId),
-            ))
-            .returning();
+            ));
+
+        const [[fromUpdated], [toUpdated]] = await Promise.all([
+            tx.select().from(variantInventoryTable).where(eq(variantInventoryTable.id, fromRow.id)),
+            tx.select().from(variantInventoryTable).where(eq(variantInventoryTable.id, toRow.id)),
+        ]);
 
         return {
             from: fromUpdated,
@@ -388,23 +399,26 @@ export async function createPurchaseOrderQuery(data: {
         }
 
         const poNumber = await createPoNumber(tx, data.businessId);
-        const [purchaseOrder] = await tx
+        const purchaseOrderId = crypto.randomUUID();
+        await tx
             .insert(purchaseOrdersTable)
             .values({
+                id: purchaseOrderId,
                 businessId: data.businessId,
                 poNumber,
                 supplierName: data.supplierName,
                 status: "draft",
                 notes: data.notes || null,
                 createdBy: data.createdBy ?? null,
-            })
-            .returning();
+            });
 
-        const [item] = await tx
+        const itemId = crypto.randomUUID();
+        await tx
             .insert(purchaseOrderItemsTable)
             .values({
+                id: itemId,
                 businessId: data.businessId,
-                purchaseOrderId: purchaseOrder.id,
+                purchaseOrderId,
                 variantId: variant.id,
                 sku: variant.sku,
                 productName: variant.productName,
@@ -412,8 +426,12 @@ export async function createPurchaseOrderQuery(data: {
                 size: variant.size,
                 quantity: data.quantity,
                 unitCost: variant.buyPrice,
-            })
-            .returning();
+            });
+
+        const [[purchaseOrder], [item]] = await Promise.all([
+            tx.select().from(purchaseOrdersTable).where(eq(purchaseOrdersTable.id, purchaseOrderId)),
+            tx.select().from(purchaseOrderItemsTable).where(eq(purchaseOrderItemsTable.id, itemId)),
+        ]);
 
         return {
             ...purchaseOrder,
@@ -513,9 +531,11 @@ export async function receivePurchaseOrderQuery(data: {
         const totalAmount = items.reduce((sum, item) => sum + item.quantity * item.unitCost, 0);
         const now = new Date();
 
-        const [transaction] = await tx
+        const transactionId = crypto.randomUUID();
+        await tx
             .insert(transactionTable)
             .values({
+                id: transactionId,
                 businessId: data.businessId,
                 paymentId: null,
                 tnxId: await getUniquePurchaseTransactionId(tx, data.businessId),
@@ -527,15 +547,16 @@ export async function receivePurchaseOrderQuery(data: {
                 reference: purchaseOrder.poNumber,
                 transactedAt: now,
                 notes: `Inventory purchase received from ${purchaseOrder.supplierName} via ${purchaseOrder.poNumber}.`,
-            })
-            .returning();
+            });
 
-        const [expense] = await tx
+        const expenseId = crypto.randomUUID();
+        await tx
             .insert(expenseTable)
             .values({
+                id: expenseId,
                 businessId: data.businessId,
                 expenseNo: await getUniqueExpenseNo(tx, data.businessId),
-                transactionId: transaction.id,
+                transactionId,
                 category: "inventory_purchase",
                 vendorName: purchaseOrder.supplierName,
                 amount: totalAmount,
@@ -543,8 +564,12 @@ export async function receivePurchaseOrderQuery(data: {
                 approvedBy: data.receivedBy ?? null,
                 approvedAt: now,
                 notes: `Generated from received purchase order ${purchaseOrder.poNumber}.`,
-            })
-            .returning();
+            });
+
+        const [[transaction], [expense]] = await Promise.all([
+            tx.select().from(transactionTable).where(eq(transactionTable.id, transactionId)),
+            tx.select().from(expenseTable).where(eq(expenseTable.id, expenseId)),
+        ]);
 
         await tx
             .insert(expenseItemTable)

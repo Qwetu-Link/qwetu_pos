@@ -3,6 +3,7 @@ import { productsTable } from "@/db/schema/products";
 import { variantInventoryTable, variantsTable } from "@/db/schema/variants";
 import { createVariantInventoryRowsQuery } from "@/db/queries/inventory";
 import { and, desc, eq } from "drizzle-orm";
+import { randomUUID } from "crypto";
 
 export const getVariantsQuery = async (businessId: string) => {
     return db
@@ -56,16 +57,22 @@ export const createVariantQuery = async (data: {
     await ensureProductBelongsToBusiness(data.productId, data.businessId);
 
     return db.transaction(async (tx) => {
-        const [variant] = await tx
+        const id = randomUUID();
+
+        await tx
             .insert(variantsTable)
-            .values(variantValues)
-            .returning();
+            .values({ id, ...variantValues });
 
         await createVariantInventoryRowsQuery(tx, {
             businessId: data.businessId,
-            variantId: variant.id,
+            variantId: id,
             mainStock,
         });
+
+        const [variant] = await tx
+            .select()
+            .from(variantsTable)
+            .where(eq(variantsTable.id, id));
 
         return variant;
     });
@@ -86,14 +93,21 @@ export const updateVariantQuery = async (data: {
     void mainStock;
 
     return db.transaction(async (tx) => {
-        const [variant] = await tx
+        await tx
             .update(variantsTable)
             .set(values)
             .where(and(
                 eq(variantsTable.id, id),
                 eq(variantsTable.businessId, businessId),
-            ))
-            .returning();
+            ));
+
+        const [variant] = await tx
+            .select()
+            .from(variantsTable)
+            .where(and(
+                eq(variantsTable.id, id),
+                eq(variantsTable.businessId, businessId),
+            ));
 
         if (variant && reorderPoint !== undefined) {
             await tx
@@ -115,13 +129,18 @@ export const deleteVariantQuery = async (data: {
     id: string;
     businessId: string;
 }) => {
-    const [variant] = await db
+    const variant = await getVariantByIdQuery(data);
+
+    if (!variant) {
+        return undefined;
+    }
+
+    await db
         .delete(variantsTable)
         .where(and(
             eq(variantsTable.id, data.id),
             eq(variantsTable.businessId, data.businessId),
-        ))
-        .returning();
+        ));
 
     return variant;
 };

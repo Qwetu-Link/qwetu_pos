@@ -112,6 +112,7 @@ function getOrderTotal(lineItems: OrderLineItemInput[]) {
 }
 
 function getInvoiceValues(data: {
+    id?: string;
     businessId: string;
     orderId: string;
     total: number;
@@ -129,6 +130,7 @@ function getInvoiceValues(data: {
             : startDate;
 
     return {
+        id: data.id,
         businessId: data.businessId,
         orderId: data.orderId,
         invoiceNumber: getInvoiceNumber(),
@@ -685,7 +687,7 @@ export async function createOrderQuery(data: OrderWriteInput) {
             data.lineItems,
             data.businessId,
         );
-        const [order] = await tx
+        await tx
             .insert(orderTable)
             .values({
                 id: orderId,
@@ -702,8 +704,12 @@ export async function createOrderQuery(data: OrderWriteInput) {
                 startDate: createdAt,
                 shippingAddress: data.shippingAddress,
                 createdAt,
-            })
-            .returning();
+            });
+
+        const [order] = await tx
+            .select()
+            .from(orderTable)
+            .where(eq(orderTable.id, orderId));
 
         await tx
             .insert(orderItemTable)
@@ -725,8 +731,10 @@ export async function createOrderQuery(data: OrderWriteInput) {
                 })),
             );
 
-        const [invoice] = await tx.insert(invoiceTable).values(
+        const invoiceId = crypto.randomUUID();
+        await tx.insert(invoiceTable).values(
             getInvoiceValues({
+                id: invoiceId,
                 businessId: data.businessId,
                 orderId: order.id,
                 total,
@@ -735,13 +743,20 @@ export async function createOrderQuery(data: OrderWriteInput) {
                 installmentPlan: data.installmentPlan,
                 installmentStartDate,
             }),
-        ).returning();
+        );
+
+        const [invoice] = await tx
+            .select()
+            .from(invoiceTable)
+            .where(eq(invoiceTable.id, invoiceId));
 
         if (amountPaid > 0) {
             const paidAt = createdAt;
             const transactionReference = await getUniqueCashReference(tx, data.businessId);
             const transactionId = await getUniqueTransactionId(tx, data.businessId, "Cash");
-            const [payment] = await tx.insert(paymentTable).values({
+            const paymentId = crypto.randomUUID();
+            await tx.insert(paymentTable).values({
+                id: paymentId,
                 businessId: data.businessId,
                 invoiceId: invoice.id,
                 amount: amountPaid,
@@ -750,11 +765,11 @@ export async function createOrderQuery(data: OrderWriteInput) {
                     data.paymentType === "installment"
                         ? "Initial deposit paid when the order was created"
                         : "Full payment recorded when the order was created",
-            }).returning();
+            });
 
             await tx.insert(transactionTable).values({
                 businessId: data.businessId,
-                paymentId: payment.id,
+                paymentId,
                 tnxId: transactionId,
                 amount: amountPaid,
                 tnxType: data.paymentType === "installment" ? "deposit" : "sale",
@@ -960,17 +975,19 @@ export async function recordOrderPaymentQuery(data: RecordOrderPaymentInput) {
                 ? data.reference || await getUniqueCashReference(tx, data.businessId)
                 : data.reference || null;
 
-        const [payment] = await tx.insert(paymentTable).values({
+        const paymentId = crypto.randomUUID();
+        await tx.insert(paymentTable).values({
+            id: paymentId,
             businessId: data.businessId,
             invoiceId: invoice.id,
             amount,
             paidAt,
             notes: originalMethodNote || null,
-        }).returning();
+        });
 
         await tx.insert(transactionTable).values({
             businessId: data.businessId,
-            paymentId: payment.id,
+            paymentId,
             tnxId: transactionId,
             amount,
             tnxType: getRecordPaymentTransactionType(order),
@@ -993,7 +1010,7 @@ export async function recordOrderPaymentQuery(data: RecordOrderPaymentInput) {
                 eq(invoiceTable.businessId, data.businessId),
             ));
 
-        return tx
+        await tx
             .update(orderTable)
             .set({
                 depositPaid: nextPaid,
@@ -1002,8 +1019,15 @@ export async function recordOrderPaymentQuery(data: RecordOrderPaymentInput) {
             .where(and(
                 eq(orderTable.id, order.id),
                 eq(orderTable.businessId, data.businessId),
-            ))
-            .returning();
+            ));
+
+        return tx
+            .select()
+            .from(orderTable)
+            .where(and(
+                eq(orderTable.id, order.id),
+                eq(orderTable.businessId, data.businessId),
+            ));
     });
 
     if (!updatedOrder) return undefined;
@@ -1053,14 +1077,21 @@ export async function updateOrderStatusQuery(data: {
             });
         }
 
-        return tx
+        await tx
             .update(orderTable)
             .set({ status: data.status })
             .where(and(
                 eq(orderTable.id, data.id),
                 eq(orderTable.businessId, data.businessId),
-            ))
-            .returning();
+            ));
+
+        return tx
+            .select()
+            .from(orderTable)
+            .where(and(
+                eq(orderTable.id, data.id),
+                eq(orderTable.businessId, data.businessId),
+            ));
     });
 
     const updatedOrder = order ? await getOrderByIdQuery({ id: order.id, businessId: data.businessId }) : undefined;

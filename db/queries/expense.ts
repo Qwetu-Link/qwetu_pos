@@ -154,7 +154,9 @@ export async function createExpenseQuery(data: ExpenseWriteInput) {
     const amount = getExpenseTotal(data);
     const [expense] = await db.transaction(async (tx) => {
         const transactedAt = new Date(data.date);
-        const [transaction] = await tx.insert(transactionTable).values({
+        const transactionId = crypto.randomUUID();
+        await tx.insert(transactionTable).values({
+            id: transactionId,
             businessId: data.businessId,
             paymentId: null,
             tnxId: await getUniqueTransactionId(tx, data.businessId, data.method),
@@ -166,18 +168,20 @@ export async function createExpenseQuery(data: ExpenseWriteInput) {
             reference: null,
             transactedAt,
             notes: data.note || null,
-        }).returning();
+        });
 
-        const [expense] = await tx.insert(expenseTable).values({
+        const expenseId = crypto.randomUUID();
+        await tx.insert(expenseTable).values({
+            id: expenseId,
             businessId: data.businessId,
             expenseNo: await getUniqueExpenseNo(tx, data.businessId),
-            transactionId: transaction.id,
+            transactionId,
             category: normalizeExpenseCategory(data.category),
             vendorName: data.vendor,
             amount,
             status: data.status,
             notes: data.note || null,
-        }).returning();
+        });
 
         if (data.category === "inventory_purchase" && data.items?.length) {
             await tx.insert(expenseItemTable).values(
@@ -191,6 +195,11 @@ export async function createExpenseQuery(data: ExpenseWriteInput) {
                 })),
             );
         }
+
+        const [expense] = await tx
+            .select()
+            .from(expenseTable)
+            .where(eq(expenseTable.id, expenseId));
 
         return [expense];
     });

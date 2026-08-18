@@ -1,22 +1,23 @@
-import { pgTable, varchar, timestamp, uuid, integer, boolean } from "drizzle-orm/pg-core";
+import { boolean, int, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
 import { categoryTable } from "./category";
 import { defineRelationsPart } from "drizzle-orm";
 import { businessTable } from "./business";
+import { randomUUID } from "crypto";
 
 
-export const productImages = pgTable("product_images", {
-    id: uuid("id").defaultRandom().primaryKey(),
-    businessId: uuid("business_id")
+export const productImages = mysqlTable("product_images", {
+    id: varchar("id", { length: 36 }).$defaultFn(() => randomUUID()).primaryKey(),
+    businessId: varchar("business_id", { length: 36 })
         .notNull()
         .references(() => businessTable.id, {
             onDelete: "cascade",
         }),
-    productId: uuid("product_id")
+    productId: varchar("product_id", { length: 36 })
         .notNull()
         .references(() => productsTable.id, {
             onDelete: "cascade",
         }),
-    variantId: uuid("variant_id"),
+    variantId: varchar("variant_id", { length: 36 }),
 
     // Storage paths
     originalPath: varchar("original_path", {
@@ -39,12 +40,12 @@ export const productImages = pgTable("product_images", {
     mimeType: varchar("mime_type", {
         length: 100,
     }),
-    width: integer("width"),
-    height: integer("height"),
-    fileSize: integer("file_size"),
+    width: int("width"),
+    height: int("height"),
+    fileSize: int("file_size"),
 
     // Product gallery
-    displayOrder: integer("display_order")
+    displayOrder: int("display_order")
         .default(0)
         .notNull(),
     isPrimary: boolean("is_primary")
@@ -59,9 +60,9 @@ export const productImages = pgTable("product_images", {
         .notNull(),
 });
 
-export const productsTable = pgTable("products", {
-    id: uuid("id").defaultRandom().primaryKey(),
-    businessId: uuid("business_id")
+export const productsTable = mysqlTable("products", {
+    id: varchar("id", { length: 36 }).$defaultFn(() => randomUUID()).primaryKey(),
+    businessId: varchar("business_id", { length: 36 })
         .notNull()
         .references(() => businessTable.id, {
             onDelete: "cascade",
@@ -69,7 +70,7 @@ export const productsTable = pgTable("products", {
     name: varchar("name", {
         length: 255,
     }).notNull(),
-    categoryId: uuid("category_id").references(() => categoryTable.id, { onDelete: 'restrict' }), // or "cascade" if you want products deleted too
+    categoryId: varchar("category_id", { length: 36 }).references(() => categoryTable.id, { onDelete: 'restrict' }), // or "cascade" if you want products deleted too
     brand: varchar("brand", {
         length: 50,
     }).notNull(),

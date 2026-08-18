@@ -1,21 +1,22 @@
 import {
-    boolean,
-    timestamp,
-    pgTable,
-    text,
-    primaryKey,
-    integer,
-    uuid,
+    mysqlTable,
     varchar,
-} from "drizzle-orm/pg-core"
+    timestamp,
+    int,
+    boolean,
+    primaryKey,
+} from "drizzle-orm/mysql-core";
 import type { AdapterAccountType } from "@auth/core/adapters"
 import { usersTable } from "./users"
+import { randomUUID } from "crypto";
 
 // -----------------------------------------------------------------------------
 // 1. Business / Organization Core
 // -----------------------------------------------------------------------------
-export const businessTable = pgTable("business", {
-    id: uuid("id").defaultRandom().primaryKey(),
+export const businessTable = mysqlTable("business", {
+    id: varchar("id", { length: 36 })
+        .$defaultFn(() => randomUUID())
+        .primaryKey(),
     businessName: varchar("business_name", { length: 255 }).notNull(),
     legalName: varchar("legal_name", { length: 255 }),
     registrationNumber: varchar("registration_number", { length: 100 }).notNull(),
@@ -38,41 +39,43 @@ export const businessTable = pgTable("business", {
 })
 
 
-export const accounts = pgTable(
+export const accounts = mysqlTable(
     "account",
     {
-        userId: uuid("user_id")
+        userId: varchar("user_id", { length: 36 })
             .notNull()
-            .references(() => usersTable.id, { onDelete: "cascade" }),
-        type: text("type").$type<AdapterAccountType>().notNull(),
-        provider: text("provider").notNull(),
-        providerAccountId: text("providerAccountId").notNull(),
-        refresh_token: text("refresh_token"),
-        access_token: text("access_token"),
-        expires_at: integer("expires_at"),
-        token_type: text("token_type"),
-        scope: text("scope"),
-        id_token: text("id_token"),
-        session_state: text("session_state"),
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+            }),
+        type: varchar("type", { length: 255 }).$type<AdapterAccountType>().notNull(),
+        provider: varchar("provider", { length: 255 }).notNull(),
+        providerAccountId: varchar("providerAccountId", { length: 255 }).notNull(),
+        refresh_token: varchar("refresh_token", { length: 2048 }),
+        access_token: varchar("access_token", { length: 2048 }),
+        expires_at: int("expires_at"),
+        token_type: varchar("token_type", { length: 255 }),
+        scope: varchar("scope", { length: 2048 }),
+        id_token: varchar("id_token", { length: 4096 }),
+        session_state: varchar("session_state", { length: 255 }),
     },
     (table) => ({
         compoundKey: primaryKey({ columns: [table.provider, table.providerAccountId] }),
     })
 )
 
-export const sessions = pgTable("session", {
-    sessionToken: text("sessionToken").primaryKey(),
-    userId: uuid("user_id")
+export const sessions = mysqlTable("session", {
+    sessionToken: varchar("sessionToken", { length: 255 }).primaryKey(),
+    userId: varchar("user_id", { length: 36 })
         .notNull()
         .references(() => usersTable.id, { onDelete: "cascade" }),
     expires: timestamp("expires", { mode: "date" }).notNull(),
 })
 
-export const verificationTokens = pgTable(
+export const verificationTokens = mysqlTable(
     "verificationToken",
     {
-        identifier: text("identifier").notNull(),
-        token: text("token").notNull(),
+        identifier: varchar("identifier", { length: 255 }).notNull(),
+        token: varchar("token", { length: 255 }).notNull(),
         expires: timestamp("expires", { mode: "date" }).notNull(),
     },
     (table) => ({

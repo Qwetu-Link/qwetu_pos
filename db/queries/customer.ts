@@ -6,6 +6,7 @@ import {
     mapCustomerRecordToCustomer,
 } from "@/utils/customerUtils";
 import { and, desc, eq } from "drizzle-orm";
+import { randomUUID } from "crypto";
 
 async function getUniqueCustomerSlug(name: string) {
     const baseSlug = generateCustomerSlug(name);
@@ -65,14 +66,21 @@ export async function createCustomerQuery(data: {
 }) {
     const slug = await getUniqueCustomerSlug(data.name);
 
-    const [customer] = await db
+    const id = randomUUID();
+
+    await db
         .insert(customerTable)
         .values({
+            id,
             businessId: data.businessId,
             slug,
             ...getCustomerWriteValues(data),
-        })
-        .returning();
+        });
+
+    const [customer] = await db
+        .select()
+        .from(customerTable)
+        .where(eq(customerTable.id, id));
 
     return mapCustomerRecordToCustomer(customer);
 }
@@ -89,14 +97,21 @@ export async function updateCustomerQuery(data: {
 }) {
     const { id, businessId, ...values } = data;
 
-    const [customer] = await db
+    await db
         .update(customerTable)
         .set(getCustomerWriteValues(values))
         .where(and(
             eq(customerTable.id, id),
             eq(customerTable.businessId, businessId),
-        ))
-        .returning();
+        ));
+
+    const [customer] = await db
+        .select()
+        .from(customerTable)
+        .where(and(
+            eq(customerTable.id, id),
+            eq(customerTable.businessId, businessId),
+        ));
 
     return customer ? mapCustomerRecordToCustomer(customer) : undefined;
 }
@@ -106,12 +121,23 @@ export async function deleteCustomerQuery(data: {
     businessId: string;
 }) {
     const [customer] = await db
+        .select()
+        .from(customerTable)
+        .where(and(
+            eq(customerTable.id, data.id),
+            eq(customerTable.businessId, data.businessId),
+        ));
+
+    if (!customer) {
+        return undefined;
+    }
+
+    await db
         .delete(customerTable)
         .where(and(
             eq(customerTable.id, data.id),
             eq(customerTable.businessId, data.businessId),
-        ))
-        .returning();
+        ));
 
     return customer ? mapCustomerRecordToCustomer(customer) : undefined;
 }

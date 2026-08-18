@@ -6,6 +6,7 @@ import { businessTable } from "@/db/schema/business"
 import { roleTable } from "@/db/schema/roles"
 import { usersTable } from "@/db/schema/users"
 import bcrypt from "bcryptjs"
+import crypto from "crypto"
 import { z } from "zod"
 
 const RegisterBusinessSchema = z.object({
@@ -42,48 +43,51 @@ export async function superAdminCreateBusiness(formData: z.infer<typeof Register
 
         // Find or create a default "Admin / Owner" role layout for this new tenant space
         // Let's assume you have a static template or create one dynamically:
-        const [business] = await tx
+        const businessId = crypto.randomUUID()
+        await tx
             .insert(businessTable)
             .values({
+                id: businessId,
                 businessName: validatedData.businessName,
                 registrationNumber: validatedData.registrationNumber,
                 taxPin: validatedData.taxPin,
                 email: validatedData.businessEmail,
                 phone: validatedData.phone,
             })
-            .returning({ id: businessTable.id })
 
         // Build the default admin tier role bound strictly to this tenant space
-        const [adminRole] = await tx
+        const adminRoleId = crypto.randomUUID()
+        await tx
             .insert(roleTable)
             .values({
+                id: adminRoleId,
                 name: "Business Admin",
-                businessId: business.id,
+                businessId,
             })
-            .returning({ id: roleTable.id })
 
         // Hash operational credentials securely 
         const passwordHash = await bcrypt.hash(validatedData.password, 10)
 
         // Append owner parameters into Auth.js standard users model
-        const [newOwner] = await tx
+        const ownerId = crypto.randomUUID()
+        await tx
             .insert(usersTable)
             .values({
+                id: ownerId,
                 firstName: validatedData.ownerFirstName,
                 lastName: validatedData.ownerLastName,
                 email: validatedData.ownerEmail,
-                businessId: business.id,
-                roleId: adminRole.id,
+                businessId,
+                roleId: adminRoleId,
                 isActive: true,
                 // Make sure to cast/extend if custom fields like passwordHash exist directly on your schema
                 ...({ passwordHash } as unknown as { passwordHash: string })
             })
-            .returning({ id: usersTable.id, email: usersTable.email })
 
         return {
             success: true,
-            businessId: business.id,
-            ownerId: newOwner.id,
+            businessId,
+            ownerId,
         }
     })
 }

@@ -1,45 +1,33 @@
-import { config } from 'dotenv';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+import { config } from "dotenv";
+import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2";
 
-config({ path: '.env.local' });
-
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-    throw new Error("DATABASE_URL is not configured.");
-}
+config({ path: ".env.local" });
 
 const globalForDb = globalThis as typeof globalThis & {
-    qwetuPostgresClient?: postgres.Sql;
+  qwetuMysqlPool?: mysql.Pool;
 };
 
-const client =
-    globalForDb.qwetuPostgresClient ??
-    postgres(connectionString, {
-        prepare: false,
-        max: Number(process.env.DATABASE_POOL_MAX ?? 5),
-        idle_timeout: 20,
-        connect_timeout: 10,
-    });
+const pool =
+  globalForDb.qwetuMysqlPool ??
+  mysql.createPool({
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT ?? 3306),
+    user: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
+    connectionLimit: Number(
+      process.env.DATABASE_POOL_MAX ?? 5
+    ),
+
+    idleTimeout: 20_000,
+    connectTimeout: 10_000,
+  });
 
 if (process.env.NODE_ENV !== "production") {
-    globalForDb.qwetuPostgresClient = client;
+  globalForDb.qwetuMysqlPool = pool;
 }
 
-// export const db = drizzle(client);
-export const db = drizzle({ client });
-
-// import { config } from 'dotenv';
-// import { drizzle } from 'drizzle-orm/postgres-js'
-// import postgres from 'postgres'
-
-// config({ path: '.env' }); // or .env.local
-
-// async function main() {
-//     const client = postgres(process.env.DATABASE_URL!)
-//     const db = drizzle({ client });
-// }
-
-// main();
-
+export const db = drizzle({
+  client: pool,
+});

@@ -3,7 +3,8 @@ import { roleTable } from "@/db/schema/roles";
 import { permissionTable, rolePermissionTable, usersTable } from "@/db/schema/users";
 import { rolePermissionOptions } from "@/utils/pos-details-data";
 import type { BusinessRole, TeamUser } from "@/types/settings";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
+import { randomUUID } from "crypto";
 
 type RoleWriteInput = {
     id?: string;
@@ -42,7 +43,9 @@ async function ensurePermissions(permissionNames: string[]) {
             description: permissionLabels.get(name) ?? name,
             group: getPermissionGroup(name),
         })))
-        .onConflictDoNothing({ target: permissionTable.name });
+        .onDuplicateKeyUpdate({
+            set: { id: sql`${permissionTable.id}` },
+        });
 
     return db
         .select()
@@ -79,12 +82,19 @@ export async function getRolesQuery(businessId: string): Promise<BusinessRole[]>
 export async function createRoleQuery(data: RoleWriteInput) {
     const permissions = await ensurePermissions(data.permissions);
     const [role] = await db.transaction(async (tx) => {
-        const [role] = await tx.insert(roleTable).values({
+        const id = randomUUID();
+        await tx.insert(roleTable).values({
+            id,
             businessId: data.businessId,
             name: data.name,
             description: data.description || null,
             salary: data.salary ?? 0,
-        }).returning();
+        });
+
+        const [role] = await tx
+            .select()
+            .from(roleTable)
+            .where(eq(roleTable.id, id));
 
         if (permissions.length) {
             await tx.insert(rolePermissionTable).values(
@@ -92,7 +102,9 @@ export async function createRoleQuery(data: RoleWriteInput) {
                     roleId: role.id,
                     permissionId: permission.id,
                 })),
-            ).onConflictDoNothing();
+            ).onDuplicateKeyUpdate({
+                set: { roleId: sql`${rolePermissionTable.roleId}` },
+            });
         }
 
         return [role];
@@ -105,7 +117,7 @@ export async function updateRoleQuery(data: RoleWriteInput & { id: string }) {
     const permissions = await ensurePermissions(data.permissions);
 
     const [role] = await db.transaction(async (tx) => {
-        const [role] = await tx.update(roleTable)
+        await tx.update(roleTable)
             .set({
                 name: data.name,
                 description: data.description || null,
@@ -114,8 +126,15 @@ export async function updateRoleQuery(data: RoleWriteInput & { id: string }) {
             .where(and(
                 eq(roleTable.id, data.id),
                 eq(roleTable.businessId, data.businessId),
-            ))
-            .returning();
+            ));
+
+        const [role] = await tx
+            .select()
+            .from(roleTable)
+            .where(and(
+                eq(roleTable.id, data.id),
+                eq(roleTable.businessId, data.businessId),
+            ));
 
         if (!role) return [undefined];
 
@@ -128,7 +147,9 @@ export async function updateRoleQuery(data: RoleWriteInput & { id: string }) {
                     roleId: data.id,
                     permissionId: permission.id,
                 })),
-            ).onConflictDoNothing();
+            ).onDuplicateKeyUpdate({
+                set: { roleId: sql`${rolePermissionTable.roleId}` },
+            });
         }
 
         return [role];
@@ -138,12 +159,21 @@ export async function updateRoleQuery(data: RoleWriteInput & { id: string }) {
 }
 
 export async function deleteRoleQuery(data: { id: string; businessId: string }) {
-    const [role] = await db.delete(roleTable)
+    const [role] = await db
+        .select()
+        .from(roleTable)
         .where(and(
             eq(roleTable.id, data.id),
             eq(roleTable.businessId, data.businessId),
-        ))
-        .returning();
+        ));
+
+    if (!role) return undefined;
+
+    await db.delete(roleTable)
+        .where(and(
+            eq(roleTable.id, data.id),
+            eq(roleTable.businessId, data.businessId),
+        ));
 
     return role;
 }
@@ -168,19 +198,26 @@ export async function getTeamUsersQuery(businessId: string): Promise<TeamUser[]>
 }
 
 export async function createTeamUserQuery(data: TeamUserWriteInput) {
-    const [user] = await db.insert(usersTable).values({
+    const id = randomUUID();
+    await db.insert(usersTable).values({
+        id,
         businessId: data.businessId,
         name: data.name,
         email: data.email,
         roleId: data.roleId,
         isActive: data.status === "Active",
-    }).returning();
+    });
+
+    const [user] = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.id, id));
 
     return user;
 }
 
 export async function updateTeamUserQuery(data: TeamUserWriteInput & { id: string }) {
-    const [user] = await db.update(usersTable)
+    await db.update(usersTable)
         .set({
             name: data.name,
             email: data.email,
@@ -190,19 +227,35 @@ export async function updateTeamUserQuery(data: TeamUserWriteInput & { id: strin
         .where(and(
             eq(usersTable.id, data.id),
             eq(usersTable.businessId, data.businessId),
-        ))
-        .returning();
+        ));
+
+    const [user] = await db
+        .select()
+        .from(usersTable)
+        .where(and(
+            eq(usersTable.id, data.id),
+            eq(usersTable.businessId, data.businessId),
+        ));
 
     return user;
 }
 
 export async function deleteTeamUserQuery(data: { id: string; businessId: string }) {
-    const [user] = await db.delete(usersTable)
+    const [user] = await db
+        .select()
+        .from(usersTable)
         .where(and(
             eq(usersTable.id, data.id),
             eq(usersTable.businessId, data.businessId),
-        ))
-        .returning();
+        ));
+
+    if (!user) return undefined;
+
+    await db.delete(usersTable)
+        .where(and(
+            eq(usersTable.id, data.id),
+            eq(usersTable.businessId, data.businessId),
+        ));
 
     return user;
 }

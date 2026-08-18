@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { categoryTable } from "@/db/schema/category";
 import { productsTable } from "@/db/schema/products";
 import { and, desc, eq, sql } from "drizzle-orm";
+import { randomUUID } from "crypto";
 
 export const getCategoriesQuery = async (businessId: string) => {
     return db
@@ -10,7 +11,7 @@ export const getCategoriesQuery = async (businessId: string) => {
             name: categoryTable.name,
             description: categoryTable.description,
             icon: categoryTable.icon,
-            productCount: sql<number>`count(${productsTable.id})::int`,
+            productCount: sql<number>`cast(count(${productsTable.id}) as unsigned)`,
         })
         .from(categoryTable)
         .leftJoin(
@@ -41,7 +42,7 @@ export const getCategoryByIdQuery = async (data: {
             name: categoryTable.name,
             description: categoryTable.description,
             icon: categoryTable.icon,
-            productCount: sql<number>`count(${productsTable.id})::int`,
+            productCount: sql<number>`cast(count(${productsTable.id}) as unsigned)`,
         })
         .from(categoryTable)
         .leftJoin(
@@ -71,12 +72,14 @@ export const createCategoryQuery = async (data: {
     description: string;
     icon: string;
 }) => {
+    const id = randomUUID();
+
     const [category] = await db
         .insert(categoryTable)
-        .values(data)
-        .returning();
+        .values({ id, ...data })
+        .$returningId();
 
-    return category;
+    return getCategoryByIdQuery({ id: category.id, businessId: data.businessId });
 };
 
 export const updateCategoryQuery = async (data: {
@@ -88,29 +91,33 @@ export const updateCategoryQuery = async (data: {
 }) => {
     const { id, businessId, ...values } = data;
 
-    const [category] = await db
+    await db
         .update(categoryTable)
         .set(values)
         .where(and(
             eq(categoryTable.id, id),
             eq(categoryTable.businessId, businessId),
-        ))
-        .returning();
+        ));
 
-    return category;
+    return getCategoryByIdQuery({ id, businessId });
 };
 
 export const deleteCategoryQuery = async (data: {
     id: string;
     businessId: string;
 }) => {
-    const [category] = await db
+    const category = await getCategoryByIdQuery(data);
+
+    if (!category) {
+        return undefined;
+    }
+
+    await db
         .delete(categoryTable)
         .where(and(
             eq(categoryTable.id, data.id),
             eq(categoryTable.businessId, data.businessId),
-        ))
-        .returning();
+        ));
 
     return category;
 };

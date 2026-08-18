@@ -1,13 +1,16 @@
-import { integer, pgEnum, pgTable, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 import { businessTable } from "./business";
+import { int, mysqlEnum, mysqlTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { randomUUID } from "crypto";
 
-export const riskLevelEnum = pgEnum("risk", ["low", "medium", "high"]);
-export const segmentEnum = pgEnum("segment", ["New", "Regular", "VIP"]);
+const riskLevelValues = ["low", "medium", "high"] as const;
+const segmentValues = ["New", "Regular", "VIP"] as const;
 
 // Customer Table
-export const customerTable = pgTable("customers", {
-    id: uuid("id").defaultRandom().primaryKey(),
-    businessId: uuid("business_id")
+export const customerTable = mysqlTable("customers", {
+    id: varchar("id", { length: 36 })
+        .$defaultFn(() => randomUUID())
+        .primaryKey(),
+    businessId: varchar("business_id", { length: 36 })
         .notNull()
         .references(() => businessTable.id, {
             onDelete: "cascade",
@@ -17,12 +20,13 @@ export const customerTable = pgTable("customers", {
     email: varchar("email", { length: 255 }).notNull().unique(),
     phone: varchar("phone", { length: 255 }),
     address: varchar("address", { length: 255 }),
-    totalOrders: integer("total_orders").default(0),
-    totalSpent: integer("total_spent").default(0),
-    activeInstallments: integer("active_installments").default(0),
-    paymentScore: integer("payment_score").default(0),
-    riskLevel: riskLevelEnum("risk_level").default("low").notNull(),
-    segment: segmentEnum("segment").default("New").notNull(),
+    totalOrders: int("total_orders").default(0),
+    totalSpent: int("total_spent").default(0),
+    activeInstallments: int("active_installments").default(0),
+    paymentScore: int("payment_score").default(0),
+    riskLevel: mysqlEnum("risk", riskLevelValues)
+        .default("low").notNull(),
+    segment: mysqlEnum("segment", segmentValues).default("New").notNull(),
     joinedDate: timestamp("joined_date").defaultNow().notNull(),
     lastPurchase: timestamp("last_purchase"),
     createdAt: timestamp("created_at").defaultNow().notNull(),

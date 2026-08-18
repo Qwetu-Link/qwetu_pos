@@ -203,7 +203,7 @@ export async function getAnalyticsSummaryQuery(
                 lt(customerTable.createdAt, currentStart),
             )), "total"),
         db.select({
-            month: sql<string>`to_char(${transactionTable.transactedAt}, 'YYYY-MM')`,
+            month: sql<string>`date_format(${transactionTable.transactedAt}, '%Y-%m')`,
             type: transactionTable.tnxType,
             total: sql<number>`coalesce(sum(${transactionTable.amount}), 0)`,
         })
@@ -214,7 +214,7 @@ export async function getAnalyticsSummaryQuery(
                 gt(transactionTable.amount, 0),
                 gte(transactionTable.transactedAt, currentStart),
             ))
-            .groupBy(sql`to_char(${transactionTable.transactedAt}, 'YYYY-MM')`, transactionTable.tnxType),
+            .groupBy(sql`date_format(${transactionTable.transactedAt}, '%Y-%m')`, transactionTable.tnxType),
         db.select({
             name: categoryTable.name,
             value: sql<number>`coalesce(sum(${orderItemTable.quantity} * ${orderItemTable.price}), 0)`,
@@ -370,3 +370,4 @@ export async function getAnalyticsSummaryQuery(
         collectionTrend: buildCollectionTrend(months, collectionRows),
     };
 }
+
