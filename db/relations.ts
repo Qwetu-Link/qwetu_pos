@@ -1,37 +1,47 @@
-import { relations } from "drizzle-orm";
+import { defineRelations } from "drizzle-orm";
 import { invoiceTable } from "@/db/schema/invoice";
 import { orderTable } from "@/db/schema/orders";
 import { paymentTable, transactionTable } from "@/db/schema/payments";
 
-export const orderRelations = relations(orderTable, ({ one }) => ({
-    invoice: one(invoiceTable, {
-        fields: [orderTable.id],
-        references: [invoiceTable.orderId],
-    }),
-}));
+export const orderRelations = defineRelations(
+    { orderTable, invoiceTable, paymentTable, transactionTable },
+    ({ one, many, orderTable, invoiceTable, paymentTable, transactionTable }) => ({
+        orderTable: {
+            invoice: one.invoiceTable({
+                from: orderTable.id,
+                to: invoiceTable.orderId,
+            }),
+        },
 
-export const invoiceRelations = relations(invoiceTable, ({ one, many }) => ({
-    order: one(orderTable, {
-        fields: [invoiceTable.orderId],
-        references: [orderTable.id],
-    }),
-    payments: many(paymentTable),
-}));
+        invoiceTable: {
+            order: one.orderTable({
+                from: invoiceTable.orderId,
+                to: orderTable.id,
+                optional: false,
+            }),
+            payments: many.paymentTable({
+                from: invoiceTable.id,
+                to: paymentTable.invoiceId,
+            }),
+        },
 
-export const paymentRelations = relations(paymentTable, ({ one }) => ({
-    invoice: one(invoiceTable, {
-        fields: [paymentTable.invoiceId],
-        references: [invoiceTable.id],
-    }),
-    transaction: one(transactionTable, {
-        fields: [paymentTable.id],
-        references: [transactionTable.paymentId],
-    }),
-}));
+        paymentTable: {
+            invoice: one.invoiceTable({
+                from: paymentTable.invoiceId,
+                to: invoiceTable.id,
+                optional: false,
+            }),
+            transaction: one.transactionTable({
+                from: paymentTable.id,
+                to: transactionTable.paymentId,
+            }),
+        },
 
-export const transactionRelations = relations(transactionTable, ({ one }) => ({
-    payment: one(paymentTable, {
-        fields: [transactionTable.paymentId],
-        references: [paymentTable.id],
+        transactionTable: {
+            payment: one.paymentTable({
+                from: transactionTable.paymentId,
+                to: paymentTable.id,
+            }),
+        },
     }),
-}));
+);

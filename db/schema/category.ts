@@ -1,6 +1,4 @@
 import { pgTable, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
-import { productsTable } from "./products";
 import { businessTable } from "./business";
 
 
@@ -22,7 +20,3 @@ export const categoryTable = pgTable("category", {
 }, (table) => ({
   uniqueName: uniqueIndex("category_business_name_idx").on(table.businessId, table.name)
 }))
-
-export const categoryRelations = relations(categoryTable, ({ many }) => ({
-  products: many(productsTable),
-}));

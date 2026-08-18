@@ -1,6 +1,6 @@
 import { pgTable, varchar, timestamp, uuid, integer, boolean } from "drizzle-orm/pg-core";
 import { categoryTable } from "./category";
-import { relations } from "drizzle-orm";
+import { defineRelationsPart } from "drizzle-orm";
 import { businessTable } from "./business";
 
 
@@ -59,17 +59,6 @@ export const productImages = pgTable("product_images", {
         .notNull(),
 });
 
-export const productImageRelations = relations(
-    productImages,
-    ({ one }) => ({
-        product: one(productsTable, {
-            fields: [productImages.productId],
-            references: [productsTable.id],
-        }),
-    })
-);
-
-
 export const productsTable = pgTable("products", {
     id: uuid("id").defaultRandom().primaryKey(),
     businessId: uuid("business_id")
@@ -96,11 +85,43 @@ export const productsTable = pgTable("products", {
         .notNull(),
 });
 
-export const productRelations = relations(productsTable, ({ one, many }) => ({
-    category: one(categoryTable, {
-        fields: [productsTable.categoryId],
-        references: [categoryTable.id],
+export const productImageRelations = defineRelationsPart(
+    { productImages, productsTable },
+    ({ one, productImages, productsTable }) => ({
+        productImages: {
+            product: one.productsTable({
+                from: productImages.productId,
+                to: productsTable.id,
+                optional: false,
+            }),
+        },
     }),
-    images: many(productImages),
+);
 
-}));
+export const categoryRelations = defineRelationsPart(
+    { categoryTable, productsTable },
+    ({ many, categoryTable, productsTable }) => ({
+        categoryTable: {
+            products: many.productsTable({
+                from: categoryTable.id,
+                to: productsTable.categoryId,
+            }),
+        },
+    }),
+);
+
+export const productRelations = defineRelationsPart(
+    { productsTable, categoryTable, productImages },
+    ({ one, many, productsTable, categoryTable, productImages }) => ({
+        productsTable: {
+            category: one.categoryTable({
+                from: productsTable.categoryId,
+                to: categoryTable.id,
+            }),
+            images: many.productImages({
+                from: productsTable.id,
+                to: productImages.productId,
+            }),
+        },
+    }),
+);
