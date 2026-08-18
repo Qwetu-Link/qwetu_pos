@@ -42,3 +42,4 @@ export const createPurchaseOrderSchema = z.object({
 export const purchaseOrderIdSchema = z.object({
     id: z.string().trim().uuid("Invalid purchase order"),
 });
+

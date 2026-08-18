@@ -43,9 +43,12 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          # local-dir: ./out/
-          # server-dir: ./public_html/
-          server-dir: ./qwetu_pos/
+          server-dir: ./domains/pos.qwetulinks.co.ke/qwetu_pos/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env*
           timeout: 86400000
           log-level: standard
           dangerous-clean-slate: false

@@ -2,10 +2,11 @@
   "name": "qwetu_pos",
   "version": "0.1.0",
   "private": true,
+  
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --webpack",
-    "start": "next start",
+    "start":"node app.js", 
     "lint": "eslint",
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
