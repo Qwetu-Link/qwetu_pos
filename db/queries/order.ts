@@ -14,7 +14,7 @@ import type {
     OrderStatus,
     PaymentStatus,
     PaymentType,
-} from "@/types/customer";
+} from "@/types/admin/customer";
 import { and, desc, eq, inArray, lte } from "drizzle-orm";
 import crypto from "crypto";
 

@@ -1,6 +1,6 @@
 import EmptyState from "@/components/common/EmptyState";
 import { TrendingUp } from "lucide-react";
-import type { CollectionMetric } from "@/types/settings";
+import type { CollectionMetric } from "@/types/admin/settings";
 
 export default function CollectionTrendChart({ data }: { data: CollectionMetric[] }) {
   if (data.length === 0) {

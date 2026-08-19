@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Loader2, X, UserPlus, Pencil, Save } from "lucide-react";
-import type { Customer, CustomerFormData, Segment } from "@/types/customer";
+import type { Customer, CustomerFormData, Segment } from "@/types/admin/customer";
 
 interface CustomerFormModalProps {
   isOpen: boolean;

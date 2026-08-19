@@ -1,6 +1,6 @@
 "use client";
 
-import type { Category } from "@/types/categories";
+import type { Category } from "@/types/admin/categories";
 import {
   Baby,
   BedDouble,

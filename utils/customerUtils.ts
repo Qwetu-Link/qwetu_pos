@@ -4,7 +4,7 @@ import type {
   CustomerStats,
   LineItem,
   RiskLevel,
-} from "../types/customer";
+} from "../types/admin/customer";
 
 export { DEMO_CUSTOMERS, DEMO_ORDERS, DEMO_VARIANTS } from "@/data/customers";
 

@@ -1,4 +1,4 @@
-import type { Customer, Order } from "@/types/customer";
+import type { Customer, Order } from "@/types/admin/customer";
 
 export const DEMO_CUSTOMERS: Customer[] = [
   {

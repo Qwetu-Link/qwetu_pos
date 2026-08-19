@@ -6,7 +6,7 @@ import {
 import EmptyState from "@/components/common/EmptyState";
 import { SimpleDataTable } from "@/components/datatables";
 import { Eye, Pencil, Trash2, WalletCards } from "lucide-react";
-import type { Expense } from "@/types/transactions";
+import type { Expense } from "@/types/admin/transactions";
 import ExpenseStatusBadge from "./ExpenseStatusBadge";
 
 export default function ExpensesTable({

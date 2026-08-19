@@ -1,5 +1,5 @@
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
-import type { BusinessRole, TeamUser } from "@/types/settings";
+import type { BusinessRole, TeamUser } from "@/types/admin/settings";
 import { SimpleDataTable } from "@/components/datatables";
 import SectionCard from "./SectionCard";
 

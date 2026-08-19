@@ -9,7 +9,7 @@ import {
   getExpenseCategoryLabel,
   normalizeExpenseCategory,
 } from "@/data/expense-categories";
-import type { Expense } from "@/types/transactions";
+import type { Expense } from "@/types/admin/transactions";
 import ExpenseField from "./ExpenseField";
 
 const expenseSchema = z.object({

@@ -5,7 +5,7 @@ import { Search, UserPlus, Users2 } from "lucide-react";
 import { CustomerCardsSkeleton } from "@/components/skeletons";
 import { useCustomersContext } from "./CustomersContext";
 import { computeStats } from "@/utils/customerUtils";
-import type { Customer, CustomerFormData } from "@/types/customer";
+import type { Customer, CustomerFormData } from "@/types/admin/customer";
 import { CustomerStatsRow } from "./CustomerStatsRow";
 import { CustomerCard } from "./CustomerCard";
 import { CustomerFormModal } from "./CustomerFormModal";

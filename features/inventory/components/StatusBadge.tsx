@@ -4,7 +4,7 @@ import {
   TriangleAlert,
   Truck,
 } from "lucide-react";
-import type { InventoryStatus } from "@/types/inventory";
+import type { InventoryStatus } from "@/types/admin/inventory";
 
 interface Config {
   label: string;

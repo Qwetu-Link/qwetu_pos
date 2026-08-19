@@ -16,7 +16,7 @@ import type {
   ReportStatus,
   ReportTemplate,
   ScheduledReport,
-} from "@/types/reports";
+} from "@/types/admin/reports";
 import EmptyState from "@/components/common/EmptyState";
 import GeneratedReportsTable from "./GeneratedReportsTable";
 import ReportMetricCard from "./ReportMetricCard";

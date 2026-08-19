@@ -7,7 +7,7 @@ import { InventoryCardsSkeleton } from "@/components/skeletons";
 import { SimpleDataTable } from "@/components/datatables";
 import { useAdjustmentLogs, useInventory, usePurchaseOrders } from "@/hooks/useInventory";
 import { useGetProducts } from "@/hooks/useProduct";
-import type { InventoryItem, StockAdjustmentReason } from "@/types/inventory";
+import type { InventoryItem, StockAdjustmentReason } from "@/types/admin/inventory";
 import { StatsRow } from "./StatsRow";
 import { FilterBar } from "./FilterBar";
 import { InventoryCard } from "./InventoryCard";

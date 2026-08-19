@@ -14,7 +14,7 @@ import Pagination from "@/components/common/Pagination";
 import {
   formatCurrency,
 } from "@/data/transaction-data";
-import type { Expense } from "@/types/transactions";
+import type { Expense } from "@/types/admin/transactions";
 import {
   useDeleteExpense,
   useGetExpenses,

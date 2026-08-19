@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { expenseItemTable, expenseTable, transactionTable } from "@/db/schema/payments";
 import { getExpenseCategoryLabel, normalizeExpenseCategory } from "@/data/expense-categories";
-import type { Expense, ExpenseStatus } from "@/types/transactions";
+import type { Expense, ExpenseStatus } from "@/types/admin/transactions";
 import { and, desc, eq } from "drizzle-orm";
 import crypto from "crypto";
 

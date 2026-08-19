@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Category } from "@/types/categories";
+import type { Category } from "@/types/admin/categories";
 import type { CategoryFormValues } from "@/validators/category";
 import { toast } from "sonner";
 import {

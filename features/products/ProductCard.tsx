@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Product } from "@/types/catalog";
+import { Product } from "@/types/admin/catalog";
 import ProductImage from "./ProductImage";
 import {
   getProductImageSrc,

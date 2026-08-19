@@ -1,6 +1,6 @@
 import { CalendarClock, Users } from "lucide-react";
 import EmptyState from "@/components/common/EmptyState";
-import type { ScheduledReport } from "@/types/reports";
+import type { ScheduledReport } from "@/types/admin/reports";
 
 export default function ScheduledReportsPanel({
   reports,

@@ -5,7 +5,7 @@ import { uploadProductImagesFromFiles } from "@/features/products/uploadProductI
 import { useCreateProduct, useSaveUploadedProductImages } from "@/hooks/useProduct";
 import { useGetCategories } from "@/hooks/useCategory";
 import { isOfflineQueuedResult } from "@/hooks/useOfflineMutation";
-import type { ProductSaveValues } from "@/types/catalog";
+import type { ProductSaveValues } from "@/types/admin/catalog";
 import { buildVariantCreateInputs } from "@/utils/catalog-utils";
 import { ArrowLeft, PackagePlus } from "lucide-react";
 import Link from "next/link";

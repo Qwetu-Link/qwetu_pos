@@ -1,4 +1,4 @@
-import type { PaymentPlan, Receipt } from "@/types/lipa-mdogo";
+import type { PaymentPlan, Receipt } from "@/types/admin/lipa-mdogo";
 
 export {
   formatCompactCurrency,
@@ -15,7 +15,7 @@ export {
   getRemainingAmount,
   mapOrderToPaymentPlan,
 } from "@/utils/lipa-mdogo-utils";
-export type { PaymentPlan, PlanStatus, Receipt } from "@/types/lipa-mdogo";
+export type { PaymentPlan, PlanStatus, Receipt } from "@/types/admin/lipa-mdogo";
 
 export const paymentPlans: PaymentPlan[] = [
   {

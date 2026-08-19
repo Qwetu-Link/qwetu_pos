@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/data/transaction-data";
 import { useGetExpense, useUpdateExpenseStatus } from "@/hooks/useExpenses";
-import type { Expense, ExpenseStatus } from "@/types/transactions";
+import type { Expense, ExpenseStatus } from "@/types/admin/transactions";
 import ExpenseStatusBadge from "./ExpenseStatusBadge";
 import { ExpenseDetailSkeleton } from "@/components/skeletons";
 import { SimpleDataTable } from "@/components/datatables";

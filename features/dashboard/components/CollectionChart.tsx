@@ -1,5 +1,5 @@
 
-import type { DashboardCollectionPoint } from "@/types/dashboard-live";
+import type { DashboardCollectionPoint } from "@/types/admin/dashboard-live";
 
 function formatAxisValue(value: number) {
     if (value >= 1_000_000) return `KES ${Math.round(value / 1_000_000)}M`;

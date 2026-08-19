@@ -1,5 +1,5 @@
 import { Loader2, Pencil, X } from "lucide-react";
-import type { Product, ProductVariant } from "@/types/catalog";
+import type { Product, ProductVariant } from "@/types/admin/catalog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";

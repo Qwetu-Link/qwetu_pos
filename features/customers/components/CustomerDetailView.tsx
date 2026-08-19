@@ -17,7 +17,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { RISK_CONFIG, SEGMENT_CONFIG } from "@/data/customer-config";
-import type { Order } from "@/types/customer";
+import type { Order } from "@/types/admin/customer";
 import { getInitials, getLoyaltyProgress, getLoyaltyStatus } from "@/utils/customerUtils";
 import { formatCurrency, formatDate, getOrderDisplayNumber } from "@/utils/orderUtils";
 import { useCustomersContext } from "./CustomersContext";

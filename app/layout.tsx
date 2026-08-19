@@ -242,17 +242,17 @@ export default function RootLayout({
       <body
         // suppressHydrationWarning # remove error in stalled app 
         className="min-h-full flex flex-col">
+        <ThemeProvider>
         <TRPCReactProvider>
-          <ThemeProvider>
             <SessionProvider>
               <RegisterSW />
               <OfflineSyncProvider />
               <AndroidInstallPrompt />
               {children}</SessionProvider>
             <Toaster position="top-right" richColors closeButton />
-          </ThemeProvider>
         </TRPCReactProvider>
         <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,4 +1,4 @@
-import type { DashboardActivity, DashboardTone } from "@/types/dashboard";
+import type { DashboardActivity, DashboardTone } from "@/types/admin/dashboard";
 import { icon } from "@/utils/icons";
 
 const activityToneClass: Record<DashboardTone, string> = {

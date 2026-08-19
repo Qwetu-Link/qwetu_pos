@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { useOfflineMutation } from "./useOfflineMutation";
-import type { Customer, CustomerFormData, Order, OrderFormData, LineItem } from "../types/customer";
+import type { Customer, CustomerFormData, Order, OrderFormData, LineItem } from "../types/admin/customer";
 import {
   filterCustomers, computeOrderTotal,
 } from "../utils/customerUtils";

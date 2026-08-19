@@ -24,7 +24,7 @@ import type {
   OrderLocationName,
   OrderStatus,
   PaymentType,
-} from "@/types/customer";
+} from "@/types/admin/customer";
 
 interface LineItemRow {
   id: number;

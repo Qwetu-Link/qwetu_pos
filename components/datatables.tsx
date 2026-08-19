@@ -30,7 +30,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/uii/table";
 import { cn } from "@/utils/utils";
 
 export type SimpleTableRow = {

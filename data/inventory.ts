@@ -1,4 +1,4 @@
-import type { InventoryItem } from "@/types/inventory";
+import type { InventoryItem } from "@/types/admin/inventory";
 
 export const DEMO_INVENTORY: InventoryItem[] = [
   {

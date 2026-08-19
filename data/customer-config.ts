@@ -1,4 +1,4 @@
-import type { OrderStatus, RiskLevel, Segment } from "@/types/customer";
+import type { OrderStatus, RiskLevel, Segment } from "@/types/admin/customer";
 
 export const RISK_CONFIG: Record<RiskLevel, { label: string; color: string }> = {
   low: { label: "Low Risk", color: "bg-green-100 text-green-700" },

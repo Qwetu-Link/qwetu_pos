@@ -5,7 +5,7 @@ import type {
   CatalogStats,
   StockLocation,
   VariantInventory,
-} from "@/types/catalog";
+} from "@/types/admin/catalog";
 import { formatCurrency } from "@/utils/formatters";
 
 type VariantCreateInput = Omit<VariantCreateValues, "productId">;

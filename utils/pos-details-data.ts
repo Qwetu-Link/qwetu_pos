@@ -21,7 +21,7 @@ export type {
   RolePermission,
   SegmentMetric,
   TeamUser,
-} from "@/types/settings";
+} from "@/types/admin/settings";
 
 export function getPercentChange(current: number, previous: number) {
   if (!previous && !current) {

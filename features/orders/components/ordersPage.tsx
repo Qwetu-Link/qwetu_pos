@@ -17,7 +17,7 @@ import { OrderStatus } from "@/data/order-options";
 import OrdersTable from "./ordersTable";
 import OrderDetailDrawer from "./orderDetailDrawer";
 import { useDeleteOrder, useGetOrders, useUpdateOrderStatus } from "@/hooks/useOrders";
-import type { Density, Order } from "@/types/orderTypes";
+import type { Density, Order } from "@/types/admin/orderTypes";
 import { getOrderDisplayNumber } from "@/utils/orderUtils";
 
 const LS_PREFIX = "orders-table:";

@@ -1,7 +1,7 @@
 import { Download } from "lucide-react";
 import EmptyState from "@/components/common/EmptyState";
 import { SimpleDataTable } from "@/components/datatables";
-import type { GeneratedReport } from "@/types/reports";
+import type { GeneratedReport } from "@/types/admin/reports";
 import ReportStatusBadge from "./ReportStatusBadge";
 
 export default function GeneratedReportsTable({

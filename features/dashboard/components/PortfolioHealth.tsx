@@ -1,5 +1,5 @@
 import { icon } from '@/utils/icons'
-import type { DashboardPaymentHealthItem } from '@/types/dashboard-live'
+import type { DashboardPaymentHealthItem } from '@/types/admin/dashboard-live'
 
 const healthColors: Record<DashboardPaymentHealthItem['label'], string> = {
     Active: 'status-active',

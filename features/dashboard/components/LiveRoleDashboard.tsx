@@ -17,8 +17,8 @@ import { DashboardSkeleton } from "@/components/skeletons";
 import { dashboardData } from "@/data/dashboard-data";
 import { formatCurrency } from "@/data/transaction-data";
 import { useDashboardSummary } from "@/hooks/useDashboard";
-import type { RoleDashboardData } from "@/types/dashboard";
-import type { DashboardRoleKey, DashboardSummary } from "@/types/dashboard-live";
+import type { RoleDashboardData } from "@/types/admin/dashboard";
+import type { DashboardRoleKey, DashboardSummary } from "@/types/admin/dashboard-live";
 import RoleDashboard from "./RoleDashboard";
 
 const primaryQuickActions = [

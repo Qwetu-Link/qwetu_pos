@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 import StatusBadge from "./statusBadge";
-import type { Order } from "@/types/orderTypes";
+import type { Order } from "@/types/admin/orderTypes";
 import {
   formatCurrency,
   formatDate,

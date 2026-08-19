@@ -4,7 +4,7 @@ import {
   PackageOpen,
   TriangleAlert,
 } from "lucide-react";
-import type { InventoryStatus } from "@/types/catalog";
+import type { InventoryStatus } from "@/types/admin/catalog";
 
 const STATUS_CONFIG = {
   healthy: {

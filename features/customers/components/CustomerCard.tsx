@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Mail, Phone, Pencil, Trash2, ChevronRight } from "lucide-react";
-import type { Customer } from "@/types/customer";
+import type { Customer } from "@/types/admin/customer";
 import { RISK_CONFIG, SEGMENT_CONFIG } from "@/data/customer-config";
 import { getInitials } from "@/utils/customerUtils";
 

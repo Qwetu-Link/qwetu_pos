@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { rolePermissionOptions } from "@/utils/pos-details-data";
-import type { BusinessRole } from "@/types/settings";
+import type { BusinessRole } from "@/types/admin/settings";
 import FormField from "../settings/components/FormField";
 
 const addRoleSchema = z.object({

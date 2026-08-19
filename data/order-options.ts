@@ -1,6 +1,6 @@
-import type { OrderStatus } from "@/types/customer";
+import type { OrderStatus } from "@/types/admin/customer";
 
-export type { OrderStatus } from "@/types/customer";
+export type { OrderStatus } from "@/types/admin/customer";
 
 export const statusOptions: OrderStatus[] = [
   "pending",

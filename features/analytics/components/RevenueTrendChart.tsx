@@ -4,7 +4,7 @@ import {
 } from "@/utils/pos-details-data";
 import EmptyState from "@/components/common/EmptyState";
 import { BarChart3 } from "lucide-react";
-import type { RevenueMonth } from "@/types/settings";
+import type { RevenueMonth } from "@/types/admin/settings";
 
 export default function RevenueTrendChart({ data }: { data: RevenueMonth[] }) {
   if (data.length === 0) {

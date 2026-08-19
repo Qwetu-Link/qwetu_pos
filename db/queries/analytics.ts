@@ -5,14 +5,14 @@ import { invoiceTable } from "@/db/schema/invoice";
 import { orderItemTable, orderTable } from "@/db/schema/orders";
 import { transactionTable } from "@/db/schema/payments";
 import { productsTable } from "@/db/schema/products";
-import type { AnalyticsPeriod, AnalyticsSummary, PlanDurationMetric } from "@/types/analytics";
+import type { AnalyticsPeriod, AnalyticsSummary, PlanDurationMetric } from "@/types/admin/analytics";
 import type {
     CategoryMetric,
     CollectionMetric,
     PaymentMethodMetric,
     RevenueMonth,
     SegmentMetric,
-} from "@/types/settings";
+} from "@/types/admin/settings";
 import { and, count, desc, eq, gt, gte, isNull, lt, ne, or, sql } from "drizzle-orm";
 
 const categoryColors = ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444", "#14b8a6"];

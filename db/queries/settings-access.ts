@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { roleTable } from "@/db/schema/roles";
 import { permissionTable, rolePermissionTable, usersTable } from "@/db/schema/users";
 import { rolePermissionOptions } from "@/utils/pos-details-data";
-import type { BusinessRole, TeamUser } from "@/types/settings";
+import type { BusinessRole, TeamUser } from "@/types/admin/settings";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 

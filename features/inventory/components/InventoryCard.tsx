@@ -1,5 +1,5 @@
 import { MapPin, Package, ArrowLeftRight, SlidersHorizontal, ShoppingCart } from "lucide-react";
-import type { InventoryItem } from "@/types/inventory";
+import type { InventoryItem } from "@/types/admin/inventory";
 import { StatusBadge } from "./StatusBadge";
 
 interface InventoryCardProps {

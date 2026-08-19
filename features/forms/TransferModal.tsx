@@ -5,7 +5,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { ArrowLeftRight, Loader2, X } from "lucide-react";
 import { LOCATIONS } from "@/data/inventory-locations";
-import type { InventoryItem } from "@/types/inventory";
+import type { InventoryItem } from "@/types/admin/inventory";
 
 interface TransferModalProps {
   item: InventoryItem;

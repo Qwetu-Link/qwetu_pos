@@ -1,5 +1,5 @@
 import { CheckCircle2, TrendingUp, TriangleAlert, Truck } from "lucide-react";
-import type { InventoryStats } from "@/types/inventory";
+import type { InventoryStats } from "@/types/admin/inventory";
 
 export function StatsRow({ stats }: { stats: InventoryStats }) {
   const cards = [

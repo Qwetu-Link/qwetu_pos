@@ -1,6 +1,6 @@
 import { receipts } from "@/data/lipa-mdogo-data";
-import type { PaymentPlan, PlanStatus, Receipt } from "@/types/lipa-mdogo";
-import type { Order } from "@/types/customer";
+import type { PaymentPlan, PlanStatus, Receipt } from "@/types/admin/lipa-mdogo";
+import type { Order } from "@/types/admin/customer";
 import { getOrderDisplayNumber } from "@/utils/orderUtils";
 
 export {

@@ -20,7 +20,7 @@ import {
 import EmptyState from "@/components/common/EmptyState";
 import { AnalyticsPageSkeleton } from "@/components/skeletons";
 import { useAnalyticsSummary } from "@/hooks/useAnalytics";
-import type { AnalyticsPeriod } from "@/types/analytics";
+import type { AnalyticsPeriod } from "@/types/admin/analytics";
 import CategoryRingChart from "./CategoryRingChart";
 import CollectionTrendChart from "./CollectionTrendChart";
 import InfoRow from "./InfoRow";

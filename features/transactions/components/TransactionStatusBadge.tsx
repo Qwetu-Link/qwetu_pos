@@ -1,5 +1,5 @@
 import { CheckCircle2, Clock3, XCircle } from "lucide-react";
-import type { TransactionStatus } from "@/types/transactions";
+import type { TransactionStatus } from "@/types/admin/transactions";
 
 export default function TransactionStatusBadge({
   status,

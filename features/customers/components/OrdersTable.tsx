@@ -2,7 +2,7 @@ import Link from "next/link";
 import EmptyState from "@/components/common/EmptyState";
 import { SimpleDataTable } from "@/components/datatables";
 import { CreditCard, Eye, Package, ReceiptText, ShoppingBag } from "lucide-react";
-import type { Order } from "@/types/customer";
+import type { Order } from "@/types/admin/customer";
 import StatusBadge from "@/features/orders/components/statusBadge";
 import { formatCurrency, formatDate, getOrderDisplayNumber } from "@/utils/orderUtils";
 

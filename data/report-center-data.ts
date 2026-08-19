@@ -3,7 +3,7 @@ import type {
   ReportMetric,
   ReportTemplate,
   ScheduledReport,
-} from "@/types/reports";
+} from "@/types/admin/reports";
 
 export type {
   GeneratedReport,
@@ -12,7 +12,7 @@ export type {
   ReportStatus,
   ReportTemplate,
   ScheduledReport,
-} from "@/types/reports";
+} from "@/types/admin/reports";
 
 export const reportMetrics: ReportMetric[] = [
   {

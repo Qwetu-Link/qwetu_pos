@@ -3,7 +3,7 @@ import EmptyState from "@/components/common/EmptyState";
 import {
   formatCompactCurrency,
 } from "@/utils/pos-details-data";
-import type { CategoryMetric } from "@/types/settings";
+import type { CategoryMetric } from "@/types/admin/settings";
 
 export default function CategoryRingChart({ data }: { data: CategoryMetric[] }) {
   const total = data.reduce((sum, item) => sum + item.value, 0);

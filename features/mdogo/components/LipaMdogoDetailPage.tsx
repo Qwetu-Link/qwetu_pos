@@ -24,7 +24,7 @@ import {
   PaymentPlan,
 } from "@/data/lipa-mdogo-data";
 import { useGetOrders } from "@/hooks/useOrders";
-import type { PlanProduct } from "@/types/lipa-mdogo";
+import type { PlanProduct } from "@/types/admin/lipa-mdogo";
 import RecordPaymentModal from "../../forms/RecordPaymentModal";
 import { LipaMdogoDetailSkeleton } from "@/components/skeletons";
 

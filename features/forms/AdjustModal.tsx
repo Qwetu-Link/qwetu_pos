@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Info, Loader2, SlidersHorizontal, X } from "lucide-react";
 import { LOCATIONS } from "@/data/inventory-locations";
-import type { InventoryItem, StockAdjustmentReason } from "@/types/inventory";
+import type { InventoryItem, StockAdjustmentReason } from "@/types/admin/inventory";
 
 interface AdjustModalProps {
   item: InventoryItem;

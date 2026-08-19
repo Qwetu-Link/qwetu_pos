@@ -5,8 +5,8 @@ import { orderTable } from "@/db/schema/orders";
 import { expenseTable, transactionTable } from "@/db/schema/payments";
 import { productsTable } from "@/db/schema/products";
 import { variantInventoryTable, variantsTable } from "@/db/schema/variants";
-import type { DashboardActivity, DashboardBar, DashboardTone } from "@/types/dashboard";
-import type { DashboardSummary } from "@/types/dashboard-live";
+import type { DashboardActivity, DashboardBar, DashboardTone } from "@/types/admin/dashboard";
+import type { DashboardSummary } from "@/types/admin/dashboard-live";
 import { and, count, desc, eq, gt, gte, inArray, isNull, lt, lte, ne, or, sql } from "drizzle-orm";
 
 type PaymentMethod = typeof transactionTable.$inferSelect.paymentMethod;

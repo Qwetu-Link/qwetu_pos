@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
-import type { InventoryItem, StockAdjustmentReason } from "@/types/inventory";
+import type { InventoryItem, StockAdjustmentReason } from "@/types/admin/inventory";
 import { DEMO_INVENTORY, filterItems, recalcTotalStock } from "@/utils/inventory-utils";
 import { useOfflineMutation } from "./useOfflineMutation";
 

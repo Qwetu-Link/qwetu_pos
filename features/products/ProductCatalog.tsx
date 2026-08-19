@@ -5,7 +5,7 @@ import CatalogStatsCards from "./CatalogStatsCards";
 import ProductCard from "./ProductCard";
 import EmptyState from "@/components/common/EmptyState";
 import Pagination from "@/components/common/Pagination";
-import type { CatalogFilters } from "@/types/catalog";
+import type { CatalogFilters } from "@/types/admin/catalog";
 import { computeCatalogStats, exportProductsToCSV } from "@/utils/catalog-utils";
 import { LucideDownload, Package, PlusIcon, Search, Tag } from "lucide-react";
 import DeleteModal from "@/components/common/DeleteModal";

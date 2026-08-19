@@ -31,6 +31,8 @@ export const businessTable = mysqlTable("business", {
     currency: varchar("currency", { length: 10 }).default("KES"),
     timezone: varchar("timezone", { length: 100 }).default("Africa/Nairobi"),
     logoPath: varchar("logo_path", { length: 1000 }),
+    description: varchar("description", { length: 1000 }),
+    whatsappStatus: boolean("whatsapp_status").default(false).notNull(),
     receiptFooter: varchar("receipt_footer", { length: 500 }),
     invoiceTerms: varchar("invoice_terms", { length: 1000 }),
     isActive: boolean("is_active").default(true).notNull(),

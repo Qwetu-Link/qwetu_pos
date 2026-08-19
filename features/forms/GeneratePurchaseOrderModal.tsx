@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, ShoppingCart, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import type { InventoryItem } from "@/types/inventory";
+import type { InventoryItem } from "@/types/admin/inventory";
 
 const purchaseOrderFormSchema = z.object({
   supplierName: z.string().trim().min(1, "Supplier is required"),

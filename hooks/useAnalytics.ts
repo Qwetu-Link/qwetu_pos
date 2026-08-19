@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
-import type { AnalyticsPeriod } from "@/types/analytics";
+import type { AnalyticsPeriod } from "@/types/admin/analytics";
 
 export const useAnalyticsSummary = (period: AnalyticsPeriod = "last_6_months") => {
     const trpc = useTRPC();

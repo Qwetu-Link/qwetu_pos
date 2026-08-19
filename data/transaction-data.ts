@@ -1,4 +1,4 @@
-import type { Expense, Transaction } from "@/types/transactions";
+import type { Expense, Transaction } from "@/types/admin/transactions";
 
 export { formatCurrency, formatDate } from "@/utils/formatters";
 export type {
@@ -7,7 +7,7 @@ export type {
   Transaction,
   TransactionStatus,
   TransactionType,
-} from "@/types/transactions";
+} from "@/types/admin/transactions";
 
 export const transactions: Transaction[] = [
   {

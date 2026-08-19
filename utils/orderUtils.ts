@@ -1,4 +1,4 @@
-import type { Order, OrderStatus } from "../types/orderTypes";
+import type { Order, OrderStatus } from "../types/admin/orderTypes";
 import { ORDER_STATUS_CONFIG } from "@/data/customer-config";
 import { formatCompactCurrency, formatCurrency } from "@/utils/formatters";
 

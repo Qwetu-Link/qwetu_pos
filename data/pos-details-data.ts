@@ -8,7 +8,7 @@ import type {
   RolePermission,
   SegmentMetric,
   TeamUser,
-} from "@/types/settings";
+} from "@/types/admin/settings";
 
 export const revenueData: RevenueMonth[] = [
   { month: "Dec 25", fullPayments: 480000, installments: 130000 },

@@ -1,7 +1,7 @@
 import { LayoutDashboard } from "lucide-react";
 import EmptyState from "@/components/common/EmptyState";
 import type { RoleDashboardData } from "@/data/dashboard-data";
-import type { DashboardSummary } from "@/types/dashboard-live";
+import type { DashboardSummary } from "@/types/admin/dashboard-live";
 import DashboardActions from "./DashboardActions";
 import DashboardActivityPanel from "./DashboardActivityPanel";
 import DashboardMetricCard from "./DashboardMetricCard";

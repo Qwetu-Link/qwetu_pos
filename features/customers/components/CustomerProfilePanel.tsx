@@ -1,5 +1,5 @@
 import { Mail, Phone, MapPin, ShieldCheck, TrendingUp } from "lucide-react";
-import type { Customer } from "@/types/customer";
+import type { Customer } from "@/types/admin/customer";
 import { RISK_CONFIG, SEGMENT_CONFIG } from "@/data/customer-config";
 import { getInitials, getLoyaltyStatus, getLoyaltyProgress } from "@/utils/customerUtils";
 import { formatDate } from "@/utils/formatters";

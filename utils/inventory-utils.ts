@@ -1,5 +1,5 @@
-import type { InventoryItem, InventoryStats } from "@/types/inventory";
-import type { Product } from "@/types/catalog";
+import type { InventoryItem, InventoryStats } from "@/types/admin/inventory";
+import type { Product } from "@/types/admin/catalog";
 
 export { DEMO_INVENTORY } from "@/data/inventory";
 

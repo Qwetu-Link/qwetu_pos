@@ -5,7 +5,7 @@ import { UserPlus, X } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import type { BusinessRole, TeamUser } from "@/types/settings";
+import type { BusinessRole, TeamUser } from "@/types/admin/settings";
 import FormField from "./FormField";
 
 const teamUserSchema = z.object({

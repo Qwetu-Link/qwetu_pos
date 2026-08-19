@@ -5,8 +5,8 @@ import AddVariantModal from "./AddVariantModal";
 import ProductImage from "@/features/products/ProductImage";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
-import type { Category } from "@/types/categories";
-import type { Product, ProductSaveValues, ProductVariant } from "@/types/catalog";
+import type { Category } from "@/types/admin/categories";
+import type { Product, ProductSaveValues, ProductVariant } from "@/types/admin/catalog";
 import {
   buildVariant,
   getProductImageSrc,

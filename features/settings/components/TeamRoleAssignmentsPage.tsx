@@ -10,7 +10,7 @@ import {
   useGetTeamUsers,
   useUpdateTeamUser,
 } from "@/hooks/useSettingsAccess";
-import type { TeamUser } from "@/types/settings";
+import type { TeamUser } from "@/types/admin/settings";
 import AddTeamUserModal, { type TeamUserFormValues } from "./AddTeamUserModal";
 import TeamAssignmentsSection from "./TeamAssignmentsSection";
 import { AccessManagementSkeleton } from "@/components/skeletons";

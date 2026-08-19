@@ -1,4 +1,4 @@
-import type { ExpenseStatus } from "@/types/transactions";
+import type { ExpenseStatus } from "@/types/admin/transactions";
 
 export type FinanceExpenseStatus = ExpenseStatus;
 

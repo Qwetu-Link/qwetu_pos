@@ -26,7 +26,7 @@ import {
   X,
 } from "lucide-react";
 import { formatCurrency, formatDate, getOrderDisplayNumber } from "@/utils/orderUtils";
-import type { LineItem, Order, OrderStatus } from "@/types/customer";
+import type { LineItem, Order, OrderStatus } from "@/types/admin/customer";
 import { ORDER_STATUS_CONFIG } from "@/data/customer-config";
 import { useGetOrder, useRecordOrderPayment, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { SimpleDataTable } from "@/components/datatables";

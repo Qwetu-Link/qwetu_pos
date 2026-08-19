@@ -1,5 +1,5 @@
 import { CheckCircle2, Clock3, XCircle } from "lucide-react";
-import type { ExpenseStatus } from "@/types/transactions";
+import type { ExpenseStatus } from "@/types/admin/transactions";
 
 export default function ExpenseStatusBadge({
   status,

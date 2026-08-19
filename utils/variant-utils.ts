@@ -3,7 +3,7 @@ import type {
   Product,
   InventoryItem,
   VariantInventory,
-} from "@/types/catalog";
+} from "@/types/admin/catalog";
 import { computeInventoryStatus } from "@/utils/catalog-utils";
 
 export function getStatus(

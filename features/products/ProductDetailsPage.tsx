@@ -9,7 +9,7 @@ import {
   Tag,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { Product, ProductImage, ProductVariant } from "@/types/catalog";
+import type { Product, ProductImage, ProductVariant } from "@/types/admin/catalog";
 import ProductImageWithFallback from "./ProductImage";
 import {
   formatCurrency,

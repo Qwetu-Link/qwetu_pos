@@ -6,8 +6,8 @@ import { ArrowLeft, Tag } from "lucide-react";
 import { toast } from "sonner";
 import ProductModal from "@/features/forms/ProductModal";
 import { uploadProductImagesFromFiles } from "@/features/products/uploadProductImages";
-import type { Category } from "@/types/categories";
-import type { Product, ProductSaveValues } from "@/types/catalog";
+import type { Category } from "@/types/admin/categories";
+import type { Product, ProductSaveValues } from "@/types/admin/catalog";
 import {
   useRemoveProductImages,
   useSaveUploadedProductImages,

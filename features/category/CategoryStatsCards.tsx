@@ -1,7 +1,7 @@
 "use client";
 
 import { Boxes, ChartColumnIncreasing, FolderOpen } from "lucide-react";
-import type { CategoryStats } from "@/types/categories";
+import type { CategoryStats } from "@/types/admin/categories";
 
 interface Props {
   stats: CategoryStats;

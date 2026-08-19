@@ -9,7 +9,7 @@ import {
   Users,
   WalletCards,
 } from "lucide-react";
-import type { RoleDashboardData } from "@/types/dashboard";
+import type { RoleDashboardData } from "@/types/admin/dashboard";
 
 export type {
   DashboardAction,
@@ -18,7 +18,7 @@ export type {
   DashboardMetric,
   DashboardTone,
   RoleDashboardData,
-} from "@/types/dashboard";
+} from "@/types/admin/dashboard";
 
 export const dashboardData: Record<string, RoleDashboardData> = {
   owner: {

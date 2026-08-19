@@ -3,7 +3,7 @@ import { customerTable } from "@/db/schema/customers";
 import { invoiceTable } from "@/db/schema/invoice";
 import { orderTable } from "@/db/schema/orders";
 import { expenseTable, paymentTable, transactionTable } from "@/db/schema/payments";
-import type { Transaction, TransactionStatus } from "@/types/transactions";
+import type { Transaction, TransactionStatus } from "@/types/admin/transactions";
 import { desc, eq } from "drizzle-orm";
 
 type TransactionRecord = typeof transactionTable.$inferSelect;

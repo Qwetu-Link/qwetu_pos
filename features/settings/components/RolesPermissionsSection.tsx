@@ -1,5 +1,5 @@
 import { Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
-import type { BusinessRole } from "@/types/settings";
+import type { BusinessRole } from "@/types/admin/settings";
 import SectionCard from "./SectionCard";
 
 export default function RolesPermissionsSection({

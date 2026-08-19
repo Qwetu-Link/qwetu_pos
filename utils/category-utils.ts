@@ -1,5 +1,5 @@
 import { CategoryFormValues } from "@/validators/category";
-import type { Category, CategoryStats } from "@/types/categories";
+import type { Category, CategoryStats } from "@/types/admin/categories";
 
 // ---- ID generation ----
 

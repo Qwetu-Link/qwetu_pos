@@ -43,10 +43,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/uii/table";
 import { cn } from "@/utils/utils";
 import StatusBadge from "./statusBadge";
-import type { Density, Order } from "@/types/orderTypes";
+import type { Density, Order } from "@/types/admin/orderTypes";
 import {
   formatCompactCurrency,
   formatCurrency,

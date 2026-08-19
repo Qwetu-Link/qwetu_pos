@@ -5,7 +5,7 @@ import {
   formatCurrency,
   formatDate,
 } from "@/data/transaction-data";
-import type { Transaction } from "@/types/transactions";
+import type { Transaction } from "@/types/admin/transactions";
 import TransactionStatusBadge from "./TransactionStatusBadge";
 
 function getInitials(name: string) {

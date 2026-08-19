@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
-import type { Category } from "@/types/categories";
+import type { Category } from "@/types/admin/categories";
 import {
   Activity,
   Baby,

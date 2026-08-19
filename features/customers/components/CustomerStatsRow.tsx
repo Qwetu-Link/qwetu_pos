@@ -1,5 +1,5 @@
 import { Users, Star, TrendingUp, CreditCard } from "lucide-react";
-import type { CustomerStats } from "@/types/customer";
+import type { CustomerStats } from "@/types/admin/customer";
 
 export function CustomerStatsRow({ stats }: { stats: CustomerStats }) {
   const cards = [
