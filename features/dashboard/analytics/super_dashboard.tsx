@@ -32,11 +32,10 @@ import { KPICard } from '@/components/kpi-card';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { dashboardKPIs, revenueData, businessGrowthData, subscriptionDistributionData } from '@/data/chart-data';
 import { AppShell } from '@/components/layouts/app-shell';
-import { activityFeed } from '@/data/mock-data';
 import { cn } from '@/utils/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { ChartDataPoint, KPIData } from '@/types/super-admin/types';
 
 const activityIcons: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string }> = {
   registration: { icon: UserPlus, color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' },
@@ -53,6 +52,23 @@ const activityIcons: Record<string, { icon: React.ComponentType<{ className?: st
 type RevenueTab = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 const revenueTabs = new Set<string>(['daily', 'weekly', 'monthly', 'yearly']);
+
+type DashboardActivity = {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  actor: string;
+  date: string;
+};
+
+type SuperAdminDashboardData = {
+  kpis: KPIData[];
+  revenueData: Record<RevenueTab, ChartDataPoint[]>;
+  businessGrowthData: ChartDataPoint[];
+  subscriptionDistributionData: ChartDataPoint[];
+  activityFeed: DashboardActivity[];
+};
 
 const rainbowChartColors = [
   '#ef4444',
@@ -83,7 +99,42 @@ function formatTime(dateStr: string) {
 
 export default function DashboardPage() {
   const [revenueTab, setRevenueTab] = React.useState<RevenueTab>('monthly');
-  const chartData = revenueData[revenueTab];
+  const [dashboardData, setDashboardData] = React.useState<SuperAdminDashboardData | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const chartData = dashboardData?.revenueData[revenueTab] ?? [];
+  const kpis = dashboardData?.kpis ?? [];
+  const businessGrowthData = dashboardData?.businessGrowthData ?? [];
+  const subscriptionDistributionData = dashboardData?.subscriptionDistributionData ?? [];
+  const activityFeed = dashboardData?.activityFeed ?? [];
+
+  React.useEffect(() => {
+    let isMounted = true;
+
+    async function loadDashboard() {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/superadmin/dashboard', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Failed to load dashboard');
+        const { data } = await response.json() as { data: SuperAdminDashboardData };
+        if (isMounted) {
+          setDashboardData(data);
+        }
+      } catch {
+        if (isMounted) {
+          setDashboardData(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadDashboard();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <AppShell>
@@ -93,9 +144,19 @@ export default function DashboardPage() {
       </PageHeader>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {dashboardKPIs.map((kpi, i) => (
-          <KPICard key={kpi.label} {...kpi} index={i} />
-        ))}
+        {isLoading ? (
+          Array.from({ length: 6 }).map((_, index) => (
+            <Card key={index} className="h-[138px] animate-pulse bg-muted/40" />
+          ))
+        ) : kpis.length > 0 ? (
+          kpis.map((kpi, i) => (
+            <KPICard key={kpi.label} {...kpi} index={i} />
+          ))
+        ) : (
+          <Card className="p-5 sm:col-span-2 lg:col-span-3 xl:col-span-4">
+            <p className="text-sm text-muted-foreground">No dashboard metrics available yet.</p>
+          </Card>
+        )}
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -124,6 +185,9 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
+            {isLoading ? (
+              <div className="h-[320px] animate-pulse rounded-md bg-muted/40" />
+            ) : (
             <ResponsiveContainer width="100%" height={320}>
               <AreaChart data={chartData}>
                 <defs>
@@ -161,6 +225,7 @@ export default function DashboardPage() {
                 <Area type="monotone" dataKey="value" stroke="url(#revenueRainbowStroke)" fill="url(#colorRevenue)" strokeWidth={2.5} name="Revenue" />
               </AreaChart>
             </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -170,6 +235,9 @@ export default function DashboardPage() {
             <CardDescription>Active plans breakdown</CardDescription>
           </CardHeader>
           <CardContent>
+            {isLoading ? (
+              <div className="h-[240px] animate-pulse rounded-md bg-muted/40" />
+            ) : (
             <ResponsiveContainer width="100%" height={240}>
               <PieChart>
                 <Pie
@@ -196,8 +264,9 @@ export default function DashboardPage() {
                 />
               </PieChart>
             </ResponsiveContainer>
+            )}
             <div className="mt-4 space-y-2">
-              {subscriptionDistributionData.map((d, i) => (
+              {subscriptionDistributionData.length > 0 ? subscriptionDistributionData.map((d, i) => (
                 <div key={d.name} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <span className="h-3 w-3 rounded-full" style={{ backgroundColor: rainbowChartColors[i % rainbowChartColors.length] }} />
@@ -205,7 +274,7 @@ export default function DashboardPage() {
                   </div>
                   <span className="font-semibold">{d.value} businesses</span>
                 </div>
-              ))}
+              )) : <p className="text-sm text-muted-foreground">No subscription data yet.</p>}
             </div>
           </CardContent>
         </Card>
@@ -218,6 +287,9 @@ export default function DashboardPage() {
             <CardDescription>Registrations, active, churn & renewals</CardDescription>
           </CardHeader>
           <CardContent>
+            {isLoading ? (
+              <div className="h-[280px] animate-pulse rounded-md bg-muted/40" />
+            ) : (
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={businessGrowthData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
@@ -238,6 +310,7 @@ export default function DashboardPage() {
                 <Line type="monotone" dataKey="renewals" stroke={chartColors.renewals} strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -248,7 +321,11 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="scrollbar-thin max-h-[320px] space-y-1 overflow-y-auto pr-2">
-              {activityFeed.map((activity, i) => {
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <div key={index} className="h-14 animate-pulse rounded-lg bg-muted/40" />
+                ))
+              ) : activityFeed.length > 0 ? activityFeed.map((activity, i) => {
                 const config = activityIcons[activity.type];
                 const Icon = config?.icon || CheckCircle2;
                 return (
@@ -269,7 +346,7 @@ export default function DashboardPage() {
                     </div>
                   </motion.div>
                 );
-              })}
+              }) : <p className="text-sm text-muted-foreground">No recent activity yet.</p>}
             </div>
           </CardContent>
         </Card>
