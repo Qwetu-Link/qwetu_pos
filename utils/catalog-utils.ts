@@ -1,4 +1,4 @@
-import type { VariantCreateValues, VariantFormValues } from "@/validators/variant";
+import type { VariantCreateValues, VariantFormValues } from "@/db/schema/validators/variant";
 import type {
   Product,
   ProductVariant,

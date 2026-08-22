@@ -60,7 +60,7 @@ export default function NotificationsPage() {
     <AppShell>
       <PageHeader title="Notifications" description="Stay updated on platform activities">
         <Button variant="outline" size="sm" onClick={markAllRead}>
-          <Check className="mr-2 h-4 w-4" /> Mark All Read
+          <Check className="h-4 w-4" /> Mark All Read
         </Button>
       </PageHeader>
 
@@ -112,11 +112,11 @@ export default function NotificationsPage() {
                   </div>
                   <div className="flex gap-2">
                     {!n.read && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => markAsRead(n.id)}>
+                      <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => markAsRead(n.id)}>
                         <Check className="h-4 w-4" />
                       </Button>
                     )}
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => archive(n.id)}>
+                    <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => archive(n.id)}>
                       <Archive className="h-4 w-4" />
                     </Button>
                   </div>

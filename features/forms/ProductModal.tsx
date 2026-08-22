@@ -23,8 +23,8 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
-import { ProductDetailsFormValues, productSchema } from "@/validators/product";
-import { VariantFormValues } from "@/validators/variant";
+import { ProductDetailsFormValues, productSchema } from "@/db/schema/validators/product";
+import { VariantFormValues } from "@/db/schema/validators/variant";
 
 interface Props {
   product: Product | null;

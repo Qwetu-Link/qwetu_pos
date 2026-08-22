@@ -10,7 +10,7 @@ import {
     customerEditSchema,
     customerIdSchema,
     customerSchema,
-} from "@/validators/customer";
+} from "@/db/schema/validators/customer";
 import { TRPCError } from "@trpc/server";
 
 type DatabaseError = {

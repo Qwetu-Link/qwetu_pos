@@ -16,9 +16,16 @@ export interface Business {
     currency?: string;
     timezone?: string;
     logoPath?: string;
+    plan:string;
+    status:string;
+    description?:string;
+    industry?:string;
+    whatsappStatus: boolean;
     receiptFooter?: string;
     invoiceTerms?: string;
+    users:number;
+    branches:number;
     isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
 }

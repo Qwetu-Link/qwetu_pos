@@ -13,7 +13,7 @@ import {
     inventoryVariantSchema,
     purchaseOrderIdSchema,
     transferInventorySchema,
-} from "@/validators/inventory";
+} from "@/db/schema/validators/inventory";
 import { TRPCError } from "@trpc/server";
 
 function ensureBusinessId(businessId: string | null) {

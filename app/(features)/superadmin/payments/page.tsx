@@ -80,7 +80,7 @@ export default function PaymentsPage() {
     <AppShell>
       <PageHeader title="Payments" description="View and manage all platform transactions">
         <Button variant="outline" size="sm" onClick={() => toast.success('Exporting payments...')}>
-          <Download className="mr-2 h-4 w-4" /> Export
+          <Download className="h-4 w-4" /> Export
         </Button>
       </PageHeader>
 

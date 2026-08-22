@@ -71,10 +71,10 @@ export default function SubscriptionsPage() {
     <AppShell>
       <PageHeader title="Subscriptions" description="Manage all platform subscriptions">
         <Button variant="outline" size="sm" onClick={() => toast.success('Exporting subscriptions...')}>
-          <Download className="mr-2 h-4 w-4" /> Export
+          <Download className="h-4 w-4" /> Export
         </Button>
         <Button size="sm" onClick={() => toast.success('Bulk renew initiated')}>
-          <RefreshCw className="mr-2 h-4 w-4" /> Bulk Renew
+          <RefreshCw className="h-4 w-4" /> Bulk Renew
         </Button>
       </PageHeader>
 

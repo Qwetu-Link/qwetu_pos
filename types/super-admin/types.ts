@@ -53,30 +53,6 @@ export type TemplateStatus = 'approved' | 'pending' | 'rejected';
 export type SupportStatus = 'open' | 'pending' | 'resolved' | 'closed';
 export type SupportPriority = 'urgent' | 'high' | 'medium' | 'low';
 
-export interface Business {
-  id: string;
-  name: string;
-  code: string;
-  logo: string;
-  owner: string;
-  email: string;
-  phone: string;
-  industry: Industry;
-  country: string;
-  city: string;
-  plan: PlanName;
-  status: BusinessStatus;
-  users: number;
-  branches: number;
-  whatsappStatus: WhatsAppStatus;
-  createdAt: string;
-  lastLogin: string;
-  monthlyRevenue: number;
-  address: string;
-  website: string;
-  taxId: string;
-  description: string;
-}
 
 export interface BusinessUser {
   id: string;

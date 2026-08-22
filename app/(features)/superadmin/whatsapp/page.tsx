@@ -9,14 +9,25 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { whatsappKPIs, whatsappAnalyticsData } from '@/data/chart-data';
 import { whatsappConnections } from '@/data/mock-data';
 import { StatusBadge } from '@/components/status-badges';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { AppShell } from '@/components/layouts/app-shell';
 
 const subModules = [
-  { label: 'Connections', href: '/whatsapp/connections', icon: Link2, desc: 'Manage WhatsApp phone numbers' },
-  { label: 'Template Manager', href: '/whatsapp/templates', icon: FileText, desc: 'Create and manage message templates' },
-  { label: 'Messaging Analytics', href: '/whatsapp/analytics', icon: BarChart3, desc: 'Message delivery insights' },
-  { label: 'API Configuration', href: '/whatsapp/config', icon: Settings, desc: 'WhatsApp Cloud API settings' },
+  { label: 'Connections', href: '/superadmin/whatsapp/connections', icon: Link2, desc: 'Manage WhatsApp phone numbers' },
+  { label: 'Template Manager', href: '/superadmin/whatsapp/templates', icon: FileText, desc: 'Create and manage message templates' },
+  { label: 'Messaging Analytics', href: '/superadmin/whatsapp/analytics', icon: BarChart3, desc: 'Message delivery insights' },
+  { label: 'API Configuration', href: '/superadmin/whatsapp/config', icon: Settings, desc: 'WhatsApp Cloud API settings' },
+];
+
+const rainbowChartColors = [
+  '#ef4444',
+  '#f97316',
+  '#eab308',
+  '#22c55e',
+  '#06b6d4',
+  '#3b82f6',
+  '#8b5cf6',
+  '#d946ef',
 ];
 
 export default function WhatsAppPage() {
@@ -63,12 +74,12 @@ export default function WhatsAppPage() {
               <AreaChart data={whatsappAnalyticsData}>
                 <defs>
                   <linearGradient id="sentGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+                    <stop offset="5%" stopColor={rainbowChartColors[5]} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={rainbowChartColors[5]} stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="deliveredGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0} />
+                    <stop offset="5%" stopColor={rainbowChartColors[3]} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={rainbowChartColors[3]} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
@@ -76,9 +87,9 @@ export default function WhatsAppPage() {
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
                 <Legend wrapperStyle={{ fontSize: '12px' }} />
-                <Area type="monotone" dataKey="sent" stroke="hsl(var(--chart-1))" fill="url(#sentGrad)" strokeWidth={2} />
-                <Area type="monotone" dataKey="delivered" stroke="hsl(var(--chart-2))" fill="url(#deliveredGrad)" strokeWidth={2} />
-                <Area type="monotone" dataKey="read" stroke="hsl(var(--chart-3))" fill="none" strokeWidth={2} />
+                <Area type="monotone" dataKey="sent" stroke={rainbowChartColors[5]} fill="url(#sentGrad)" strokeWidth={2} />
+                <Area type="monotone" dataKey="delivered" stroke={rainbowChartColors[3]} fill="url(#deliveredGrad)" strokeWidth={2} />
+                <Area type="monotone" dataKey="read" stroke={rainbowChartColors[7]} fill="none" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -96,7 +107,11 @@ export default function WhatsAppPage() {
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
-                <Bar dataKey="failed" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="failed" radius={[4, 4, 0, 0]}>
+                  {whatsappAnalyticsData.map((entry, i) => (
+                    <Cell key={entry.name} fill={rainbowChartColors[i % rainbowChartColors.length]} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

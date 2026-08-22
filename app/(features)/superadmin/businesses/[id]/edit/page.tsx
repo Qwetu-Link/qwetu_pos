@@ -34,14 +34,14 @@ export default function EditBusinessPage() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    toast.success(`${business.name} updated`);
+    toast.success(`${business.businessName} updated`);
   };
 
   return (
     <AppShell>
-      <PageHeader title={`Edit ${business.name}`} description="Update business profile, owner contact, and operating details">
+      <PageHeader title={`Edit ${business.businessName}`} description="Update business profile, owner contact, and operating details">
         <Button variant="outline" size="sm">
-          <Link href={`/superadmin/businesses/${business.id}`}>
+          <Link href={`/superadmin/businesses/${business.id}`} className='flex items-center'>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Profile
           </Link>
         </Button>
@@ -63,16 +63,16 @@ export default function EditBusinessPage() {
           <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="business-name">Business Name</Label>
-              <Input id="business-name" defaultValue={business.name} required />
+              <Input id="business-name" defaultValue={business.businessName} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="business-code">Business Code</Label>
-              <Input id="business-code" defaultValue={business.code} />
+              <Label htmlFor="business-code">Business Reg No.</Label>
+              <Input id="business-code" defaultValue={business.registrationNumber} />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 w-full">
               <Label>Industry</Label>
               <Select defaultValue={business.industry}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -84,10 +84,10 @@ export default function EditBusinessPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 w-full">
               <Label>Business Status</Label>
               <Select defaultValue={business.status}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -100,7 +100,7 @@ export default function EditBusinessPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="tax-id">Tax ID</Label>
-              <Input id="tax-id" defaultValue={business.taxId} />
+              <Input id="tax-id" defaultValue={business.taxPin} />
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="description">Description</Label>
@@ -123,10 +123,10 @@ export default function EditBusinessPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="owner">Owner Name</Label>
                 <Input id="owner" defaultValue={business.owner} required />
-              </div>
+              </div> */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" defaultValue={business.email} required />
@@ -135,10 +135,10 @@ export default function EditBusinessPage() {
                 <Label htmlFor="phone">Phone</Label>
                 <Input id="phone" defaultValue={business.phone} required />
               </div>
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="website">Website</Label>
                 <Input id="website" defaultValue={business.website} />
-              </div>
+              </div> */}
             </CardContent>
           </Card>
 
@@ -176,7 +176,7 @@ export default function EditBusinessPage() {
             <Link href={`/superadmin/businesses/${business.id}`}>Cancel</Link>
           </Button>
           <Button type="submit">
-            <Save className="mr-2 h-4 w-4" /> Save Changes
+            <Save className="h-4 w-4" /> Save Changes
           </Button>
         </div>
       </form>

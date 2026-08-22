@@ -156,7 +156,7 @@ function AdministratorForm({
           <Button type="button" variant="outline">Cancel</Button>
         </DialogClose>
         <Button type="submit">
-          <Save className="mr-2 h-4 w-4" /> {submitLabel}
+          <Save className="h-4 w-4" /> {submitLabel}
         </Button>
       </DialogFooter>
     </form>
@@ -218,7 +218,7 @@ export default function AdministratorsPage() {
           <AlertDialog>
             <DropdownMenu>
               <DropdownMenuTrigger>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button variant="ghost" size="icon" className="h-9 w-9">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -286,7 +286,7 @@ export default function AdministratorsPage() {
         <Dialog>
           <DialogTrigger>
             <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" /> Add Admin
+              <Plus className="h-4 w-4" /> Add Admin
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">

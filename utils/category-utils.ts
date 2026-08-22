@@ -1,4 +1,4 @@
-import { CategoryFormValues } from "@/validators/category";
+import { CategoryFormValues } from "@/db/schema/validators/category";
 import type { Category, CategoryStats } from "@/types/admin/categories";
 
 // ---- ID generation ----

@@ -43,7 +43,7 @@ export default function TemplatesPage() {
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger >
             <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" /> Create Template
+              <Plus className="h-4 w-4" /> Create Template
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
@@ -142,7 +142,7 @@ export default function TemplatesPage() {
               </div>
               <div className="mt-auto flex gap-2 pt-2">
                 <Button variant="outline" size="sm" className="flex-1" onClick={() => setPreview(tpl)}>
-                  <Eye className="mr-1.5 h-3.5 w-3.5" /> Preview
+                  <Eye className="h-3.5 w-3.5" /> Preview
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => toast.success('Edit dialog would open')}>
                   <Edit className="h-3.5 w-3.5" />

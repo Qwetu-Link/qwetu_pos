@@ -18,7 +18,7 @@ import {
 import { toast } from 'sonner';
 import { AppShell } from '@/components/layouts/app-shell';
 import { businesses } from '@/data/mock-data';
-import { Business } from '@/types/super-admin/types';
+import { Business } from '@/types/admin/business';
 
 export default function BusinessesPage() {
   const columns: ColumnDef<Business>[] = [
@@ -43,18 +43,23 @@ export default function BusinessesPage() {
       ),
       enableSorting: false,
       enableHiding: false,
+    },{
+      accessorKey:'logo',
+      header: 'Logo',
+      cell:({row})=>(
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-base font-bold text-primary">
+            {row.original.logoPath}
+          </div>
+      ),
     },
     {
       accessorKey: 'name',
       header: 'Business',
       cell: ({ row }) => (
-        <Link href={`/superadmin/businesses/${row.original.id}`} className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
-            {row.original.logo}
-          </div>
-          <div className="flex flex-col">
-            <span className="font-medium hover:text-primary">{row.original.name}</span>
-            <span className="text-xs text-muted-foreground">{row.original.code}</span>
+        <Link href={`/superadmin/businesses/${row.original.id}`} className="flex items-center gap-4 py-1.5">  
+          <div className="flex min-w-30 flex-1 flex-col gap-1.5">
+            <span className="text-base font-semibold hover:text-primary">{row.original.businessName}</span>
+            <span className="text-sm text-muted-foreground">{row.original.registrationNumber}</span>
           </div>
         </Link>
       ),
@@ -64,7 +69,7 @@ export default function BusinessesPage() {
       header: 'Owner',
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <span className="text-sm">{row.original.owner}</span>
+          <span className="text-sm">Owners Name</span>
           <span className="text-xs text-muted-foreground">{row.original.email}</span>
         </div>
       ),
@@ -90,19 +95,13 @@ export default function BusinessesPage() {
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
-      accessorKey: 'users',
-      header: 'Users',
-      cell: ({ row }) => <span className="text-sm font-medium">{row.original.users}</span>,
-    },
-    {
-      accessorKey: 'branches',
-      header: 'Branches',
-      cell: ({ row }) => <span className="text-sm font-medium">{row.original.branches}</span>,
-    },
-    {
       accessorKey: 'whatsappStatus',
       header: 'WhatsApp',
-      cell: ({ row }) => <StatusBadge status={row.original.whatsappStatus} />,
+      cell: ({ row }) => (
+        <StatusBadge
+          status={row.original.whatsappStatus ? 'connected' : 'disconnected'}
+        />
+      ),
     },
     {
       accessorKey: 'createdAt',
@@ -115,13 +114,13 @@ export default function BusinessesPage() {
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-9 w-9">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem>
-              <Link href={`/superadmin/businesses/${row.original.id}`}>
+              <Link href={`/superadmin/businesses/${row.original.id}`} className="flex items-center">
                 <Eye className="mr-2 h-4 w-4" /> View Profile
               </Link>
             </DropdownMenuItem>
@@ -143,13 +142,13 @@ export default function BusinessesPage() {
     <AppShell>
       <PageHeader title="Businesses" description="Manage all businesses on the platform">
         <Button variant="outline" size="sm" onClick={() => toast.success('Exporting to CSV...')}>
-          <Download className="mr-2 h-4 w-4" /> Export CSV
+          <Download className="h-4 w-4" /> Export CSV
         </Button>
         <Button variant="outline" size="sm" onClick={() => toast.success('Exporting to Excel...')}>
-          <Upload className="mr-2 h-4 w-4" /> Export Excel
+          <Upload className="h-4 w-4" /> Export Excel
         </Button>
         <Button size="sm">
-          <Link href="/superadmin/businesses/addbusiness">
+          <Link href="/superadmin/businesses/addbusiness" className="flex items-center">
             <Building2 className="mr-2 h-4 w-4" /> Add Business
           </Link>
         </Button>

@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   Mail,
   Phone,
-  Globe,
   MapPin,
   Users,
   Building,
@@ -52,11 +51,11 @@ import { StatusBadge, PlanBadge } from '@/components/status-badges';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/uii/table';
 import { businesses, businessUsers, branches, payments, activityFeed } from '@/data/mock-data';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+// import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
-const profileTabs = new Set(['overview', 'subscription', 'payments', 'users', 'branches', 'activity', 'api']);
+const profileTabs = new Set(['overview', 'subscription', 'payments', 'users', 'branches', 'activity']);
 
 const planPrices: Record<string, string> = {
   Trial: '0',
@@ -75,17 +74,7 @@ export default function BusinessProfilePage() {
   const businessPayments = payments.filter((p) => p.businessId === business.id);
   const businessActivity = activityFeed.slice(0, 8);
 
-  const apiUsageData = [
-    { name: 'Mon', requests: 4500, errors: 45 },
-    { name: 'Tue', requests: 5200, errors: 30 },
-    { name: 'Wed', requests: 4800, errors: 50 },
-    { name: 'Thu', requests: 6100, errors: 40 },
-    { name: 'Fri', requests: 7200, errors: 60 },
-    { name: 'Sat', requests: 5500, errors: 25 },
-    { name: 'Sun', requests: 3200, errors: 15 },
-  ];
-
-  const successRate = 96.5;
+  // const successRate = 96.5;
   const requestedTab = searchParams.get('tab') || 'overview';
   const selectedTab = profileTabs.has(requestedTab) ? requestedTab : 'overview';
 
@@ -99,7 +88,7 @@ export default function BusinessProfilePage() {
         </Link>
       </div>
 
-      <PageHeader title={business.name} description={business.description}>
+      <PageHeader title={business.businessName} description={business.description}>
         <Button variant="outline" size="sm">
           <Link href={`/superadmin/businesses/${business.id}/edit`}>Edit</Link>
         </Button>
@@ -108,14 +97,12 @@ export default function BusinessProfilePage() {
           <Link href={`/superadmin/businesses/${business.id}?tab=subscription`}>Manage Subscription</Link>
         </Button>
         <AlertDialog>
-          <AlertDialogTrigger>
-            <Button variant="destructive" size="sm">
-              <Ban className="mr-2 h-4 w-4" /> Suspend
-            </Button>
+          <AlertDialogTrigger render={<Button variant="destructive" size="sm" />}>
+            <Ban className="h-4 w-4" /> Suspend
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Suspend {business.name}?</AlertDialogTitle>
+              <AlertDialogTitle>Suspend {business.businessName}?</AlertDialogTitle>
               <AlertDialogDescription>
                 This will block access for all business users, pause subscription activity, and mark the business as suspended.
               </AlertDialogDescription>
@@ -124,7 +111,7 @@ export default function BusinessProfilePage() {
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                onClick={() => toast.error(`${business.name} suspended`)}
+                onClick={() => toast.error(`${business.businessName} suspended`)}
               >
                 Suspend Business
               </AlertDialogAction>
@@ -145,7 +132,6 @@ export default function BusinessProfilePage() {
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="branches">Branches</TabsTrigger>
           <TabsTrigger value="activity">Activity Timeline</TabsTrigger>
-          <TabsTrigger value="api">API Usage</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -154,10 +140,10 @@ export default function BusinessProfilePage() {
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-2xl font-bold text-primary">
-                    {business.logo}
+                    {business.logoPath}
                   </div>
                   <div>
-                    <CardTitle className="text-xl">{business.name}</CardTitle>
+                    <CardTitle className="text-xl">{business.businessName}</CardTitle>
                     <div className="mt-1 flex items-center gap-2">
                       <StatusBadge status={business.status} />
                       <PlanBadge plan={business.plan} />
@@ -169,7 +155,7 @@ export default function BusinessProfilePage() {
                 <div className="flex items-center gap-3 text-sm">
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Owner:</span>
-                  <span className="font-medium">{business.owner}</span>
+                  <span className="font-medium">Owner Name</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <Mail className="h-4 w-4 text-muted-foreground" />
@@ -178,10 +164,6 @@ export default function BusinessProfilePage() {
                 <div className="flex items-center gap-3 text-sm">
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{business.phone}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{business.website}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -202,7 +184,7 @@ export default function BusinessProfilePage() {
               {[
                 { label: 'Active Users', value: business.users, icon: Users, color: 'text-blue-500' },
                 { label: 'Active Branches', value: business.branches, icon: Building, color: 'text-purple-500' },
-                { label: 'Monthly Revenue', value: `KES ${(business.monthlyRevenue / 1000000).toFixed(1)}M`, icon: DollarSign, color: 'text-green-500' },
+                { label: 'Monthly Revenue', value: `KES ${(0).toFixed(1)}M`, icon: DollarSign, color: 'text-green-500' },
                 { label: 'Plan', value: business.plan, icon: CreditCard, color: 'text-indigo-500' },
               ].map((stat) => {
                 const Icon = stat.icon;
@@ -239,11 +221,7 @@ export default function BusinessProfilePage() {
                     </div>
                     <div>
                       <p className="text-muted-foreground">WhatsApp</p>
-                      <p className="font-semibold"><StatusBadge status={business.whatsappStatus} /></p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Last Login</p>
-                      <p className="font-semibold">{new Date(business.lastLogin).toLocaleDateString()}</p>
+                      <p className="font-semibold"><StatusBadge status={business.whatsappStatus ? 'connected' : 'disconnected'} /></p>
                     </div>
                   </div>
                 </CardContent>
@@ -310,15 +288,13 @@ export default function BusinessProfilePage() {
                 </div>
                 <div className="flex flex-wrap gap-2 pt-2">
                   <Dialog>
-                    <DialogTrigger>
-                      <Button size="sm">
-                        <ArrowUpCircle className="mr-2 h-4 w-4" /> Upgrade
-                      </Button>
+                    <DialogTrigger render={<Button size="sm" />}>
+                      <ArrowUpCircle className="h-4 w-4" /> Upgrade
                     </DialogTrigger>
                     <DialogContent className="max-w-lg">
                       <DialogHeader>
                         <DialogTitle>Upgrade Subscription</DialogTitle>
-                        <DialogDescription>Move {business.name} to a higher plan and apply the new limits.</DialogDescription>
+                        <DialogDescription>Move {business.businessName} to a higher plan and apply the new limits.</DialogDescription>
                       </DialogHeader>
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
@@ -357,10 +333,10 @@ export default function BusinessProfilePage() {
                         </div>
                       </div>
                       <DialogFooter>
-                        <DialogClose>
-                          <Button variant="outline" type="button">Cancel</Button>
+                        <DialogClose render={<Button variant="outline" type="button" />}>
+                          Cancel
                         </DialogClose>
-                        <Button type="button" onClick={() => toast.success(`${business.name} upgrade scheduled`)}>
+                        <Button type="button" onClick={() => toast.success(`${business.businessName} upgrade scheduled`)}>
                           Confirm Upgrade
                         </Button>
                       </DialogFooter>
@@ -368,10 +344,8 @@ export default function BusinessProfilePage() {
                   </Dialog>
 
                   <Dialog>
-                    <DialogTrigger>
-                      <Button size="sm" variant="outline">
-                        <ArrowDownCircle className="mr-2 h-4 w-4" /> Downgrade
-                      </Button>
+                    <DialogTrigger render={<Button size="sm" variant="outline" />}>
+                      <ArrowDownCircle className="h-4 w-4" /> Downgrade
                     </DialogTrigger>
                     <DialogContent className="max-w-lg">
                       <DialogHeader>
@@ -411,10 +385,10 @@ export default function BusinessProfilePage() {
                         </div>
                       </div>
                       <DialogFooter>
-                        <DialogClose>
-                          <Button variant="outline" type="button">Cancel</Button>
+                        <DialogClose render={<Button variant="outline" type="button" />}>
+                          Cancel
                         </DialogClose>
-                        <Button type="button" onClick={() => toast.success(`${business.name} downgrade scheduled`)}>
+                        <Button type="button" onClick={() => toast.success(`${business.businessName} downgrade scheduled`)}>
                           Confirm Downgrade
                         </Button>
                       </DialogFooter>
@@ -422,10 +396,8 @@ export default function BusinessProfilePage() {
                   </Dialog>
 
                   <Dialog>
-                    <DialogTrigger>
-                      <Button size="sm" variant="outline">
-                        <RefreshCw className="mr-2 h-4 w-4" /> Renew
-                      </Button>
+                    <DialogTrigger render={<Button size="sm" variant="outline" />}>
+                      <RefreshCw className="h-4 w-4" /> Renew
                     </DialogTrigger>
                     <DialogContent className="max-w-lg">
                       <DialogHeader>
@@ -459,10 +431,10 @@ export default function BusinessProfilePage() {
                         </div>
                       </div>
                       <DialogFooter>
-                        <DialogClose>
-                          <Button variant="outline" type="button">Cancel</Button>
+                        <DialogClose render={<Button variant="outline" type="button" />}>
+                          Cancel
                         </DialogClose>
-                        <Button type="button" onClick={() => toast.success(`${business.name} subscription renewed`)}>
+                        <Button type="button" onClick={() => toast.success(`${business.businessName} subscription renewed`)}>
                           Confirm Renewal
                         </Button>
                       </DialogFooter>
@@ -470,21 +442,21 @@ export default function BusinessProfilePage() {
                   </Dialog>
 
                   <AlertDialog>
-                    <AlertDialogTrigger>
-                      <Button size="sm" variant="destructive">Cancel</Button>
+                    <AlertDialogTrigger render={<Button size="sm" variant="destructive" />}>
+                      Cancel
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Cancel this subscription?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This will stop future renewals for {business.name}. Existing access remains governed by the current expiry date unless the business is suspended separately.
+                          This will stop future renewals for {business.businessName}. Existing access remains governed by the current expiry date unless the business is suspended separately.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
                         <AlertDialogAction
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          onClick={() => toast.error(`${business.name} subscription cancelled`)}
+                          onClick={() => toast.error(`${business.businessName} subscription cancelled`)}
                         >
                           Confirm Cancel
                         </AlertDialogAction>
@@ -502,8 +474,8 @@ export default function BusinessProfilePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {[
-                  { label: 'User Licenses', used: business.users, total: business.plan === 'Enterprise' ? 999 : business.plan === 'Professional' ? 50 : 10, unit: '', color: 'bg-purple-500' },
-                  { label: 'Branches', used: business.branches, total: business.plan === 'Enterprise' ? 999 : business.plan === 'Professional' ? 10 : 2, unit: '', color: 'bg-blue-500' },
+                  { label: 'User Licenses', used: 0, total: business.plan === 'Enterprise' ? 999 : business.plan === 'Professional' ? 50 : 10, unit: '', color: 'bg-purple-500' },
+                  { label: 'Branches', used: 0, total: business.plan === 'Enterprise' ? 999 : business.plan === 'Professional' ? 10 : 2, unit: '', color: 'bg-blue-500' },
                 ].map((u) => (
                   <div key={u.label}>
                     <div className="mb-1.5 flex items-center justify-between text-sm">
@@ -649,80 +621,6 @@ export default function BusinessProfilePage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="api" className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">API Requests (7 days)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={apiUsageData}>
-                    <defs>
-                      <linearGradient id="apiGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
-                    <Area type="monotone" dataKey="requests" stroke="hsl(var(--chart-1))" fill="url(#apiGrad)" strokeWidth={2} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Errors (7 days)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={apiUsageData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
-                    <Bar dataKey="errors" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Success Rate</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center gap-4 pt-8">
-                  <div className="relative flex h-32 w-32 items-center justify-center rounded-full">
-                    <svg className="h-32 w-32 -rotate-90">
-                      <circle cx="64" cy="64" r="56" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
-                      <circle cx="64" cy="64" r="56" fill="none" stroke="hsl(var(--chart-2))" strokeWidth="8" strokeDasharray={`${2 * Math.PI * 56 * (successRate / 100)} ${2 * Math.PI * 56}`} strokeLinecap="round" />
-                    </svg>
-                    <div className="absolute flex flex-col items-center">
-                      <span className="text-2xl font-bold">{successRate}%</span>
-                      <span className="text-xs text-muted-foreground">Success</span>
-                    </div>
-                  </div>
-                  <div className="grid w-full grid-cols-2 gap-2 text-sm">
-                    <div className="rounded-lg border p-2 text-center">
-                      <p className="text-xs text-muted-foreground">Rate Limit</p>
-                      <p className="font-semibold">100K/mo</p>
-                    </div>
-                    <div className="rounded-lg border p-2 text-center">
-                      <p className="text-xs text-muted-foreground">Used</p>
-                      <p className="font-semibold">78K</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </TabsContent>
       </Tabs>
     </AppShell>

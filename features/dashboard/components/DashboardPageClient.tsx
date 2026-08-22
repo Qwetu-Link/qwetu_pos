@@ -9,9 +9,10 @@ import CashierDashboard from "../analytics/cashier_dashboard";
 import ManagerDashboard from "../analytics/manager_dashboard";
 import AdminDashboard from "../analytics/owner_dashboard";
 import InventoryDashboard from "../analytics/inventory_dashboard";
+import DashboardPage from "../analytics/super_dashboard";
 
 const DASHBOARD_MAP: Record<UserRole, () => JSX.Element> = {
-  SAdmin: () => <AdminDashboard />,
+  SAdmin: () => <DashboardPage />,
   Owner: () => <AdminDashboard />,
   Manager: () => <ManagerDashboard />,
   Cashier: () => <CashierDashboard />,

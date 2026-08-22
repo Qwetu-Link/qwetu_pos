@@ -42,10 +42,10 @@ export default function ReportsPage() {
     <AppShell>
       <PageHeader title="Reports & Analytics" description="Comprehensive reporting and data insights">
         <Button variant="outline" size="sm" onClick={() => toast.success('Exporting to PDF...')}>
-          <Download className="mr-2 h-4 w-4" /> Export PDF
+          <Download className="h-4 w-4" /> Export PDF
         </Button>
         <Button variant="outline" size="sm" onClick={() => toast.success('Exporting to Excel...')}>
-          <FileText className="mr-2 h-4 w-4" /> Export Excel
+          <FileText className="h-4 w-4" /> Export Excel
         </Button>
         <Button size="sm" onClick={() => toast.success('Scheduled report created')}>Schedule Report</Button>
       </PageHeader>

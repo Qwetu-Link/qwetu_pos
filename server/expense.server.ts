@@ -12,7 +12,7 @@ import {
     expenseEditSchema,
     expenseIdSchema,
     expenseStatusSchema,
-} from "@/validators/expense";
+} from "@/db/schema/validators/expense";
 import { TRPCError } from "@trpc/server";
 
 function ensureBusinessId(businessId: string | null) {

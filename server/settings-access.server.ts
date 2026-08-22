@@ -16,7 +16,7 @@ import {
     teamUserCreateSchema,
     teamUserEditSchema,
     teamUserIdSchema,
-} from "@/validators/settings-access";
+} from "@/db/schema/validators/settings-access";
 import { TRPCError } from "@trpc/server";
 
 function ensureBusinessId(businessId: string | null) {

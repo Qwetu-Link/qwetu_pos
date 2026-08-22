@@ -37,6 +37,7 @@ interface TopNavProps {
 }
 
 const routeLabels: Record<string, string> = {
+  '/superadmin': 'Dashboard',
   '/superadmin/': 'Dashboard',
   '/superadmin/businesses': 'Businesses',
   '/superadmin/subscriptions': 'Subscriptions',
@@ -54,14 +55,21 @@ export function TopNav({ onMobileMenuClick, onCommandPaletteOpen }: TopNavProps)
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const breadcrumbs = React.useMemo(() => {
-    const segments = pathname.split('/').filter(Boolean);
-    const crumbs: { label: string; href: string }[] = [{ label: 'Home', href: '/' }];
+    const currentPath = pathname || '/superadmin';
+    const pathSegments = currentPath.split('/').filter(Boolean);
+    const crumbs: { label: string; href: string }[] = [{ label: 'Home', href: '/superadmin' }];
+
     let acc = '';
-    for (const seg of segments) {
-      acc += '/' + seg;
+    for (const seg of pathSegments) {
+      acc += `/${seg}`;
+      if (acc === '/superadmin') {
+        continue;
+      }
+
       const label = routeLabels[acc] || seg.charAt(0).toUpperCase() + seg.slice(1);
       crumbs.push({ label, href: acc });
     }
+
     return crumbs;
   }, [pathname]);
 
@@ -96,7 +104,7 @@ export function TopNav({ onMobileMenuClick, onCommandPaletteOpen }: TopNavProps)
       <div className="ml-auto flex items-center gap-2">
         <Button
           variant="outline"
-          className="hidden h-9 gap-2 text-muted-foreground md:flex"
+          className="hidden h-10 gap-2.5 px-4 text-muted-foreground md:flex"
           onClick={onCommandPaletteOpen}
         >
           <Search className="h-4 w-4" />
@@ -110,7 +118,7 @@ export function TopNav({ onMobileMenuClick, onCommandPaletteOpen }: TopNavProps)
 
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <Button variant="ghost" size="icon" className="relative h-9 w-9">
+            <Button variant="ghost" size="icon" className="relative h-10 w-10">
               <Bell className="h-[18px] w-[18px]" />
               {unreadCount > 0 && (
                 <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
@@ -145,7 +153,7 @@ export function TopNav({ onMobileMenuClick, onCommandPaletteOpen }: TopNavProps)
 
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Button variant="ghost" size="icon" className="h-10 w-10">
               <Plus className="h-[18px] w-[18px]" />
             </Button>
           </DropdownMenuTrigger>
@@ -153,16 +161,16 @@ export function TopNav({ onMobileMenuClick, onCommandPaletteOpen }: TopNavProps)
             <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href="/superadmin/businesses"><Building2 className="mr-2 h-4 w-4" />Add Business</Link>
+              <Link href="/superadmin/businesses" className="flex items-center"><Building2 className="mr-2 h-4 w-4" />Add Business</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link href="/superadmin/administrators"><Users className="mr-2 h-4 w-4" />Add Admin</Link>
+              <Link href="/superadmin/administrators" className="flex items-center"><Users className="mr-2 h-4 w-4" />Add Admin</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link href="/superadmin/plans"><CreditCard className="mr-2 h-4 w-4" />Create Plan</Link>
+              <Link href="/superadmin/plans" className="flex items-center"><CreditCard className="mr-2 h-4 w-4" />Create Plan</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link href="/superadmin/whatsapp"><FileText className="mr-2 h-4 w-4" />New Template</Link>
+              <Link href="/superadmin/whatsapp" className="flex items-center"><FileText className="mr-2 h-4 w-4" />New Template</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -171,7 +179,7 @@ export function TopNav({ onMobileMenuClick, onCommandPaletteOpen }: TopNavProps)
 
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <Button variant="ghost" className="gap-2 px-2">
+            <Button variant="ghost" className="gap-3 px-3.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                 AT
               </div>
@@ -185,13 +193,17 @@ export function TopNav({ onMobileMenuClick, onCommandPaletteOpen }: TopNavProps)
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" /> Profile
+              <Link href="/superadmin/settings" className="flex items-center">
+                <User className="mr-2 h-4 w-4" /> Profile
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link href="/superadmin/settings"><Settings className="mr-2 h-4 w-4" /> Settings</Link>
+              <Link href="/superadmin/settings" className="flex items-center">
+                <Settings className="mr-2 h-4 w-4" /> Settings
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem className="flex items-center text-destructive">
               <LogOut className="mr-2 h-4 w-4" /> Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

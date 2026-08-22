@@ -12,7 +12,7 @@ import {
     categoryIdSchema,
     categorySchema,
     editCategorySchema,
-} from "@/validators/category";
+} from "@/db/schema/validators/category";
 
 type DatabaseError = {
     code?: string;

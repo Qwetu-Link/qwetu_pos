@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Category } from "@/types/admin/categories";
-import type { CategoryFormValues } from "@/validators/category";
+import type { CategoryFormValues } from "@/db/schema/validators/category";
 import { toast } from "sonner";
 import {
   computeCategoryStats,

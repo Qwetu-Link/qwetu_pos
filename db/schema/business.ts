@@ -5,6 +5,7 @@ import {
     int,
     boolean,
     primaryKey,
+    mysqlEnum,
 } from "drizzle-orm/mysql-core";
 import type { AdapterAccountType } from "@auth/core/adapters"
 import { usersTable } from "./users"
@@ -13,6 +14,10 @@ import { randomUUID } from "crypto";
 // -----------------------------------------------------------------------------
 // 1. Business / Organization Core
 // -----------------------------------------------------------------------------
+const planValues = ["trial", "starter", "professional", "enterprise"] as const;
+const statusValues = ["trial", "active", "suspended", "expired"] as const;
+
+
 export const businessTable = mysqlTable("business", {
     id: varchar("id", { length: 36 })
         .$defaultFn(() => randomUUID())
@@ -31,7 +36,13 @@ export const businessTable = mysqlTable("business", {
     currency: varchar("currency", { length: 10 }).default("KES"),
     timezone: varchar("timezone", { length: 100 }).default("Africa/Nairobi"),
     logoPath: varchar("logo_path", { length: 1000 }),
+    plan: mysqlEnum("plan", planValues)
+        .default("starter").notNull(),
+    status: mysqlEnum("status", statusValues).default("active").notNull(),
     description: varchar("description", { length: 1000 }),
+    industry: varchar("industry", { length: 255 }),
+    users:int("users").default(0),
+    branches:int("branches").default(0),
     whatsappStatus: boolean("whatsapp_status").default(false).notNull(),
     receiptFooter: varchar("receipt_footer", { length: 500 }),
     invoiceTerms: varchar("invoice_terms", { length: 1000 }),

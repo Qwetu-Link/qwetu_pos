@@ -10,7 +10,7 @@ import {
     variantCreateSchema,
     variantEditSchema,
     variantIdSchema,
-} from "@/validators/variant";
+} from "@/db/schema/validators/variant";
 import { TRPCError } from "@trpc/server";
 
 type DatabaseError = {

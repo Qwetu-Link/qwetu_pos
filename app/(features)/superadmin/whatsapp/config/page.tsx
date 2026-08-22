@@ -38,10 +38,10 @@ export default function WhatsAppConfigPage() {
     <AppShell>
       <PageHeader title="API Configuration" description="WhatsApp Cloud API global configuration">
         <Button variant="outline" size="sm" onClick={() => toast.success('Testing connection...')}>
-          <Zap className="mr-2 h-4 w-4" /> Test Connection
+          <Zap className="h-4 w-4" /> Test Connection
         </Button>
         <Button size="sm" onClick={() => toast.success('Syncing templates with WhatsApp...')}>
-          <FileText className="mr-2 h-4 w-4" /> Sync Templates
+          <FileText className="h-4 w-4" /> Sync Templates
         </Button>
       </PageHeader>
 
@@ -116,16 +116,16 @@ export default function WhatsAppConfigPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <Button className="w-full justify-start" variant="outline" onClick={() => toast.success('Connection test successful!')}>
-                <Zap className="mr-2 h-4 w-4" /> Test Connection
+                <Zap className="h-4 w-4" /> Test Connection
               </Button>
               <Button className="w-full justify-start" variant="outline" onClick={() => toast.success('Token refreshed successfully')}>
-                <RefreshCw className="mr-2 h-4 w-4" /> Refresh Token
+                <RefreshCw className="h-4 w-4" /> Refresh Token
               </Button>
               <Button className="w-full justify-start" variant="outline" onClick={() => toast.success('Test message sent!')}>
-                <Send className="mr-2 h-4 w-4" /> Send Test Message
+                <Send className="h-4 w-4" /> Send Test Message
               </Button>
               <Button className="w-full justify-start" variant="outline" onClick={() => toast.success('Syncing templates...')}>
-                <FileText className="mr-2 h-4 w-4" /> Sync Templates
+                <FileText className="h-4 w-4" /> Sync Templates
               </Button>
             </CardContent>
           </Card>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { VariantFormValues, variantSchema } from "@/validators/variant";
+import { VariantFormValues, variantSchema } from "@/db/schema/validators/variant";
 import { CLOTHING_SIZES } from "@/utils/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Puzzle } from "lucide-react";

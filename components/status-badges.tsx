@@ -26,9 +26,13 @@ const statusStyles: Record<string, string> = {
   closed: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
 };
 
-export function StatusBadge({ status }: { status: string }) {
-  const style = statusStyles[status] || 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
-  const label = status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+export function StatusBadge({ status }: { status: string | boolean | null | undefined }) {
+  const normalizedStatus =
+    typeof status === 'boolean'
+      ? status ? 'connected' : 'disconnected'
+      : String(status ?? 'unknown').toLowerCase();
+  const style = statusStyles[normalizedStatus] || 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+  const label = normalizedStatus.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
     <span

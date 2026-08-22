@@ -8,9 +8,20 @@ import { KPICard } from '@/components/kpi-card';
 import { whatsappKPIs, whatsappAnalyticsData } from '@/data/chart-data';
 import { AppShell } from '@/components/layouts/app-shell';
 
+const rainbowChartColors = [
+  '#ef4444',
+  '#f97316',
+  '#eab308',
+  '#22c55e',
+  '#06b6d4',
+  '#3b82f6',
+  '#8b5cf6',
+  '#d946ef',
+];
+
 const successRateData = [
-  { name: 'Delivered', value: 27000, color: 'hsl(var(--chart-2))' },
-  { name: 'Failed', value: 1000, color: 'hsl(var(--destructive))' },
+  { name: 'Delivered', value: 27000, color: rainbowChartColors[3] },
+  { name: 'Failed', value: 1000, color: rainbowChartColors[0] },
 ];
 
 export default function WhatsAppAnalyticsPage() {
@@ -38,10 +49,10 @@ export default function WhatsAppAnalyticsPage() {
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
                 <Legend wrapperStyle={{ fontSize: '12px' }} />
-                <Line type="monotone" dataKey="sent" stroke="hsl(var(--chart-1))" strokeWidth={2} />
-                <Line type="monotone" dataKey="delivered" stroke="hsl(var(--chart-2))" strokeWidth={2} />
-                <Line type="monotone" dataKey="read" stroke="hsl(var(--chart-3))" strokeWidth={2} />
-                <Line type="monotone" dataKey="failed" stroke="hsl(var(--destructive))" strokeWidth={2} />
+                <Line type="monotone" dataKey="sent" stroke={rainbowChartColors[5]} strokeWidth={2} />
+                <Line type="monotone" dataKey="delivered" stroke={rainbowChartColors[3]} strokeWidth={2} />
+                <Line type="monotone" dataKey="read" stroke={rainbowChartColors[7]} strokeWidth={2} />
+                <Line type="monotone" dataKey="failed" stroke={rainbowChartColors[0]} strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -77,15 +88,15 @@ export default function WhatsAppAnalyticsPage() {
               <AreaChart data={whatsappAnalyticsData}>
                 <defs>
                   <linearGradient id="sentArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+                    <stop offset="5%" stopColor={rainbowChartColors[5]} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={rainbowChartColors[5]} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
-                <Area type="monotone" dataKey="sent" stroke="hsl(var(--chart-1))" fill="url(#sentArea)" strokeWidth={2} />
+                <Area type="monotone" dataKey="sent" stroke={rainbowChartColors[5]} fill="url(#sentArea)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -104,8 +115,8 @@ export default function WhatsAppAnalyticsPage() {
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
                 <Legend wrapperStyle={{ fontSize: '12px' }} />
-                <Bar dataKey="delivered" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="read" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="delivered" fill={rainbowChartColors[3]} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="read" fill={rainbowChartColors[7]} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

@@ -15,6 +15,7 @@ import {
   Bell,
 } from 'lucide-react';
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -51,65 +52,67 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Search businesses, users, pages..." />
-      <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup heading="Navigation">
-          {navCommands.map((cmd) => {
-            const Icon = cmd.icon;
-            return (
-              <CommandItem key={cmd.href} onSelect={() => navigate(cmd.href)}>
-                <Icon className="mr-2 h-4 w-4" />
-                {cmd.label}
+      <Command>
+        <CommandInput placeholder="Search businesses, users, pages..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading="Navigation">
+            {navCommands.map((cmd) => {
+              const Icon = cmd.icon;
+              return (
+                <CommandItem key={cmd.href} onSelect={() => navigate(cmd.href)}>
+                  <Icon className="mr-2 h-4 w-4" />
+                  {cmd.label}
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+          <CommandGroup heading="Businesses">
+            {businesses.slice(0, 6).map((b) => (
+              <CommandItem key={b.id} onSelect={() => navigate(`/superadmin/businesses/${b.id}`)}>
+                <Building2 className="mr-2 h-4 w-4" />
+                {b.businessName}
+                <span className="ml-2 text-xs text-muted-foreground">{b.industry}</span>
               </CommandItem>
-            );
-          })}
-        </CommandGroup>
-        <CommandGroup heading="Businesses">
-          {businesses.slice(0, 6).map((b) => (
-            <CommandItem key={b.id} onSelect={() => navigate(`/businesses/${b.id}`)}>
-              <Building2 className="mr-2 h-4 w-4" />
-              {b.name}
-              <span className="ml-2 text-xs text-muted-foreground">{b.industry}</span>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-        <CommandGroup heading="Administrators">
-          {adminUsers.slice(0, 5).map((a) => (
-            <CommandItem key={a.id} onSelect={() => navigate('/administrators')}>
-              <Shield className="mr-2 h-4 w-4" />
-              {a.name}
-              <span className="ml-2 text-xs text-muted-foreground">{a.role}</span>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-        <CommandGroup heading="Subscriptions">
-          {subscriptions.slice(0, 5).map((s) => (
-            <CommandItem key={s.id} onSelect={() => navigate('/subscriptions')}>
-              <CreditCard className="mr-2 h-4 w-4" />
-              {s.businessName}
-              <span className="ml-2 text-xs text-muted-foreground">{s.plan}</span>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-        <CommandGroup heading="Payments">
-          {payments.slice(0, 5).map((p) => (
-            <CommandItem key={p.id} onSelect={() => navigate('/payments')}>
-              <Wallet className="mr-2 h-4 w-4" />
-              {p.invoice} - {p.businessName}
-            </CommandItem>
-          ))}
-        </CommandGroup>
-        <CommandGroup heading="WhatsApp Templates">
-          {whatsappTemplates.slice(0, 5).map((t) => (
-            <CommandItem key={t.id} onSelect={() => navigate('/whatsapp')}>
-              <FileText className="mr-2 h-4 w-4" />
-              {t.name}
-              <span className="ml-2 text-xs text-muted-foreground">{t.category}</span>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      </CommandList>
+            ))}
+          </CommandGroup>
+          <CommandGroup heading="Administrators">
+            {adminUsers.slice(0, 5).map((a) => (
+              <CommandItem key={a.id} onSelect={() => navigate('/administrators')}>
+                <Shield className="mr-2 h-4 w-4" />
+                {a.name}
+                <span className="ml-2 text-xs text-muted-foreground">{a.role}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+          <CommandGroup heading="Subscriptions">
+            {subscriptions.slice(0, 5).map((s) => (
+              <CommandItem key={s.id} onSelect={() => navigate('/subscriptions')}>
+                <CreditCard className="mr-2 h-4 w-4" />
+                {s.businessName}
+                <span className="ml-2 text-xs text-muted-foreground">{s.plan}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+          <CommandGroup heading="Payments">
+            {payments.slice(0, 5).map((p) => (
+              <CommandItem key={p.id} onSelect={() => navigate('/payments')}>
+                <Wallet className="mr-2 h-4 w-4" />
+                {p.invoice} - {p.businessName}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+          <CommandGroup heading="WhatsApp Templates">
+            {whatsappTemplates.slice(0, 5).map((t) => (
+              <CommandItem key={t.id} onSelect={() => navigate('/whatsapp')}>
+                <FileText className="mr-2 h-4 w-4" />
+                {t.name}
+                <span className="ml-2 text-xs text-muted-foreground">{t.category}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </Command>
     </CommandDialog>
   );
 }

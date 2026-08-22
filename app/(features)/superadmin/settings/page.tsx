@@ -32,7 +32,7 @@ export default function SettingsPage() {
     <AppShell>
       <PageHeader title="System Settings" description="Configure platform-wide settings">
         <Button size="sm" onClick={save}>
-          <Save className="mr-2 h-4 w-4" /> Save Changes
+          <Save className="h-4 w-4" /> Save Changes
         </Button>
       </PageHeader>
 

@@ -13,7 +13,7 @@ import {
 } from "@/data/expense-categories";
 import { useGetExpense, useUpdateExpense } from "@/hooks/useExpenses";
 import ExpenseField from "./ExpenseField";
-import { expensePageSchema, type ExpensePageValues } from "./expense-form-schema";
+import { expensePageSchema, type ExpensePageValues } from "@/db/schema/validators/expense-form-schema";
 import { FormPageSkeleton } from "@/components/skeletons";
 
 function getDateValue(date: string) {

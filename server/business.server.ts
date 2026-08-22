@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createBusiness } from "@/db/queries/business";
-import { businessSchema } from "@/validators/business";
+import { businessSchema } from "@/db/schema/validators/business";
 
 
 export async function createBusinessAction(

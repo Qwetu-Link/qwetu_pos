@@ -14,7 +14,7 @@ import {
     orderIdSchema,
     orderPaymentSchema,
     orderStatusSchema,
-} from "@/validators/order";
+} from "@/db/schema/validators/order";
 import { TRPCError } from "@trpc/server";
 
 function ensureBusinessId(businessId: string | null) {

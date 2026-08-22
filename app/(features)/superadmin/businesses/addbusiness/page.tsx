@@ -41,7 +41,7 @@ export default function AddBusinessPage() {
     <AppShell>
       <PageHeader title="Add Business" description="Create a new business profile and assign its starting plan">
         <Button variant="outline" size="sm">
-          <Link href="/superadmin/businesses">
+          <Link href="/superadmin/businesses" className='flex items-center'>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Businesses
           </Link>
         </Button>
@@ -67,13 +67,13 @@ export default function AddBusinessPage() {
                 <Input id="business-name" placeholder="e.g. Greenleaf Supermarkets" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="business-code">Business Code</Label>
+                <Label htmlFor="business-code">Business Reg No.</Label>
                 <Input id="business-code" placeholder="GRN-001" />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 w-full">
                 <Label>Industry</Label>
                 <Select required>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select industry" />
                   </SelectTrigger>
                   <SelectContent>
@@ -85,10 +85,10 @@ export default function AddBusinessPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 w-full">
                 <Label>Business Status</Label>
                 <Select defaultValue="trial">
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -124,7 +124,11 @@ export default function AddBusinessPage() {
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="owner-name">Owner Name</Label>
+                <Label htmlFor="owner-name">First Name</Label>
+                <Input id="owner-name" placeholder="Full name" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="owner-name">Last Name</Label>
                 <Input id="owner-name" placeholder="Full name" required />
               </div>
               <div className="space-y-2">
@@ -136,8 +140,8 @@ export default function AddBusinessPage() {
                 <Input id="owner-phone" placeholder="+254 700 000 000" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="website">Website</Label>
-                <Input id="website" placeholder="www.business.co.ke" />
+                <Label htmlFor="password">Temp Password</Label>
+                <Input id="password" placeholder="TempPass@123" />
               </div>
             </CardContent>
           </Card>
@@ -185,10 +189,10 @@ export default function AddBusinessPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="space-y-2">
+              <div className="space-y-2 w-full">
                 <Label>Subscription Plan</Label>
                 <Select defaultValue="Trial">
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -209,11 +213,6 @@ export default function AddBusinessPage() {
                   <Input id="branches" type="number" min="0" defaultValue="1" />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="monthly-revenue">Monthly Revenue</Label>
-                <Input id="monthly-revenue" type="number" min="0" placeholder="0" />
-              </div>
-
               <Separator />
 
               <div className="flex items-center justify-between gap-4">
@@ -247,7 +246,7 @@ export default function AddBusinessPage() {
 
               <div className="flex flex-col gap-2">
                 <Button type="submit">
-                  <Save className="mr-2 h-4 w-4" /> Create Business
+                  <Save className="h-4 w-4" /> Create Business
                 </Button>
                 <Button type="button" variant="outline">
                   <Link href="/superadmin/businesses">Cancel</Link>

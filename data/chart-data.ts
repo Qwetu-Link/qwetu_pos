@@ -108,16 +108,9 @@ export const dashboardKPIs: KPIData[] = [
   { label: 'Total Businesses', value: 18, format: 'number', growth: 12.5, previousValue: 16, sparkline: [12, 13, 14, 15, 16, 17, 18], icon: 'Building2', color: 'text-blue-500' },
   { label: 'Active Businesses', value: 12, format: 'number', growth: 8.2, previousValue: 11, sparkline: [8, 9, 10, 10, 11, 11, 12], icon: 'CheckCircle2', color: 'text-green-500' },
   { label: 'Trial Businesses', value: 3, format: 'number', growth: 50.0, previousValue: 2, sparkline: [1, 1, 2, 2, 2, 3, 3], icon: 'Clock', color: 'text-amber-500' },
-  { label: 'Suspended Businesses', value: 1, format: 'number', growth: -50.0, previousValue: 2, sparkline: [2, 2, 2, 1, 1, 1, 1], icon: 'Ban', color: 'text-red-500' },
-  { label: 'Expired Subscriptions', value: 1, format: 'number', growth: 0, previousValue: 1, sparkline: [1, 1, 1, 1, 1, 1, 1], icon: 'XCircle', color: 'text-orange-500' },
   { label: 'Monthly Revenue', value: 7100000, format: 'currency', growth: 14.5, previousValue: 6200000, sparkline: [4.2, 4.5, 5.1, 4.8, 5.6, 6.2, 7.1], icon: 'DollarSign', color: 'text-green-600' },
   { label: 'Annual Revenue', value: 71000000, format: 'currency', growth: 22.4, previousValue: 58000000, sparkline: [18, 28, 42, 58, 71], icon: 'TrendingUp', color: 'text-emerald-600' },
-  { label: 'Total Transactions', value: 18450, format: 'number', growth: 18.3, previousValue: 15600, sparkline: [12000, 13500, 14000, 15600, 16800, 17500, 18450], icon: 'Receipt', color: 'text-indigo-500' },
   { label: 'Total Users', value: 1066, format: 'number', growth: 15.2, previousValue: 925, sparkline: [650, 720, 810, 880, 925, 990, 1066], icon: 'Users', color: 'text-purple-500' },
-  { label: 'Active WhatsApp', value: 8, format: 'number', growth: 33.3, previousValue: 6, sparkline: [4, 5, 5, 6, 6, 7, 8], icon: 'MessageCircle', color: 'text-teal-500' },
-  { label: 'Pending Registrations', value: 5, format: 'number', growth: 25.0, previousValue: 4, sparkline: [2, 3, 3, 4, 4, 5, 5], icon: 'UserPlus', color: 'text-cyan-500' },
-  { label: 'New Businesses Today', value: 2, format: 'number', growth: 100.0, previousValue: 1, sparkline: [0, 1, 0, 1, 1, 2, 2], icon: 'Sparkles', color: 'text-pink-500' },
-  { label: 'API Requests Today', value: 75200, format: 'number', growth: 11.8, previousValue: 67200, sparkline: [45000, 52000, 58000, 61000, 65000, 71000, 75200], icon: 'Activity', color: 'text-blue-600' },
 ];
 
 export const subscriptionKPIs: KPIData[] = [

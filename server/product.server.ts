@@ -21,7 +21,7 @@ import {
     productImageReplaceSchema,
     productImageUploadSchema,
     productUploadedImagesSaveSchema,
-} from "@/validators/product";
+} from "@/db/schema/validators/product";
 import { TRPCError } from "@trpc/server";
 
 type DatabaseError = {

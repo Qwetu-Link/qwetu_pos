@@ -19,7 +19,7 @@ import {
   UserRound,
   type LucideIcon,
 } from "lucide-react";
-import { CategoryFormValues, categorySchema } from "@/validators/category";
+import { CategoryFormValues, categorySchema } from "@/db/schema/validators/category";
 
 interface Props {
   /** null = add mode, Category = edit mode */
