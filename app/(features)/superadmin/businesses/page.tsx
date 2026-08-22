@@ -17,10 +17,50 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { AppShell } from '@/components/layouts/app-shell';
-import { businesses } from '@/data/mock-data';
 import { Business } from '@/types/admin/business';
 
+function normalizeBusiness(business: Business): Business {
+  return {
+    ...business,
+    logoPath: business.logoPath || business.businessName.slice(0, 2).toUpperCase(),
+    country: business.country || 'Kenya',
+    createdAt: business.createdAt ? new Date(business.createdAt).toLocaleDateString() : '',
+    updatedAt: business.updatedAt ? new Date(business.updatedAt).toLocaleDateString() : '',
+  };
+}
+
 export default function BusinessesPage() {
+  const [businessRows, setBusinessRows] = React.useState<Business[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    let isMounted = true;
+
+    setIsLoading(true);
+    fetch('/api/superadmin/businesses')
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('Failed to load businesses')))
+      .then(({ data }: { data: Business[] }) => {
+        if (isMounted) {
+          setBusinessRows(data.map(normalizeBusiness));
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setBusinessRows([]);
+          toast.error('Could not load businesses');
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const columns: ColumnDef<Business>[] = [
     {
       id: 'select',
@@ -69,8 +109,8 @@ export default function BusinessesPage() {
       header: 'Owner',
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <span className="text-sm">Owners Name</span>
-          <span className="text-xs text-muted-foreground">{row.original.email}</span>
+          <span className="text-sm">{row.original.ownerName || 'No owner assigned'}</span>
+          <span className="text-xs text-muted-foreground">{row.original.ownerEmail || row.original.email}</span>
         </div>
       ),
     },
@@ -155,13 +195,19 @@ export default function BusinessesPage() {
       </PageHeader>
 
       <div className="rounded-xl border bg-card p-4 lg:p-6">
-        <DataTable
-          columns={columns}
-          data={businesses}
-          searchKey="name"
-          searchPlaceholder="Search businesses..."
-          pageSize={10}
-        />
+        {isLoading ? (
+          <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
+            Loading businesses...
+          </div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={businessRows}
+            searchKey="businessName"
+            searchPlaceholder="Search businesses..."
+            pageSize={10}
+          />
+        )}
       </div>
     </AppShell>
   );

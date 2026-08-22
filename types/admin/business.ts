@@ -8,6 +8,10 @@ export interface Business {
     taxPin: string;
     email: string;
     phone: string;
+    ownerId?: string | null;
+    ownerName?: string | null;
+    ownerEmail?: string | null;
+    ownerPhone?: string | null;
     alternativePhone?: string;
     address?: string;
     city?: string;

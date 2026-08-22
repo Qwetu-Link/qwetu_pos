@@ -2,7 +2,8 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Building2, Check, CreditCard, MapPin, Save, UserRound } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Building2, Check, CreditCard, Eye, EyeOff, MapPin, Save, UserRound } from 'lucide-react';
 import { AppShell } from '@/components/layouts/app-shell';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { superAdminCreateBusiness } from '@/server/register-business';
+import type { SuperAdminCreateBusinessInput } from '@/server/register-business';
 
 const industries = [
   'Retail',
@@ -29,12 +32,56 @@ const industries = [
 ];
 
 export default function AddBusinessPage() {
+  const router = useRouter();
+  const [isPending, startTransition] = React.useTransition();
+  const [industry, setIndustry] = React.useState('');
+  const [status, setStatus] = React.useState<SuperAdminCreateBusinessInput['status']>('trial');
+  const [plan, setPlan] = React.useState<SuperAdminCreateBusinessInput['plan']>('trial');
   const [whatsappEnabled, setWhatsappEnabled] = React.useState(false);
   const [autoRenewal, setAutoRenewal] = React.useState(true);
+  const [showPassword, setShowPassword] = React.useState(false);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    toast.success('Business profile created');
+    const formData = new FormData(event.currentTarget);
+
+    startTransition(async () => {
+      try {
+        const result = await superAdminCreateBusiness({
+          businessName: String(formData.get('businessName') ?? ''),
+          registrationNumber: String(formData.get('registrationNumber') ?? ''),
+          taxPin: String(formData.get('taxPin') ?? 'N/A'),
+          email: String(formData.get('email') ?? ''),
+          phone: String(formData.get('phone') ?? ''),
+          industry,
+          status,
+          description: String(formData.get('description') ?? ''),
+          ownerFirstName: String(formData.get('ownerFirstName') ?? ''),
+          ownerLastName: String(formData.get('ownerLastName') ?? ''),
+          ownerEmail: String(formData.get('ownerEmail') ?? ''),
+          ownerPhone: String(formData.get('ownerPhone') ?? ''),
+          password: String(formData.get('password') ?? ''),
+          country: String(formData.get('country') ?? 'Kenya'),
+          city: String(formData.get('city') ?? ''),
+          address: String(formData.get('address') ?? ''),
+          plan,
+          users: Number(formData.get('users') ?? 1),
+          branches: Number(formData.get('branches') ?? 1),
+          whatsappStatus: whatsappEnabled,
+        });
+
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+
+        toast.success('Business profile created');
+        router.push(`/superadmin/businesses/${result.businessId}`);
+        router.refresh();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Failed to create business');
+      }
+    });
   };
 
   return (
@@ -64,15 +111,15 @@ export default function AddBusinessPage() {
             <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="business-name">Business Name</Label>
-                <Input id="business-name" placeholder="e.g. Greenleaf Supermarkets" required />
+                <Input id="business-name" name="businessName" placeholder="e.g. Greenleaf Supermarkets" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="business-code">Business Reg No.</Label>
-                <Input id="business-code" placeholder="GRN-001" />
+                <Input id="business-code" name="registrationNumber" placeholder="GRN-001" required />
               </div>
               <div className="space-y-2 w-full">
                 <Label>Industry</Label>
-                <Select required>
+                <Select value={industry} onValueChange={(value) => setIndustry(value ?? '')} required>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select industry" />
                   </SelectTrigger>
@@ -87,7 +134,7 @@ export default function AddBusinessPage() {
               </div>
               <div className="space-y-2 w-full">
                 <Label>Business Status</Label>
-                <Select defaultValue="trial">
+                <Select value={status} onValueChange={(value) => setStatus(value as SuperAdminCreateBusinessInput['status'])}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -101,11 +148,19 @@ export default function AddBusinessPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="tax-id">Tax ID</Label>
-                <Input id="tax-id" placeholder="P051234567A" />
+                <Input id="tax-id" name="taxPin" placeholder="P051234567A" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="business-email">Business Email</Label>
+                <Input id="business-email" name="email" type="email" placeholder="info@business.co.ke" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="business-phone">Business Phone</Label>
+                <Input id="business-phone" name="phone" placeholder="+254 700 000 000" required />
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="description">Description</Label>
-                <Textarea id="description" rows={4} placeholder="Short operational summary for internal review" />
+                <Textarea id="description" name="description" rows={4} placeholder="Short operational summary for internal review" />
               </div>
             </CardContent>
           </Card>
@@ -124,24 +179,43 @@ export default function AddBusinessPage() {
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="owner-name">First Name</Label>
-                <Input id="owner-name" placeholder="Full name" required />
+                <Label htmlFor="owner-first-name">First Name</Label>
+                <Input id="owner-first-name" name="ownerFirstName" placeholder="First name" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="owner-name">Last Name</Label>
-                <Input id="owner-name" placeholder="Full name" required />
+                <Label htmlFor="owner-last-name">Last Name</Label>
+                <Input id="owner-last-name" name="ownerLastName" placeholder="Last name" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="owner-email">Email</Label>
-                <Input id="owner-email" type="email" placeholder="owner@business.co.ke" required />
+                <Input id="owner-email" name="ownerEmail" type="email" placeholder="owner@business.co.ke" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="owner-phone">Phone</Label>
-                <Input id="owner-phone" placeholder="+254 700 000 000" required />
+                <Input id="owner-phone" name="ownerPhone" placeholder="+254 700 000 000" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Temp Password</Label>
-                <Input id="password" placeholder="TempPass@123" />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="TempPass@123"
+                    className="pr-10"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -161,15 +235,15 @@ export default function AddBusinessPage() {
             <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="country">Country</Label>
-                <Input id="country" defaultValue="Kenya" required />
+                <Input id="country" name="country" defaultValue="Kenya" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="city">City</Label>
-                <Input id="city" placeholder="Nairobi" required />
+                <Input id="city" name="city" placeholder="Nairobi" required />
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="address">Address</Label>
-                <Input id="address" placeholder="Building, street, estate, or town" />
+                <Input id="address" name="address" placeholder="Building, street, estate, or town" />
               </div>
             </CardContent>
           </Card>
@@ -191,26 +265,26 @@ export default function AddBusinessPage() {
             <CardContent className="space-y-5">
               <div className="space-y-2 w-full">
                 <Label>Subscription Plan</Label>
-                <Select defaultValue="Trial">
+                <Select value={plan} onValueChange={(value) => setPlan(value as SuperAdminCreateBusinessInput['plan'])}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Trial">Trial</SelectItem>
-                    <SelectItem value="Starter">Starter</SelectItem>
-                    <SelectItem value="Professional">Professional</SelectItem>
-                    <SelectItem value="Enterprise">Enterprise</SelectItem>
+                    <SelectItem value="trial">Trial</SelectItem>
+                    <SelectItem value="starter">Starter</SelectItem>
+                    <SelectItem value="professional">Professional</SelectItem>
+                    <SelectItem value="enterprise">Enterprise</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="users">Users</Label>
-                  <Input id="users" type="number" min="0" defaultValue="1" />
+                  <Input id="users" name="users" type="number" min="0" defaultValue="1" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="branches">Branches</Label>
-                  <Input id="branches" type="number" min="0" defaultValue="1" />
+                  <Input id="branches" name="branches" type="number" min="0" defaultValue="1" />
                 </div>
               </div>
               <Separator />
@@ -245,8 +319,8 @@ export default function AddBusinessPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <Button type="submit">
-                  <Save className="h-4 w-4" /> Create Business
+                <Button type="submit" disabled={isPending}>
+                  <Save className="h-4 w-4" /> {isPending ? 'Creating...' : 'Create Business'}
                 </Button>
                 <Button type="button" variant="outline">
                   <Link href="/superadmin/businesses">Cancel</Link>

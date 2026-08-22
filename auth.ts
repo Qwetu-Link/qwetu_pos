@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm"
 import { usersTable } from "./db/schema/users"
 import { db } from "./db"
 import { roleTable } from "./db/schema/roles"
+import { businessTable } from "./db/schema/business"
 
 // 1. Safe Module Overrides via Direct Interface Merging
 declare module "next-auth" {
@@ -77,6 +78,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                     if (!targetUser.isActive) {
                         throw new Error("Account is deactivated.")
+                    }
+
+                    if (targetUser.businessId) {
+                        const [business] = await db
+                            .select({
+                                status: businessTable.status,
+                                isActive: businessTable.isActive,
+                            })
+                            .from(businessTable)
+                            .where(eq(businessTable.id, targetUser.businessId))
+                            .limit(1)
+
+                        if (!business || !business.isActive || business.status === "suspended") {
+                            throw new Error("Business account is suspended.")
+                        }
                     }
 
                     return {
