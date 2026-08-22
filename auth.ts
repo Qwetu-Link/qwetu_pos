@@ -36,6 +36,12 @@ const signInSchema = z.object({
     password: z.string().min(6),
 })
 
+const SUPERADMIN_ROLE = "SUPERADMIN";
+
+function normalizeRoleName(roleName?: string | null) {
+    return roleName?.replace(/[\s_-]+/g, "").toUpperCase();
+}
+
 const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? process.env.BETTER_AUTH_SECRET;
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -105,10 +111,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         .where(eq(roleTable.id, user.roleId))
                         .limit(1)
 
-                    token.roleName = roleRecord?.name || "Member"
+                    token.roleName = normalizeRoleName(roleRecord?.name) || "MEMBER"
                 } else if (user.businessId === null) {
                     // If no business context exists, they are structurally a global system manager
-                    token.roleName = "Super Admin"
+                    token.roleName = SUPERADMIN_ROLE
                 }
             }
             return token

@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
 import {
   Search,
   Menu,
@@ -50,9 +51,41 @@ const routeLabels: Record<string, string> = {
   '/superadmin/settings': 'System Settings',
 };
 
+function getInitials(name?: string | null, email?: string | null) {
+  const source = name?.trim() || email?.split('@')[0] || 'User';
+  const parts = source.split(/\s+/).filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+
+  return source.slice(0, 2).toUpperCase();
+}
+
+function formatRoleName(roleName?: string | null) {
+  if (!roleName) {
+    return 'Account';
+  }
+
+  if (roleName === 'SUPERADMIN') {
+    return 'Super Admin';
+  }
+
+  return roleName
+    .toLowerCase()
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export function TopNav({ onMobileMenuClick, onCommandPaletteOpen }: TopNavProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const sessionUser = session?.user;
+  const accountName = sessionUser?.name || sessionUser?.email || 'Signed in user';
+  const accountEmail = sessionUser?.email;
+  const accountRole = formatRoleName(sessionUser?.roleName);
+  const accountInitials = getInitials(sessionUser?.name, sessionUser?.email);
 
   const breadcrumbs = React.useMemo(() => {
     const currentPath = pathname || '/superadmin';
@@ -181,16 +214,21 @@ export function TopNav({ onMobileMenuClick, onCommandPaletteOpen }: TopNavProps)
           <DropdownMenuTrigger>
             <Button variant="ghost" className="gap-3 px-3.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                AT
+                {accountInitials}
               </div>
               <div className="hidden flex-col items-start leading-tight lg:flex">
-                <span className="text-sm font-medium">Alex Thornton</span>
-                <span className="text-xs text-muted-foreground">Super Admin</span>
+                <span className="max-w-40 truncate text-sm font-medium">{accountName}</span>
+                <span className="max-w-40 truncate text-xs text-muted-foreground">{accountRole}</span>
               </div>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              <div className="flex flex-col leading-tight">
+                <span className="truncate text-sm font-medium text-foreground">{accountName}</span>
+                <span className="truncate text-xs font-normal text-muted-foreground">{accountEmail || accountRole}</span>
+              </div>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Link href="/superadmin/settings" className="flex items-center">
@@ -203,7 +241,10 @@ export function TopNav({ onMobileMenuClick, onCommandPaletteOpen }: TopNavProps)
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex items-center text-destructive">
+            <DropdownMenuItem
+              className="flex items-center text-destructive"
+              onClick={() => signOut({ callbackUrl: '/login' })}
+            >
               <LogOut className="mr-2 h-4 w-4" /> Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

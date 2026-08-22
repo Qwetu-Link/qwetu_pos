@@ -35,7 +35,7 @@ export async function GET(
     return new Response("Unauthorized", { status: 401 });
   }
 
-  if (session.user.roleName === "Super Admin") {
+  if (session.user.roleName === "SUPERADMIN") {
     return new Response("Forbidden", { status: 403 });
   }
 

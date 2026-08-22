@@ -19,23 +19,29 @@ export default auth((req) => {
 // With a safe type assertion:
 //   const userRole = (req.auth?.user as typeof req.auth.user & { roleName?: string })?.roleName
   const userRole = (req.auth?.user as AuthenticatedUser | undefined)?.roleName
-const businessId = req.auth?.user?.businessId
+  const businessId = req.auth?.user?.businessId
+  const isSuperAdmin = userRole === "SUPERADMIN"
 
   const isAuthPage = nextUrl.pathname.startsWith("/login") || nextUrl.pathname.startsWith("/register")
   const isAdminPage = nextUrl.pathname.startsWith("/admin")
+  const isSuperAdminPage = nextUrl.pathname.startsWith("/superadmin")
   const isDashboardPage = nextUrl.pathname.startsWith("/dashboard")
 
   // 1. If hitting auth pages while already logged in, redirect based on their role profile
   if (isAuthPage && isLoggedIn) {
-    if (userRole === "Super Admin" || !businessId) {
+    if (isSuperAdmin) {
       return NextResponse.redirect(new URL("/superadmin/", nextUrl))
     }
     return NextResponse.redirect(new URL("/admin", nextUrl))
   }
 
   // 2. Protect Admin panel from normal team members/tenants
-  if (isAdminPage && userRole !== "Super Admin") {
-    return NextResponse.redirect(new URL("/admin", nextUrl))
+  if (isAdminPage && (isSuperAdmin || !businessId)) {
+    return NextResponse.redirect(new URL(isSuperAdmin ? "/superadmin/" : "/login", nextUrl))
+  }
+
+  if (isSuperAdminPage && !isSuperAdmin) {
+    return NextResponse.redirect(new URL(isLoggedIn && businessId ? "/admin" : "/login", nextUrl))
   }
 
   // 3. Protect operational dashboards from unauthenticated sessions

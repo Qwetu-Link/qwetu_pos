@@ -24,6 +24,8 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+const SUPERADMIN_ROLE = "SUPERADMIN";
+
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
@@ -63,13 +65,20 @@ export default function LoginForm() {
 
       const freshSession = await getSession();
       const roleName = freshSession?.user?.roleName;
+      const businessId = freshSession?.user?.businessId;
 
-      if (roleName === "Super Admin") {
+      if (roleName === SUPERADMIN_ROLE) {
         router.replace("/superadmin");
         return;
       }
 
-      router.replace("/dashboard");
+      if (businessId) {
+        router.replace("/admin");
+        return;
+      }
+
+      setError("Your account is not assigned to a business workspace.");
+      setIsSubmitting(false);
     } catch {
       setError("An unexpected authentication error occurred.");
       setIsSubmitting(false);

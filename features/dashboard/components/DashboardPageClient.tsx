@@ -26,19 +26,20 @@ export default function DashboardPageClient() {
   const session = sessionData?.data;
   const status = sessionData?.status ?? "loading";
   const roleName = session?.user?.roleName ?? "Owner";
-  const normalizedRole = roleName === "Super Admin" ? "SAdmin" : roleName;
+  const isSuperAdmin = roleName === "SUPERADMIN";
+  const normalizedRole = isSuperAdmin ? "SAdmin" : roleName;
   const user = (normalizedRole as UserRole) || "Owner";
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/login");
     }
-    if (status === "authenticated" && roleName === "Super Admin") {
+    if (status === "authenticated" && isSuperAdmin) {
       router.replace("/superadmin");
     }
-  }, [status, roleName, router]);
+  }, [status, isSuperAdmin, router]);
 
-  if (status === "loading" || roleName === "Super Admin") return null;
+  if (status === "loading" || isSuperAdmin) return null;
 
   const DashboardComponent = DASHBOARD_MAP[user] ?? DASHBOARD_MAP.Owner;
 
