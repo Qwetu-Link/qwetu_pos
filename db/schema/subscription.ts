@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { boolean, int, mysqlEnum, mysqlTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { boolean, int, json, mysqlEnum, mysqlTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 import { businessTable } from "./business";
 
 
@@ -32,4 +32,26 @@ export const subscriptionTable = mysqlTable("subscription", {
         .notNull(),
 }, (table) => ({
     uniqueBusinessRole: uniqueIndex("unique_plan_idx").on(table.businessId, table.plan),
+}));
+
+export const subscriptionPlansTable = mysqlTable("subscription_plans", {
+    id: varchar("id", { length: 36 }).primaryKey(),
+    name: varchar("name", { length: 80 }).notNull(),
+    monthlyPrice: int("monthly_price").default(0).notNull(),
+    annualPrice: int("annual_price").default(0).notNull(),
+    userLimit: int("user_limit").default(1).notNull(),
+    branchLimit: int("branch_limit").default(1).notNull(),
+    supportLevel: varchar("support_level", { length: 100 }).default("Standard").notNull(),
+    features: json("features").notNull(),
+    isPopular: boolean("is_popular").default(false).notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at")
+        .defaultNow()
+        .notNull(),
+    updatedAt: timestamp("updated_at")
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
+}, (table) => ({
+    nameUnique: uniqueIndex("name_unique").on(table.name),
 }));

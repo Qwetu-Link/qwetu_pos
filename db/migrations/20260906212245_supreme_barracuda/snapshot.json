@@ -1,9 +1,9 @@
 {
   "version": "6",
   "dialect": "mysql",
-  "id": "87e74eda-fd9a-4cf4-a879-af42d80b0034",
+  "id": "a6fbbf1b-ae36-4745-ba89-baf978bbf426",
   "prevIds": [
-    "b4a937b6-97c7-4dba-b91d-11561cad4722"
+    "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
@@ -104,6 +104,10 @@
     },
     {
       "name": "roles",
+      "entityType": "tables"
+    },
+    {
+      "name": "subscription_plans",
       "entityType": "tables"
     },
     {
@@ -4256,6 +4260,174 @@
       "generated": null,
       "name": "id",
       "entityType": "columns",
+      "table": "subscription_plans"
+    },
+    {
+      "type": "varchar(80)",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "name",
+      "entityType": "columns",
+      "table": "subscription_plans"
+    },
+    {
+      "type": "int",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": "0",
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "monthly_price",
+      "entityType": "columns",
+      "table": "subscription_plans"
+    },
+    {
+      "type": "int",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": "0",
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "annual_price",
+      "entityType": "columns",
+      "table": "subscription_plans"
+    },
+    {
+      "type": "int",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": "1",
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "user_limit",
+      "entityType": "columns",
+      "table": "subscription_plans"
+    },
+    {
+      "type": "int",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": "1",
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "branch_limit",
+      "entityType": "columns",
+      "table": "subscription_plans"
+    },
+    {
+      "type": "varchar(100)",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": "'Standard'",
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "support_level",
+      "entityType": "columns",
+      "table": "subscription_plans"
+    },
+    {
+      "type": "json",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "features",
+      "entityType": "columns",
+      "table": "subscription_plans"
+    },
+    {
+      "type": "boolean",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": "false",
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "is_popular",
+      "entityType": "columns",
+      "table": "subscription_plans"
+    },
+    {
+      "type": "boolean",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": "true",
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "is_active",
+      "entityType": "columns",
+      "table": "subscription_plans"
+    },
+    {
+      "type": "timestamp",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": "(now())",
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "subscription_plans"
+    },
+    {
+      "type": "timestamp",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": "(now())",
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "subscription_plans"
+    },
+    {
+      "type": "varchar(36)",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
       "table": "subscription"
     },
     {
@@ -4774,6 +4946,14 @@
         "id"
       ],
       "name": "PRIMARY",
+      "table": "subscription_plans",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "name": "PRIMARY",
       "table": "subscription",
       "entityType": "pks"
     },
@@ -5260,6 +5440,22 @@
       "name": "unique_name_idx",
       "entityType": "indexes",
       "table": "roles"
+    },
+    {
+      "columns": [
+        {
+          "value": "name",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "using": null,
+      "algorithm": null,
+      "lock": null,
+      "nameExplicit": true,
+      "name": "name_unique",
+      "entityType": "indexes",
+      "table": "subscription_plans"
     },
     {
       "columns": [

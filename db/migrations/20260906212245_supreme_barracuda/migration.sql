@@ -355,6 +355,13 @@ CREATE TABLE `business` (
 	`currency` varchar(10) DEFAULT 'KES',
 	`timezone` varchar(100) DEFAULT 'Africa/Nairobi',
 	`logo_path` varchar(1000),
+	`plan` enum('trial','starter','professional','enterprise') NOT NULL DEFAULT 'starter',
+	`status` enum('trial','active','suspended','expired') NOT NULL DEFAULT 'active',
+	`description` varchar(1000),
+	`industry` varchar(255),
+	`users` int DEFAULT 0,
+	`branches` int DEFAULT 0,
+	`whatsapp_status` boolean NOT NULL DEFAULT false,
 	`receipt_footer` varchar(500),
 	`invoice_terms` varchar(1000),
 	`is_active` boolean NOT NULL DEFAULT true,
@@ -386,10 +393,60 @@ CREATE TABLE `roles` (
 	CONSTRAINT `unique_name_idx` UNIQUE INDEX(`business_id`,`name`)
 );
 --> statement-breakpoint
+CREATE TABLE `subscription_plans` (
+	`id` varchar(36) PRIMARY KEY,
+	`name` varchar(80) NOT NULL,
+	`monthly_price` int NOT NULL DEFAULT 0,
+	`annual_price` int NOT NULL DEFAULT 0,
+	`user_limit` int NOT NULL DEFAULT 1,
+	`branch_limit` int NOT NULL DEFAULT 1,
+	`support_level` varchar(100) NOT NULL DEFAULT 'Standard',
+	`features` json NOT NULL,
+	`is_popular` boolean NOT NULL DEFAULT false,
+	`is_active` boolean NOT NULL DEFAULT true,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `name_unique` UNIQUE INDEX(`name`)
+);
+--> statement-breakpoint
+CREATE TABLE `subscription` (
+	`id` varchar(36) PRIMARY KEY,
+	`business_id` varchar(36),
+	`plan` enum('Trial','Starter','Professional','Enterprise') NOT NULL DEFAULT 'Trial',
+	`billing_cycle` enum('monthly','quartely','semi-annual','annual') NOT NULL DEFAULT 'monthly',
+	`description` varchar(255),
+	`salary` int DEFAULT 0,
+	`payment_status` enum('paid','pending','failed','refunded') NOT NULL DEFAULT 'pending',
+	`renewal_date` varchar(255),
+	`expiry_date` varchar(255),
+	`status` varchar(255),
+	`auto_renewal` boolean NOT NULL DEFAULT false,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `unique_plan_idx` UNIQUE INDEX(`business_id`,`plan`)
+);
+--> statement-breakpoint
+CREATE TABLE `reviews` (
+	`id` varchar(36) PRIMARY KEY,
+	`business_id` varchar(36) NOT NULL,
+	`product_id` varchar(36) NOT NULL,
+	`customer_id` varchar(36) NOT NULL,
+	`rating` tinyint NOT NULL,
+	`title` varchar(255),
+	`review` text NOT NULL,
+	`would_recommend` boolean NOT NULL DEFAULT true,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `customer_product_review_unique` UNIQUE INDEX(`customer_id`,`product_id`)
+);
+--> statement-breakpoint
 CREATE INDEX `expense_items_expense_idx` ON `expense_items` (`expense_id`);--> statement-breakpoint
 CREATE INDEX `payments_invoice_idx` ON `payments` (`invoice_id`);--> statement-breakpoint
 CREATE INDEX `payments_business_paid_at_idx` ON `payments` (`business_id`,`paid_at`);--> statement-breakpoint
 CREATE INDEX `transactions_reference_idx` ON `transactions` (`reference`);--> statement-breakpoint
+CREATE INDEX `reviews_product_id_idx` ON `reviews` (`product_id`);--> statement-breakpoint
+CREATE INDEX `reviews_customer_id_idx` ON `reviews` (`customer_id`);--> statement-breakpoint
+CREATE INDEX `reviews_business_id_idx` ON `reviews` (`business_id`);--> statement-breakpoint
 ALTER TABLE `product_images` ADD CONSTRAINT `product_images_business_id_business_id_fkey` FOREIGN KEY (`business_id`) REFERENCES `business`(`id`) ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE `product_images` ADD CONSTRAINT `product_images_product_id_products_id_fkey` FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE `products` ADD CONSTRAINT `products_business_id_business_id_fkey` FOREIGN KEY (`business_id`) REFERENCES `business`(`id`) ON DELETE CASCADE;--> statement-breakpoint
@@ -433,4 +490,8 @@ ALTER TABLE `user` ADD CONSTRAINT `user_business_id_business_id_fkey` FOREIGN KE
 ALTER TABLE `user` ADD CONSTRAINT `user_role_id_roles_id_fkey` FOREIGN KEY (`role_id`) REFERENCES `roles`(`id`) ON DELETE RESTRICT;--> statement-breakpoint
 ALTER TABLE `account` ADD CONSTRAINT `account_user_id_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE `session` ADD CONSTRAINT `session_user_id_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE;--> statement-breakpoint
-ALTER TABLE `roles` ADD CONSTRAINT `roles_business_id_business_id_fkey` FOREIGN KEY (`business_id`) REFERENCES `business`(`id`) ON DELETE CASCADE;
+ALTER TABLE `roles` ADD CONSTRAINT `roles_business_id_business_id_fkey` FOREIGN KEY (`business_id`) REFERENCES `business`(`id`) ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE `subscription` ADD CONSTRAINT `subscription_business_id_business_id_fkey` FOREIGN KEY (`business_id`) REFERENCES `business`(`id`) ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE `reviews` ADD CONSTRAINT `reviews_business_id_business_id_fkey` FOREIGN KEY (`business_id`) REFERENCES `business`(`id`) ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE `reviews` ADD CONSTRAINT `reviews_product_id_products_id_fkey` FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE `reviews` ADD CONSTRAINT `reviews_customer_id_customers_id_fkey` FOREIGN KEY (`customer_id`) REFERENCES `customers`(`id`) ON DELETE CASCADE;
