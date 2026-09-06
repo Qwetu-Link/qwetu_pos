@@ -8,6 +8,9 @@ import { productsTable } from "@/db/schema/products";
 import { variantInventoryTable, variantsTable } from "@/db/schema/variants";
 import { and, count, desc, eq, gt, gte, inArray, lt, lte, ne, or, sql } from "drizzle-orm";
 
+const transactionMonth = sql<string>`date_format(\`transactions\`.\`transacted_at\`, '%Y-%m')`;
+const expenseMonth = sql<string>`date_format(\`expenses\`.\`created_at\`, '%Y-%m')`;
+
 export type AdminReportMetric = {
   label: string;
   value: string;
@@ -273,7 +276,7 @@ export async function getAdminReportCenterData(businessId: string): Promise<Admi
     ),
     db
       .select({
-        month: sql<string>`date_format(${transactionTable.transactedAt}, '%Y-%m')`,
+        month: transactionMonth,
         total: sql<number>`coalesce(sum(${transactionTable.amount}), 0)`,
       })
       .from(transactionTable)
@@ -283,15 +286,15 @@ export async function getAdminReportCenterData(businessId: string): Promise<Admi
         gt(transactionTable.amount, 0),
         gte(transactionTable.transactedAt, trendStart),
       ))
-      .groupBy(sql`date_format(${transactionTable.transactedAt}, '%Y-%m')`),
+      .groupBy(transactionMonth),
     db
       .select({
-        month: sql<string>`date_format(${expenseTable.createdAt}, '%Y-%m')`,
+        month: expenseMonth,
         total: sql<number>`abs(coalesce(sum(${expenseTable.amount}), 0))`,
       })
       .from(expenseTable)
       .where(and(eq(expenseTable.businessId, businessId), gte(expenseTable.createdAt, trendStart)))
-      .groupBy(sql`date_format(${expenseTable.createdAt}, '%Y-%m')`),
+      .groupBy(expenseMonth),
     db
       .select({
         name: orderItemTable.name,

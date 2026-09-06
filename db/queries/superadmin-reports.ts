@@ -6,6 +6,8 @@ import { transactionTable } from "@/db/schema/payments";
 import { usersTable } from "@/db/schema/users";
 import { and, count, desc, eq, gt, gte, isNotNull, lt, ne, sql } from "drizzle-orm";
 
+const transactionMonth = sql<string>`date_format(\`transactions\`.\`transacted_at\`, '%Y-%m')`;
+
 export type SuperAdminReportCard = {
   id: string;
   title: string;
@@ -243,7 +245,7 @@ export async function getSuperAdminReportCenterData(): Promise<SuperAdminReportC
       .groupBy(transactionTable.businessId),
     db
       .select({
-        month: sql<string>`date_format(${transactionTable.transactedAt}, '%Y-%m')`,
+        month: transactionMonth,
         amount: sql<number>`coalesce(sum(${transactionTable.amount}), 0)`,
       })
       .from(transactionTable)
@@ -252,7 +254,7 @@ export async function getSuperAdminReportCenterData(): Promise<SuperAdminReportC
         gt(transactionTable.amount, 0),
         gte(transactionTable.transactedAt, trendStart),
       ))
-      .groupBy(sql`date_format(${transactionTable.transactedAt}, '%Y-%m')`),
+      .groupBy(transactionMonth),
   ]);
 
   const ownerMap = new Map(ownerRows.map((row) => [row.businessId, toNumber(row.owners)]));

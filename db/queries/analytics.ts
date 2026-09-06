@@ -21,6 +21,7 @@ const periodMonths: Record<AnalyticsPeriod, number> = {
     last_6_months: 6,
     last_12_months: 12,
 };
+const transactionMonth = sql<string>`date_format(\`transactions\`.\`transacted_at\`, '%Y-%m')`;
 
 function toNumber(value: unknown) {
     if (typeof value === "number") return value;
@@ -203,7 +204,7 @@ export async function getAnalyticsSummaryQuery(
                 lt(customerTable.createdAt, currentStart),
             )), "total"),
         db.select({
-            month: sql<string>`date_format(${transactionTable.transactedAt}, '%Y-%m')`,
+            month: transactionMonth,
             type: transactionTable.tnxType,
             total: sql<number>`coalesce(sum(${transactionTable.amount}), 0)`,
         })
@@ -214,7 +215,7 @@ export async function getAnalyticsSummaryQuery(
                 gt(transactionTable.amount, 0),
                 gte(transactionTable.transactedAt, currentStart),
             ))
-            .groupBy(sql`date_format(${transactionTable.transactedAt}, '%Y-%m')`, transactionTable.tnxType),
+            .groupBy(transactionMonth, transactionTable.tnxType),
         db.select({
             name: categoryTable.name,
             value: sql<number>`coalesce(sum(${orderItemTable.quantity} * ${orderItemTable.price}), 0)`,
@@ -370,4 +371,3 @@ export async function getAnalyticsSummaryQuery(
         collectionTrend: buildCollectionTrend(months, collectionRows),
     };
 }
-
