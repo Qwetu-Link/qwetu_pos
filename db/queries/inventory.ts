@@ -225,7 +225,7 @@ export async function adjustVariantInventoryQuery(data: {
                 .innerJoin(productsTable, eq(productsTable.id, variantsTable.productId))
                 .where(eq(variantsTable.id, data.variantId));
 
-            await sendBusinessNotification("low_stock_alert", {
+            await sendBusinessNotification(data.businessId, "low_stock_alert", {
                 productName: variantDetails?.productName ?? "Inventory item",
                 variantName: variantDetails?.variantName ?? "variant",
                 stock: nextQuantity,

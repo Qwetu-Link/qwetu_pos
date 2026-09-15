@@ -1,4 +1,6 @@
-export type BusinessNotificationType = "order_created" | "order_paid" | "order_status_updated" | "low_stock_alert";
+import type { NotificationType } from "@/db/schema/notifications";
+
+export type BusinessNotificationType = NotificationType;
 
 export type BusinessNotificationPayload = {
   orderNo?: string;
@@ -47,6 +49,13 @@ export function buildBusinessNotification(
       return {
         title: "Low stock alert",
         body: `${payload.productName ?? "A product"} (${payload.variantName ?? "variant"}) is running low with ${payload.stock ?? 0} units remaining.`,
+        url: "/inventory",
+        persistent: true,
+      };
+    case "expiry_alert":
+      return {
+        title: "Expiry alert",
+        body: `${payload.productName ?? "A product batch"} is nearing its expiration date.`,
         url: "/inventory",
         persistent: true,
       };

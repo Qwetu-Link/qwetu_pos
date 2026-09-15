@@ -565,38 +565,75 @@ export function TransactionsPageSkeleton() {
 
 export function SettingsPageSkeleton() {
   return (
-    <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-      <PageHeaderSkeleton actions={1} />
-      <StatCardsSkeleton count={3} />
-      <div className="grid gap-5 lg:grid-cols-2">
-        {Array.from({ length: 2 }).map((_, index) => (
-          <div key={index} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <SkeletonIcon className="h-12 w-12 rounded-xl" />
-                <div className="space-y-3">
-                  <SkeletonBlock className="h-6 w-48" />
-                  <SkeletonBlock className="h-4 w-64 max-w-[60vw]" />
-                  <SkeletonBlock className="h-4 w-32" />
-                </div>
+    <main className="min-h-screen bg-slate-50">
+      <div className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 pt-7 sm:px-6 lg:px-8">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+            <div className="flex items-start gap-3">
+              <SkeletonIcon className="h-10 w-10 rounded-lg bg-emerald-100" />
+              <div className="space-y-3">
+                <SkeletonBlock className="h-9 w-64 max-w-full" />
+                <SkeletonBlock className="h-4 w-[460px] max-w-[72vw]" />
               </div>
-              <SkeletonBlock className="h-10 w-24 rounded-xl" />
             </div>
+            <SkeletonBlock className="h-10 w-32 rounded-xl bg-emerald-100" />
           </div>
-        ))}
-      </div>
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-5 flex items-center gap-3">
-          <SkeletonIcon className="h-11 w-11 rounded-full" />
-          <div className="space-y-2">
-            <SkeletonBlock className="h-5 w-44" />
-            <SkeletonBlock className="h-3 w-56" />
+
+          <div className="mt-7 flex gap-6 overflow-hidden">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="shrink-0 space-y-3 pb-4">
+                <div className="flex items-center gap-2">
+                  <SkeletonIcon className="h-4 w-4 rounded" />
+                  <SkeletonBlock className="h-4 w-28" />
+                </div>
+                <SkeletonBlock
+                  className={`h-0.5 rounded-none ${index === 3 ? "bg-emerald-200" : "bg-transparent"}`}
+                />
+              </div>
+            ))}
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          <SkeletonBlock className="h-24 rounded-xl" />
-          <SkeletonBlock className="h-24 rounded-xl" />
-          <SkeletonBlock className="h-24 rounded-xl" />
+      </div>
+
+      <div className="mx-auto max-w-7xl space-y-7 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="space-y-3">
+          <SkeletonBlock className="h-9 w-80 max-w-full" />
+          <SkeletonBlock className="h-4 w-[520px] max-w-full" />
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 bg-slate-50 px-6 py-5">
+            <SkeletonBlock className="h-5 w-64" />
+            <SkeletonBlock className="mt-2 h-4 w-[460px] max-w-full" />
+          </div>
+          <div className="divide-y divide-slate-100">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="grid gap-5 px-6 py-5 lg:grid-cols-[1fr_340px] lg:items-center">
+                <div className="space-y-3">
+                  <SkeletonBlock className="h-5 w-40" />
+                  <SkeletonBlock className="h-4 w-[420px] max-w-full" />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  {Array.from({ length: 3 }).map((__, toggleIndex) => (
+                    <div key={toggleIndex} className="space-y-2">
+                      <SkeletonBlock className="h-3 w-14" />
+                      <SkeletonBlock className="h-7 w-12 rounded-full bg-slate-100" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-2">
+              <SkeletonBlock className="h-5 w-40" />
+              <SkeletonBlock className="h-4 w-[420px] max-w-full" />
+            </div>
+            <SkeletonBlock className="h-10 w-32 rounded-md bg-slate-900/10" />
+          </div>
         </div>
       </div>
     </main>
@@ -871,59 +908,82 @@ export function ProductEditSkeleton() {
 
 export function ProfileDetailsSkeleton() {
   return (
-    <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-end">
-          <PageHeaderSkeleton actions={1} />
-        </div>
-        <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="space-y-5">
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex flex-col gap-5 md:flex-row md:items-start">
-                <SkeletonIcon className="h-20 w-20 rounded-2xl" />
-                <div className="flex-1 space-y-3">
-                  <div className="flex gap-2">
-                    <SkeletonBlock className="h-7 w-28 rounded-full" />
-                    <SkeletonBlock className="h-7 w-28 rounded-full" />
+    <main className="min-h-screen bg-white">
+      <div className="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6 lg:px-8">
+        <SkeletonBlock className="h-5 w-32" />
+
+        <section className="grid gap-5 lg:grid-cols-[360px_1fr]">
+          <aside className="flex min-h-[420px] flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div>
+              <div className="flex items-start gap-4">
+                <SkeletonIcon className="h-16 w-16 rounded-2xl" />
+                <div className="min-w-0 flex-1 space-y-3">
+                  <SkeletonBlock className="h-7 w-48 max-w-full" />
+                  <div className="flex flex-wrap gap-2">
+                    <SkeletonBlock className="h-5 w-20 rounded-full bg-emerald-100" />
+                    <SkeletonBlock className="h-5 w-20 rounded-full" />
                   </div>
-                  <SkeletonBlock className="h-9 w-72 max-w-full" />
-                  <SkeletonBlock className="h-4 w-full" />
-                  <SkeletonBlock className="h-4 w-2/3" />
                 </div>
               </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <SkeletonBlock key={index} className="h-24 rounded-xl border border-slate-200 bg-white" />
-              ))}
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="mb-5 flex items-center gap-3">
-                <SkeletonIcon className="h-10 w-10 rounded-lg" />
-                <div className="space-y-2">
-                  <SkeletonBlock className="h-5 w-44" />
-                  <SkeletonBlock className="h-3 w-64" />
-                </div>
-              </div>
-              <div className="divide-y divide-slate-100">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="grid gap-2 py-4 sm:grid-cols-[180px_1fr]">
-                    <SkeletonBlock className="h-4 w-28" />
-                    <SkeletonBlock className="h-4 w-full max-w-md" />
+
+              <div className="mt-5 space-y-3.5">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="grid grid-cols-[20px_64px_1fr] items-center gap-2.5">
+                    <SkeletonIcon className="h-4 w-4 rounded" />
+                    <SkeletonBlock className="h-4 w-14" />
+                    <SkeletonBlock className="h-4 w-full max-w-44" />
                   </div>
                 ))}
               </div>
+
+              <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                <SkeletonBlock className="h-3 w-full" />
+                <SkeletonBlock className="mt-2 h-3 w-4/5" />
+              </div>
             </div>
-          </div>
-          <aside className="space-y-5">
-            <CardGridSkeleton count={1} columns="lg:grid-cols-1" />
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
-              <SkeletonBlock className="h-5 w-36 bg-emerald-100" />
-              <SkeletonBlock className="mt-3 h-4 w-full bg-emerald-100" />
-              <SkeletonBlock className="mt-2 h-4 w-3/4 bg-emerald-100" />
-              <SkeletonBlock className="mt-5 h-10 w-full rounded-lg bg-emerald-100" />
-            </div>
+
+            <SkeletonBlock className="mt-auto h-9 w-full rounded-xl bg-emerald-100" />
           </aside>
+
+          <div className="space-y-4">
+            <section className="grid gap-4 md:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="flex items-center gap-3.5">
+                    <SkeletonIcon className="h-12 w-12 rounded-xl" />
+                    <div className="space-y-2">
+                      <SkeletonBlock className="h-4 w-28" />
+                      <SkeletonBlock className="h-7 w-24" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <SkeletonBlock className="h-6 w-48" />
+              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="space-y-2">
+                    <SkeletonBlock className="h-4 w-24" />
+                    <SkeletonBlock className="h-5 w-20 rounded-full" />
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <SkeletonBlock className="h-6 w-40" />
+              <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="space-y-2">
+                    <SkeletonBlock className="h-4 w-24" />
+                    <SkeletonBlock className="h-7 w-28" />
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
         </section>
       </div>
     </main>

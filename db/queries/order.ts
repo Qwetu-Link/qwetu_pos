@@ -794,14 +794,14 @@ export async function createOrderQuery(data: OrderWriteInput) {
 
     await recomputeCustomerOrderStats(data.customerId, data.businessId);
 
-    await sendBusinessNotification("order_created", {
+    await sendBusinessNotification(data.businessId, "order_created", {
         orderNo: createdOrderRecord.orderNo ?? undefined,
         customerName: customer.name,
         amount: createdOrderRecord.total,
     });
 
     for (const alert of lowStockAlerts) {
-        await sendBusinessNotification("low_stock_alert", alert);
+        await sendBusinessNotification(data.businessId, "low_stock_alert", alert);
     }
 
     return getOrderByIdQuery({ id: createdOrderRecord.id, businessId: data.businessId });
@@ -1034,7 +1034,7 @@ export async function recordOrderPaymentQuery(data: RecordOrderPaymentInput) {
 
     await recomputeCustomerOrderStats(updatedOrder.customerId, data.businessId);
 
-    await sendBusinessNotification("order_paid", {
+    await sendBusinessNotification(data.businessId, "order_paid", {
         orderNo: updatedOrder.orderNo ?? undefined,
         amount: paymentAmount,
     });
@@ -1097,7 +1097,7 @@ export async function updateOrderStatusQuery(data: {
     const updatedOrder = order ? await getOrderByIdQuery({ id: order.id, businessId: data.businessId }) : undefined;
 
     if (updatedOrder) {
-        await sendBusinessNotification("order_status_updated", {
+        await sendBusinessNotification(data.businessId, "order_status_updated", {
             orderNo: updatedOrder.orderNumber,
             status: updatedOrder.status,
         });
